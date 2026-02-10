@@ -53,11 +53,31 @@ pub fn migrate(conn: &Connection) -> Result<()> {
             updated_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
 
+        CREATE TABLE IF NOT EXISTS measurements (
+            id INTEGER PRIMARY KEY,
+            probe_type TEXT NOT NULL,
+            target TEXT NOT NULL,
+            value REAL NOT NULL,
+            unit TEXT NOT NULL,
+            backend TEXT NOT NULL DEFAULT 'scalar',
+            duration_us INTEGER,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS spool (
+            id INTEGER PRIMARY KEY,
+            payload_json TEXT NOT NULL,
+            dispatched INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
         CREATE TABLE IF NOT EXISTS schedule_history (
             id INTEGER PRIMARY KEY,
             schedule_name TEXT NOT NULL,
             status TEXT NOT NULL,
             result_summary TEXT,
+            backend_used TEXT,
+            duration_us INTEGER,
             started_at TEXT NOT NULL,
             finished_at TEXT,
             FOREIGN KEY (schedule_name) REFERENCES schedules(name)

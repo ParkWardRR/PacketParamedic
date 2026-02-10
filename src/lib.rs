@@ -12,6 +12,7 @@ pub mod scheduler;
 pub mod selftest;
 pub mod storage;
 pub mod throughput;
+pub mod system;
 
 use anyhow::Result;
 

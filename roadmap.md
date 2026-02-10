@@ -42,10 +42,10 @@
 - **No support for Raspberry Pi 4 or earlier. Pi 5 only -- forward-looking, no legacy.**
 
 ### Checklist
-- [ ] Create repo scaffolding (workspace layout, Cargo.toml, CI config)
-- [ ] Define versioning scheme and release channels (stable / beta / nightly)
-- [ ] Write security posture doc (defaults, ports, auth model)
-- [ ] Document Pi 5-only hardware requirement in all user-facing docs
+- [x] Create repo scaffolding (workspace layout, Cargo.toml, CI config)
+- [x] Define versioning scheme and release channels (stable / beta / nightly)
+- [x] Write security posture doc (defaults, ports, auth model)
+- [x] Document Pi 5-only hardware requirement in all user-facing docs
 - [ ] Verify: one command builds a runnable dev version + produces a versioned artifact
 
 ---
@@ -53,14 +53,16 @@
 ## Phase 1: Backend Foundation (Week 1--2)
 
 ### 1.1 Base OS Image & Services
-- [ ] Set up reproducible image build pipeline (Pi 5 target only)
-- [ ] Design systemd unit layout (measurement, API, updater, OOB daemons as separate services)
-- [ ] Configure log retention caps + disk space guardrails
-- [ ] Implement NTP health check + "clock skew detected" alarms
+- [x] Set up reproducible image build pipeline (Pi 5 target only)
+- [x] Design systemd unit layout (measurement, API, updater, OOB daemons as separate services)
+- [x] Configure log retention caps + disk space guardrails (journald + `src/system/disk.rs`)
+- [x] Implement NTP health check + "clock skew detected" alarms (`src/system/ntp.rs`)
 
 ### 1.2 Storage Reliability
-- [ ] Prefer NVMe SSD via Pi 5 PCIe; document microSD mitigation plan (read-only root optional)
-- [ ] Implement crash-safe spool/queue for measurements to avoid data loss
+- [x] Configure SQLite for WAL mode + foreign keys (checked `src/storage/mod.rs`)
+- [x] Implement `measurements` and `spool` tables with acceleration metadata columns
+- [x] Implement crash-safe spool: write results to `spool` immediately, aggregate to `measurements` later
+- [x] Store execution metadata: `backend_used` (vk/gles/neon/scalar) and `duration_us` for every op
 
 ### Acceptance
 - [ ] Survives 50+ power cuts; reboots cleanly; doesn't fill disk in 7-day soak
@@ -103,20 +105,37 @@
 
 ---
 
-## Phase 3: Acceleration Plumbing (Week 3--5)
+## Phase 3: MANDATORY Acceleration Implementation (Week 3--6)
+
+> **CRITICAL:** "Overuse is Non-Negotiable". Every backend task must be implemented for Vulkan, GLES, and NEON. This is not optional.
 
 ### 3.1 Acceleration Policy Layer
-- [ ] Create internal "Acceleration Manager" abstraction
-- [ ] Implement NEON-optimized codepaths (Cortex-A76 ASIMD guaranteed)
-- [ ] Record which acceleration path was used (for supportability)
+- [ ] Create internal `AccelerationManager` (Runtime detection, dispatch logic)
+- [ ] Define trait `AcceleratedOp` (inputs -> outputs) with `vk`, `gles`, `neon`, `scalar` methods
+- [ ] Implement backend selection heuristic (payload size vs. transfer overhead)
+- [ ] Verification harness: random 0.1% sampling of accelerated results against scalar reference
 
-### 3.2 GPU Support Baseline
-- [ ] Target OpenGL ES 3.1 via Pi 5 VideoCore VII (Mesa V3D)
-- [ ] Target Vulkan 1.2 via V3DV for compute workloads where beneficial
-- [ ] CPU reference implementation for all GPU-accelerated paths
+### 3.2 NEON Backend (latency-sensitive)
+- [ ] Implement `neon_cpu` path for all statistical operations (mean, variance, percentiles)
+- [ ] Optimize critical hot loops using `std::arch::aarch64` intrinsics
+- [ ] Benchmark NEON vs scalar (ensure >2x speedup on small batches)
+
+### 3.3 OpenGL ES 3 Backend (render-pass compute)
+- [ ] Initialize headless EGL context (Mesa V3D)
+- [ ] Implement `gles3_computeish` path using fragment shaders + FBOs
+- [ ] Map 2D grid tasks (heatmaps, pattern scanning) to render passes
+- [ ] Buffer readback optimization (PBOs)
+
+### 3.4 Vulkan Backend (heavy compute)
+- [ ] Initialize Vulkan instance/device (V3DV)
+- [ ] Implement `vk_compute` path using compute shaders (SPIR-V)
+- [ ] Manage descriptor sets, pipeline barriers, and command buffers
+- [ ] Benchmark large-batch throughput (target >10x vs NEON on huge datasets)
 
 ### Acceptance
-- [ ] Benchmark harness shows acceleration used when available, clean fallback when not
+- [ ] Benchmark harness shows distinct performance tiers: Vulkan > NEON > Scalar for large batches
+- [ ] Graceful fallback: if GPU hangs, manager switches to NEON instantly
+- [ ] All accelerated results match scalar reference exactly
 
 ---
 

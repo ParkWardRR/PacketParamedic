@@ -2,21 +2,27 @@
 //!
 //! Pi 5 guarantees Cortex-A76 NEON (ASIMD). GPU acceleration via VideoCore VII
 //! (Vulkan 1.2 / OpenGL ES 3.1) is used where beneficial.
+//!
+//! # Architecture: "Overuse"
+//!
+//! Every accelerated operation has implementations for:
+//! - `vk_compute` (Vulkan 1.2)
+//! - `gles_computeish` (OpenGL ES 3.1)
+//! - `neon_cpu` (ARM NEON)
+//! - `scalar_cpu` (Reference)
 
-/// Which acceleration path was used for a given computation.
-#[derive(Debug, Clone, Copy, serde::Serialize)]
-pub enum AccelPath {
-    /// Cortex-A76 NEON SIMD (always available on Pi 5)
-    Neon,
-    /// VideoCore VII GPU compute
-    Gpu,
-    /// Scalar CPU reference implementation
-    CpuReference,
-}
+pub mod manager;
+pub mod vulkan;
+pub mod gles;
+pub mod neon;
+pub mod cpu;
+
+// Re-export key types
+pub use manager::{AccelerationManager, Backend, AcceleratedOp};
 
 /// Metadata recording which acceleration path was used.
 #[derive(Debug, serde::Serialize)]
 pub struct AccelMetadata {
-    pub path_used: AccelPath,
+    pub backend: Backend,
     pub duration_us: u64,
 }
