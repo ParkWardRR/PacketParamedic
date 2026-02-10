@@ -109,7 +109,12 @@ graph TB
     end
 
     subgraph Builtin["Built-in Connectivity"]
-        BLE["BLE 5.0<br/><small>Nearby admin · provisioning</small>"]
+        BLE["BLE 5.0 GATT<br/><small>Nearby admin · provisioning</small>"]
+    end
+
+    subgraph Clients["BLE Clients"]
+        iOS["iOS Companion App<br/><small>Core Bluetooth · Swift</small>"]
+        WebBLE["Web Bluetooth<br/><small>Android Chrome · Desktop Chrome/Edge</small>"]
     end
 
     subgraph Optional["Optional Connectivity"]
@@ -118,6 +123,8 @@ graph TB
     end
 
     API --> BLE
+    BLE --> iOS
+    BLE --> WebBLE
     API --> Tailscale
     API --> Cellular
 ```
@@ -190,6 +197,18 @@ sequenceDiagram
 | **Remote admin** | Tailscale (optional) | Zero-trust, no inbound ports, WireGuard encrypted |
 | **BLE** | BlueZ + bluer | Pi 5 built-in Bluetooth 5.0; nearby provisioning and recovery via GATT |
 | **Cellular** | SIM HAT/modem (optional) | Out-of-band management when WAN is down |
+
+### BLE Client Platform Compatibility
+
+PacketParamedic exposes a BLE GATT service for nearby provisioning and admin. How you connect depends on your client platform:
+
+| Platform | App required? | Recommended path | Notes |
+|---|---|---|---|
+| **iOS** | Yes | Native iOS companion app (Core Bluetooth + Swift) | Web Bluetooth is not available in iOS Safari or PWAs. A native companion app is required. |
+| **Android** | No | Web UI + Web Bluetooth API in Chrome | Permissions/UX can be finicky; still workable for provisioning. No separate app install needed. |
+| **Desktop (macOS / Windows / Linux)** | No | Web UI + Web Bluetooth in Chrome or Edge | Requires HTTPS or secure context. Hardware/OS BLE stacks vary. |
+
+> **Why a native iOS app?** Apple does not implement the Web Bluetooth API in Safari (or any iOS browser engine, since all iOS browsers use WebKit). The only way to interact with the PacketParamedic BLE GATT service from an iPhone or iPad is through a native app using Apple's Core Bluetooth framework.
 
 ---
 
@@ -337,6 +356,9 @@ PacketParamedic/
 ├── systemd/               # Unit files for deployment
 ├── tests/                 # Integration and soak test harnesses
 ├── benches/               # Acceleration and throughput benchmarks
+├── ios/                   # iOS companion app (Swift + Core Bluetooth)
+│   ├── PacketParamedic/   # Xcode project
+│   └── README.md          # iOS-specific build and usage instructions
 ├── roadmap.md             # Development roadmap (checklist)
 ├── CONTRIBUTING.md        # Development plan, standards, and best practices
 └── README.md
