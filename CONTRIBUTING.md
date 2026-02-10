@@ -193,7 +193,7 @@ cargo watch -x run
 - **Commit messages:** Imperative mood, present tense. First line under 72 characters. Body explains "why", not "what".
 - **Comments:** Explain _why_, not _what_. Code should be self-documenting. Doc comments (`///`) on all public items.
 - **Magic numbers:** Named constants, always.
-- **Feature flags:** Use Cargo features for optional subsystems (BLE, Tailscale, cellular). Core functionality has no feature gates.
+- **Feature flags:** Use Cargo features for optional subsystems (Tailscale, cellular). BLE is always available on Pi 5 and is not feature-gated. Core functionality has no feature gates.
 - **Pi 5 only:** Do not add `#[cfg]` gates, feature flags, or runtime checks for Pi 4 or earlier. Assume Cortex-A76, VideoCore VII, and PCIe are always present.
 
 ### Throughput & Scheduling
@@ -263,7 +263,7 @@ pub enum SchedulerError {
 
 1. **Never swallow errors.** If you handle an error, log it. If you can't handle it, propagate it.
 2. **Structured errors for probes.** Probe failures are data, not crashes. Record them as measurement results with error context.
-3. **Graceful degradation.** If a subsystem fails (e.g., BLE adapter missing, iperf3 not installed), log a warning and continue without it or fall back to the native engine.
+3. **Graceful degradation.** If a subsystem fails (e.g., iperf3 not installed, Tailscale not configured), log a warning and continue without it or fall back to the native engine.
 4. **Timeouts everywhere.** Every network operation has an explicit timeout. No unbounded waits.
 
 ---

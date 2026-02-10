@@ -108,14 +108,17 @@ graph TB
         Throughput -.-> HW
     end
 
+    subgraph Builtin["Built-in Connectivity"]
+        BLE["BLE 5.0<br/><small>Nearby admin · provisioning</small>"]
+    end
+
     subgraph Optional["Optional Connectivity"]
         Tailscale["Tailscale<br/><small>Zero-trust remote</small>"]
-        BLE["BLE<br/><small>Nearby admin</small>"]
         Cellular["Cellular<br/><small>OOB mgmt</small>"]
     end
 
-    API --> Tailscale
     API --> BLE
+    API --> Tailscale
     API --> Cellular
 ```
 
@@ -185,7 +188,7 @@ sequenceDiagram
 | **Observability** | `tracing` + `tracing-journald` | Structured logs into journald; great for support bundles |
 | **Services** | systemd units + tmpfiles.d | Appliance-grade supervision, easy rollback and diagnostics |
 | **Remote admin** | Tailscale (optional) | Zero-trust, no inbound ports, WireGuard encrypted |
-| **BLE** | BlueZ + bluer (optional) | Nearby provisioning and recovery via GATT |
+| **BLE** | BlueZ + bluer | Pi 5 built-in Bluetooth 5.0; nearby provisioning and recovery via GATT |
 | **Cellular** | SIM HAT/modem (optional) | Out-of-band management when WAN is down |
 
 ---

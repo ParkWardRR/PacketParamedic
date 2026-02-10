@@ -20,7 +20,7 @@
 | Throughput | iperf3 (wrapped) + native Rust fallback | Industry-standard for 10GbE line-rate testing; Rust fallback when iperf3 unavailable |
 | 10GbE | PCIe M.2 HAT NIC | Pi 5 native PCIe -- true 10GbE without USB bottlenecks |
 | Scheduling | Tokio in-process cron engine | Unified scheduler for all probes and tests; bandwidth-aware coordination |
-| BLE | BlueZ + bluer (optional) | Official Rust interface to Linux Bluetooth stack |
+| BLE | BlueZ + bluer | Pi 5 has built-in Bluetooth 5.0 / BLE; bluer is the official Rust interface |
 | Remote admin | Tailscale (optional) | No inbound ports; zero-trust appliance management |
 
 ---
@@ -30,7 +30,7 @@
 ### Goals
 - Appliance-grade: unattended operation, safe updates, observable, supportable.
 - Answers "Wi-Fi vs router vs ISP?" with evidence and a timeline.
-- Manageable: local UI + secure remote access (Tailscale) + optional OOB (cellular + BLE).
+- Manageable: local UI + BLE nearby admin + secure remote access (Tailscale) + optional OOB (cellular).
 
 ### Non-Goals
 - No "always-on monitor/injection" unless the user explicitly enables it.
@@ -290,19 +290,22 @@
 
 ---
 
-## Phase 12: OOB Access -- BLE & Cellular (Week 27--34)
+## Phase 12: BLE Nearby Admin & OOB Cellular (Week 27--34)
 
-### 12.1 BLE "Nearby Admin" & Provisioning
+### 12.1 BLE "Nearby Admin" & Provisioning (Pi 5 built-in Bluetooth 5.0)
 - [ ] Secure pairing + provisioning (Wi-Fi creds, admin token, enable Tailscale)
 - [ ] Recovery actions: reboot, factory reset trigger, export support bundle via BLE
+- [ ] BLE GATT service for status queries (health, last incident, uptime) without opening the web UI
+- [ ] Auto-discoverable via BLE advertisement when in provisioning mode
 
-### 12.2 Cellular Management Plane
+### 12.2 Cellular Management Plane (optional)
 - [ ] Outbound-only management tunnel policy
 - [ ] Data budget controls + emergency-only mode
 - [ ] Strong separation: management traffic vs measurement traffic
 
 ### Acceptance
-- [ ] If primary WAN dies, unit is reachable (if enabled) without blowing data caps
+- [ ] BLE provisioning works out of box on Pi 5 with no additional hardware
+- [ ] If primary WAN dies, unit is reachable via BLE (always) or cellular (if enabled) without blowing data caps
 
 ---
 
