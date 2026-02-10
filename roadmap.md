@@ -1,8 +1,20 @@
 # PacketParamedic — Roadmap (.md)
 
 License: Blue Oak Model License 1.0.0 (SPDX: BlueOak-1.0.0) [web:34]
-
+use lots of badges in readme
 ---
+
+| Layer                     | Pick                                                                                     | Why                                                                                                                                                                                    |
+| ------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host OS                   | Raspberry Pi OS Lite (Bookworm)                                                          | Best alignment with Pi hardware support; Pi OS has moved to Wayland/labwc for the desktop path if you later add a local UI. raspberrypi+1                                              |
+| Init/Services             | systemd units + tmpfiles.d + journald                                                    | Appliance-grade supervision + structured logs; everything is a unit, easy to update/rollback/diagnose. docs​                                                                           |
+| API                       | axum + tokio + tower                                                                     | Lightweight, modern async stack; ergonomic middleware and good fit for “daemon exposes local API”. nashtechglobal​                                                                     |
+| Storage                   | SQLite (local-first)                                                                     | Lowest ops burden for an appliance event/timeline store (my recommendation; no citation).                                                                                              |
+| Observability             | tracing + tracing-journald                                                               | Structured logs straight into journald; great for support bundles and journalctl. docs​                                                                                                |
+| Web UI                    | Server-rendered HTML + htmx (+ tiny JS) served by your axum app; optional Rust SSR later | This is the lightest “fast UI” approach (minimal JS, no SPA build pipeline) while still feeling modern; SSR keeps it responsive on low-power clients (my recommendation; no citation). |
+| UI (local HDMI, optional) | Wayland + labwc                                                                          | If you truly need an on-device desktop UI, labwc is a lightweight Wayland compositor used in the Pi OS Wayland transition. github+1                                                    |
+| BLE (optional)            | BlueZ (system) + bluer (Rust)                                                            | bluer is the official Rust interface to the Linux Bluetooth stack (BlueZ) and supports BLE GATT client/server + advertisements with Tokio. docs​                                       |
+| Remote admin (optional)   | Tailscale                                                                                | Fits “no inbound ports” appliance management model (still optional) and aligns with your roadmap direction (my recommendation; no citation).                                           |
 
 ## 0) Project definition (1–3 days)
 ### Goals
