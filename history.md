@@ -32,7 +32,9 @@
     - Implemented Thermal/Power check (vcgencmd wrapper) in `src/selftest/thermal.rs`.
     - Implemented Network Interface scan (10GbE / PCIe detection) in `src/selftest/network.rs`.
     - Wired everything into `selftest::run()` and exposed via CLI (`packetparamedic self-test`).
-    - **Pending:** Detailed Wi-Fi capabilities check (Phase 2.2).
+    - **Wi-Fi Progress (Phase 2.2):**
+        - Implemented `src/selftest/wifi.rs` to parse `iw list` output.
+        - Detects monitor/AP/managed modes and warns if hardware lacks monitor support.
 - **Phase 3 Progress (Acceleration):**
     - Defined `AcceleratedOp` trait and `StatsOp` (mean/variance).
     - Implemented **NEON Backend** (`src/accel/neon.rs`) using `std::arch::aarch64` SIMD intrinsics.

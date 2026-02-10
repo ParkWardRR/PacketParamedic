@@ -7,6 +7,7 @@ use tracing::info;
 pub mod hardware;
 pub mod thermal;
 pub mod network;
+pub mod wifi;
 
 /// Run the full hardware self-test suite.
 /// Returns a list of component results.
@@ -80,6 +81,18 @@ pub async fn run() -> Result<Vec<ComponentResult>> {
             remediation: None,
         }),
     }
+
+    // 7. Wi-Fi (Phase 2.2)
+    match wifi::check_wifi() {
+        Ok(wifi_results) => results.extend(wifi_results),
+        Err(e) => results.push(ComponentResult {
+            component: "Wi-Fi".to_string(),
+            status: TestStatus::Warning,
+            details: format!("Failed to check Wi-Fi: {}", e),
+            remediation: Some("Ensure 'iw' is installed.".to_string()),
+        }),
+    }
+
 
     info!("Self-test complete. {} check(s) run.", results.len());
     Ok(results)

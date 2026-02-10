@@ -80,10 +80,10 @@
 - [x] Expose hardware inventory via API
 
 ### 2.2 Wi-Fi Hardware Self-Test
-- [ ] Enumerate Wi-Fi interfaces and driver stack (mac80211 vs vendor/out-of-tree)
-- [ ] Check monitor mode support + radiotap quality via short capture sanity test
+- [x] Enumerate Wi-Fi interfaces and driver stack (mac80211 vs vendor/out-of-tree)
+- [x] Check monitor mode support via `iw list` capabilities
 - [ ] Check injection capability only under explicit "RF test mode"
-- [ ] Recommend hardware profile if capabilities are missing (Profile A: monitor/capture dongle; Profile B: dual-radio)
+- [x] Recommend hardware profile if capabilities are missing (Profile A: monitor/capture dongle; Profile B: dual-radio)
 
 ### 2.3 Thermal & Power Integrity
 - [x] Detect CPU/GPU throttling under load (frequency drops)
