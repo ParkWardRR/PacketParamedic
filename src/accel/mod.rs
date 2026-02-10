@@ -17,6 +17,8 @@ pub mod gles;
 pub mod neon;
 pub mod cpu;
 
+pub mod ops;
+
 // Re-export key types
 pub use manager::{AccelerationManager, Backend, AcceleratedOp};
 

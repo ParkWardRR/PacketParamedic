@@ -116,8 +116,8 @@
 - [ ] Verification harness: random 0.1% sampling of accelerated results against scalar reference
 
 ### 3.2 NEON Backend (latency-sensitive)
-- [ ] Implement `neon_cpu` path for all statistical operations (mean, variance, percentiles)
-- [ ] Optimize critical hot loops using `std::arch::aarch64` intrinsics
+- [x] Implement `neon_cpu` path for all statistical operations (mean, variance, percentiles)
+- [x] Optimize critical hot loops using `std::arch::aarch64` intrinsics
 - [ ] Benchmark NEON vs scalar (ensure >2x speedup on small batches)
 
 ### 3.3 OpenGL ES 3 Backend (render-pass compute)

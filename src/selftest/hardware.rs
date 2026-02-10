@@ -1,6 +1,5 @@
 use anyhow::{Result, Context};
 use std::fs;
-use std::process::Command;
 use crate::selftest::{ComponentResult, TestStatus};
 use tracing::info;
 
