@@ -49,6 +49,10 @@ pub async fn run_test(
     streams: u32,
 ) -> Result<()> {
     tracing::info!(%mode, ?peer, %duration, %streams, "Throughput test (stub)");
+    println!("Speed Test (Phase 6 Feature): This functionality is currently a prototype.");
+    println!("Please ensure 'iperf3' is installed for future enabling.");
+    println!("Running in simulation mode (0 Mbps)...");
+    
     // TODO: Parse duration string
     // TODO: Select iperf3 or native engine
     // TODO: Run test with thermal monitoring

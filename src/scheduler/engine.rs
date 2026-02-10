@@ -1,6 +1,7 @@
 use crate::scheduler::Scheduler;
 use crate::storage::save_measurement;
 use crate::probes::{self, Probe};
+use crate::system::network; // Import the network module
 use std::time::Duration;
 use tracing::{info, warn, error};
 
@@ -31,11 +32,28 @@ pub async fn run_scheduler_loop(scheduler: Scheduler) {
                              return; 
                         }
 
+                        // Resolve Aliases first
+                        let resolved_spec = match full_test_string.as_str() {
+                            "icmp-gateway" => {
+                                match network::get_default_gateway() {
+                                    Ok(gw) => format!("icmp:{}", gw),
+                                    Err(e) => {
+                                        warn!(schedule=%name, "Failed to resolve gateway: {}. Fallback to 192.168.1.1", e);
+                                        "icmp:192.168.1.1".to_string()
+                                    }
+                                }
+                            },
+                            "dns-check" | "dns-resolver" => "dns:1.1.1.1".to_string(),
+                            "http-check" | "http-reachability" => "http:google.com".to_string(),
+                            "speed-test-light" => "speed:wan".to_string(), // new speed alias
+                            "blame-check" => "blame:full".to_string(), // explicit blame alias
+                            other => other.to_string(),
+                        };
+
                         // Parse "type:target" e.g. "icmp:8.8.8.8"
-                        // Or just "icmp" (invalid)
-                        let parts: Vec<&str> = full_test_string.splitn(2, ':').collect();
+                        let parts: Vec<&str> = resolved_spec.splitn(2, ':').collect();
                         if parts.len() != 2 {
-                             warn!(schedule=%name, spec=%full_test_string, "Invalid test spec. Expected 'type:target'");
+                             warn!(schedule=%name, spec=%resolved_spec, "Invalid test spec. Expected 'type:target' (or known alias)");
                              return;
                         }
                         let probe_kind = parts[0];
@@ -62,18 +80,25 @@ pub async fn run_scheduler_loop(scheduler: Scheduler) {
                             },
                              "blame" => {
                                  // Blame check is special: it reads from DB and writes to DB.
-                                 // Target field is ignored (or could specify model?)
                                  match crate::analysis::runner::perform_blame_analysis(scheduler.get_pool()).await {
                                      Ok(_) => {
                                          info!(schedule=%name, "Blame analysis complete");
-                                         return; // Success, return early as we don't have a measurement to save
+                                         return; // Success
                                      }
-                                     Err(e) => {
-                                         // Create a dummy failure measurement or just log error?
-                                         // Let's create a dummy so we log failure
-                                          Err(e)
-                                     }
+                                     Err(e) => Err(e)
                                  }
+                            },
+                            "speed" => {
+                                // "speed:wan" or "speed:lan"
+                                let mode = if target == "lan" { "lan" } else { "wan" };
+                                // Default params for scheduled test: 10s, 1 stream (lightweight)
+                                match crate::throughput::run_test(mode, None, "10s", 1).await {
+                                    Ok(_) => {
+                                        info!(schedule=%name, mode=%mode, "Speed test complete");
+                                        return; // Success
+                                    }
+                                    Err(e) => Err(e)
+                                }
                             },
                             _ => {
                                 warn!(schedule=%name, kind=%probe_kind, "Unknown probe type");
