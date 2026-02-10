@@ -128,7 +128,8 @@
 - [ ] Buffer readback optimization (PBOs)
 
 ### 3.4 Vulkan Backend (heavy compute)
-- [ ] Initialize Vulkan instance/device (V3DV)
+- [x] Integrate `ash` for Vulkan 1.2 bindings (staged in `src/accel/vulkan.rs`)
+- [ ] Initialize Vulkan instance/device (V3DV) - requires runtime verification
 - [ ] Implement `vk_compute` path using compute shaders (SPIR-V)
 - [ ] Manage descriptor sets, pipeline barriers, and command buffers
 - [ ] Benchmark large-batch throughput (target >10x vs NEON on huge datasets)

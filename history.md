@@ -41,6 +41,9 @@
     - **OpenGL ES 3 Progress:**
         - Added `glow` and `glutin` dependencies for headless EGL.
         - Staged `src/accel/gles.rs` structure for compute shader compilation.
+    - **Vulkan Progress:**
+        - Added `ash` dependency (Vulkan 1.2 raw bindings).
+        - Staged `src/accel/vulkan.rs` with Instance/Device creation logic targeting V3DV.
 - **Scope Change:**
     - Reprioritized throughput targets: 250Mbps/500Mbps/1Gbps/2.5Gbps now.
     - Deferred 5GbE/10GbE to Phase 14 (Future).
