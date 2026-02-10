@@ -6,22 +6,22 @@ This document outlines the primary user personas for **PacketParamedic**. Unders
 
 | Persona | Real-world label | Core motivation | What they “buy” PacketParamedic for | Primary adoption risk |
 |---|---|---|---|---|
-| **“Home tech interested noob”** | Pi-hole majority vibe | Learn + regain control without deep expertise | “Tell me whose fault it is” + simple health checks | CLI/config feels scary; Pi 5 requirement |
+| **“Home tech interested noob”** | Home server beginner vibe | Learn + regain control without deep expertise | “Tell me whose fault it is” + simple health checks | CLI/config feels scary; Pi 5 requirement |
 | **“Home normal user”** | Non-hobbyist household | Reliability for work/streaming | Proof to send to ISP + fewer “is it down?” mysteries | Anything that looks like a project, not an appliance |
 | **“Tech home expert”** | Homelab / network-savvy | Observability + automation | Local dataset + API + evidence export + schedule control | Missing UI polish |
 
 ---
 
-## Persona 1: Home tech‑interested noob (“Pi-hole user energy”)
+## Persona 1: Home tech‑interested noob (“Home server energy”)
 
-**Name & vibe**: Alex (29), curious, proud of running Pi-hole, but still guesses wrong about “Wi‑Fi vs ISP vs website.”  
+**Name & vibe**: Alex (29), curious, proud of running a home server, but still guesses wrong about “Wi‑Fi vs ISP vs website.”  
 **Home setup** (typical): consumer router + unmanaged switch + a small always-on box; willing to add a Pi if it’s “one more little thing”.
 
 ### What “pain” triggers adoption
 Alex’s trigger is the recurring pattern: “Netflix buffers + Zoom glitches, but speedtest.net sometimes looks fine,” so the household debates whether to reboot the router, call the ISP, or blame the service. PacketParamedic’s pitch lands because it’s explicitly built to answer that question by running multiple probe types over time and producing a blame verdict rather than a single snapshot test.
 
 ### What they actually do with PacketParamedic (workflow)
-Alex treats PacketParamedic like “Pi-hole for diagnosis”: plug it in, let default schedules run, check in only when something feels off, then look for a single sentence answer (“isp” vs “me” vs “service”).  
+Alex treats PacketParamedic like a specialized diagnostic appliance: plug it in, let default schedules run, check in only when something feels off, then look for a single sentence answer (“isp” vs “me” vs “service”).  
 They rely on the shipped default schedules (minute-by-minute gateway ping, 5‑minute DNS+HTTP checks, nightly speed test, weekly blame check) rather than designing their own measurement plan.  
 When the internet feels broken, they run a manual blame-check, then export a support bundle so they can paste one ZIP’s worth of evidence into an ISP ticket without understanding every metric.
 
