@@ -72,12 +72,12 @@
 ## Phase 2: Hardware Self-Test (Week 2--4)
 
 ### 2.1 Hardware Inventory & Capability Probing
-- [ ] Verify Pi 5 board (Cortex-A76 quad-core, 4/8 GB RAM)
-- [ ] Confirm CPU SIMD: Arm NEON / ASIMD (guaranteed on Cortex-A76)
-- [ ] Detect GPU: Pi 5 VideoCore VII (Vulkan 1.2 via V3DV, OpenGL ES 3.1 via Mesa V3D)
-- [ ] Detect storage type and health (NVMe via PCIe preferred, microSD fallback)
-- [ ] Output results as machine-readable JSON for support bundles
-- [ ] Expose hardware inventory via API
+- [x] Verify Pi 5 board (Cortex-A76 quad-core, 4/8 GB RAM)
+- [x] Confirm CPU SIMD: Arm NEON / ASIMD (guaranteed on Cortex-A76)
+- [x] Detect GPU: Pi 5 VideoCore VII (Vulkan 1.2 via V3DV, OpenGL ES 3.1 via Mesa V3D)
+- [x] Detect storage type and health (NVMe via PCIe preferred, microSD fallback)
+- [x] Output results as machine-readable JSON for support bundles
+- [x] Expose hardware inventory via API
 
 ### 2.2 Wi-Fi Hardware Self-Test
 - [ ] Enumerate Wi-Fi interfaces and driver stack (mac80211 vs vendor/out-of-tree)
@@ -86,16 +86,16 @@
 - [ ] Recommend hardware profile if capabilities are missing (Profile A: monitor/capture dongle; Profile B: dual-radio)
 
 ### 2.3 Thermal & Power Integrity
-- [ ] Detect CPU/GPU throttling under load (frequency drops)
-- [ ] Confirm PSU stability (brownout flags) and USB bus stability
-- [ ] Validate Pi 5 active cooler presence and fan operation
+- [x] Detect CPU/GPU throttling under load (frequency drops)
+- [x] Confirm PSU stability (brownout flags) and USB bus stability
+- [x] Validate Pi 5 active cooler presence and fan operation
 
 ### 2.4 Network Interface & 10GbE Detection
-- [ ] Enumerate all network interfaces (onboard 1GbE, PCIe NICs via M.2 HAT)
-- [ ] Detect 10GbE-capable PCIe NIC and validate driver status
-- [ ] Report PCIe lane width and negotiated link speed
-- [ ] Validate negotiated vs advertised link speed (ethtool)
-- [ ] Warn if thermal limits may constrain sustained 10GbE throughput
+- [x] Enumerate all network interfaces (onboard 1GbE, PCIe NICs via M.2 HAT)
+- [x] Detect 10GbE-capable PCIe NIC and validate driver status
+- [x] Report PCIe lane width and negotiated link speed
+- [x] Validate negotiated vs advertised link speed (ethtool)
+- [x] Warn if thermal limits may constrain sustained 10GbE throughput
 
 ### Acceptance
 - [ ] One-call "Run Self-Test" (API/CLI) produces pass/fail report + remediation steps

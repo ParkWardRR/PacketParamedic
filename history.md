@@ -24,3 +24,12 @@
     - Added `systemd/journald.conf.d/packetparamedic-retention.conf` for 1GB/7d log retention.
     - Verified build passes `cargo check`.
     - **Note:** Phase 1.1 and 1.2 logic complete. Acceptance testing (soak) pending physical hardware.
+- **Phase 2 Progress (Hardware Self-Test):**
+    - Implemented board detection (Pi 5 model, RAM check) in `src/selftest/hardware.rs`.
+    - Implemented CPU feature check (NEON/ASIMD).
+    - Implemented GPU detection (VideoCore VII / v3d presence).
+    - Implemented Storage detection (NVMe vs SD).
+    - Implemented Thermal/Power check (vcgencmd wrapper) in `src/selftest/thermal.rs`.
+    - Implemented Network Interface scan (10GbE / PCIe detection) in `src/selftest/network.rs`.
+    - Wired everything into `selftest::run()` and exposed via CLI (`packetparamedic self-test`).
+    - **Pending:** Detailed Wi-Fi capabilities check (Phase 2.2).

@@ -115,7 +115,9 @@ async fn main() -> Result<()> {
         }
         Commands::SelfTest => {
             tracing::info!("Running hardware self-test");
-            packetparamedic::selftest::run().await?;
+            let results = packetparamedic::selftest::run().await?;
+            let json = serde_json::to_string_pretty(&results)?;
+            println!("{}", json);
         }
         Commands::BlameCheck => {
             tracing::info!("Running blame check");
