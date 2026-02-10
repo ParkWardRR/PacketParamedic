@@ -1,6 +1,8 @@
 # PacketParamedic -- Development Plan & Best Practices
 
 > This document defines how we build PacketParamedic. It covers architecture decisions, coding standards, testing strategy, CI/CD, security, and contribution workflow.
+>
+> **Target hardware: Raspberry Pi 5 only.** No backward compatibility with Pi 4 or earlier.
 
 ---
 
@@ -36,6 +38,10 @@
 5. **Correctness over speed.** Acceleration (NEON, GPU) is welcome but must never change results. Every accelerated path has a reference CPU implementation and both must agree.
 
 6. **Minimal attack surface.** Default to deny. No open ports except the local UI. No default credentials. Explicit opt-in for advanced features (monitor mode, injection testing).
+
+7. **Pi 5 only.** No backward compatibility with Pi 4 or earlier. Target Cortex-A76, VideoCore VII, and PCIe natively. Do not add codepaths, feature flags, or conditional logic for older hardware. If it doesn't run on Pi 5, it's not our problem.
+
+8. **Bandwidth-aware coordination.** Only one throughput-heavy test runs at a time. The scheduler enforces mutual exclusion and priority ordering to prevent tests from interfering with each other or with the user's network.
 
 ---
 
@@ -73,12 +79,29 @@ PacketParamedic/
 │   │   ├── mod.rs
 │   │   ├── hardware.rs
 │   │   ├── wifi.rs
+│   │   ├── network.rs     # 10GbE PCIe NIC detection
 │   │   └── thermal.rs
-│   └── accel/             # Acceleration manager
+│   ├── accel/             # Acceleration manager
+│   │   ├── mod.rs
+│   │   └── neon.rs
+│   ├── throughput/        # Throughput testing engine
+│   │   ├── mod.rs
+│   │   ├── iperf.rs       # iperf3 process wrapper (spawn, parse JSON output)
+│   │   ├── native.rs      # Native Rust TCP/UDP throughput engine (fallback)
+│   │   ├── lan.rs         # LAN stress test orchestration
+│   │   ├── wan.rs         # WAN bandwidth test orchestration
+│   │   └── report.rs      # Throughput result formatting and storage
+│   └── scheduler/         # Scheduling engine
 │       ├── mod.rs
-│       └── neon.rs
+│       ├── engine.rs      # Core scheduler loop (Tokio-based)
+│       ├── cron.rs        # Cron expression parser and next-run calculator
+│       ├── queue.rs       # Priority queue with bandwidth-aware coordination
+│       ├── profiles.rs    # Default schedule profiles and user overrides
+│       └── history.rs     # Execution history tracking
 ├── templates/             # Askama/Tera HTML templates
 ├── static/                # CSS, minimal JS, htmx
+├── config/                # Default configuration
+│   └── schedules.toml     # Default schedule profiles
 ├── systemd/               # Unit files
 │   ├── packetparamedic.service
 │   ├── packetparamedic-updater.service
@@ -86,6 +109,8 @@ PacketParamedic/
 ├── tests/                 # Integration tests
 │   ├── api_tests.rs
 │   ├── probe_tests.rs
+│   ├── throughput_tests.rs
+│   ├── scheduler_tests.rs
 │   └── soak/
 ├── benches/               # Benchmarks
 ├── tools/                 # Build scripts, image builders
@@ -110,6 +135,7 @@ PacketParamedic/
 | cargo-fmt (rustfmt) | latest | Formatting |
 | SQLite | 3.35+ | Local storage |
 | cross | latest | Cross-compilation for aarch64 |
+| iperf3 | 3.x | Throughput testing (optional; native fallback available) |
 
 ### Setup
 
@@ -117,11 +143,15 @@ PacketParamedic/
 # Install Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Add Pi target
+# Add Pi 5 target
 rustup target add aarch64-unknown-linux-gnu
 
 # Install dev tools
 cargo install cargo-watch cargo-nextest cross
+
+# Install iperf3 (optional)
+# macOS: brew install iperf3
+# Debian/Pi OS: sudo apt install iperf3
 
 # Run in development with auto-reload
 cargo watch -x run
@@ -135,6 +165,10 @@ cargo watch -x run
 | `PP_DB_PATH` | `./data/packetparamedic.db` | SQLite database path |
 | `PP_LOG_LEVEL` | `info` | Log level (trace/debug/info/warn/error) |
 | `PP_DATA_DIR` | `./data` | Data directory for spool and exports |
+| `PP_IPERF3_PATH` | `/usr/bin/iperf3` | Path to iperf3 binary (empty = use native engine) |
+| `PP_SCHEDULER_ENABLED` | `true` | Enable/disable the scheduling engine |
+| `PP_SPEED_TEST_WINDOW` | `*` | Cron expression for allowed speed test hours (default: anytime) |
+| `PP_DAILY_BW_BUDGET_GB` | `0` | Daily bandwidth budget for WAN tests in GB (0 = unlimited) |
 
 ---
 
@@ -159,7 +193,16 @@ cargo watch -x run
 - **Commit messages:** Imperative mood, present tense. First line under 72 characters. Body explains "why", not "what".
 - **Comments:** Explain _why_, not _what_. Code should be self-documenting. Doc comments (`///`) on all public items.
 - **Magic numbers:** Named constants, always.
-- **Feature flags:** Use Cargo features for optional subsystems (BLE, Tailscale, cellular). Core functionality has no feature gates.
+- **Feature flags:** Use Cargo features for optional subsystems (Tailscale, cellular). BLE is always available on Pi 5 and is not feature-gated. Core functionality has no feature gates.
+- **Pi 5 only:** Do not add `#[cfg]` gates, feature flags, or runtime checks for Pi 4 or earlier. Assume Cortex-A76, VideoCore VII, and PCIe are always present.
+
+### Throughput & Scheduling
+
+- **iperf3 wrapper:** Always parse iperf3 JSON output (`--json` flag), never scrape text output. Handle iperf3 process lifecycle (spawn, timeout, kill) defensively.
+- **Native throughput engine:** Must be pure safe Rust. No `unsafe` for socket operations -- use `tokio::net` primitives.
+- **Scheduler:** All schedule state persisted to SQLite. The scheduler must be idempotent on restart (no duplicate runs, no missed-run replay without explicit config).
+- **Mutual exclusion:** Use a `tokio::sync::Semaphore` (permits=1) for throughput tests. Never acquire without a timeout.
+- **Thermal safety:** All long-running tests (>30s) must poll `/sys/class/thermal/thermal_zone0/temp` and abort if temperature exceeds 80C.
 
 ---
 
@@ -182,13 +225,45 @@ pub enum ProbeError {
     #[error("unexpected response: status {status}")]
     UnexpectedStatus { status: u16 },
 }
+
+// Throughput errors
+#[derive(Debug, thiserror::Error)]
+pub enum ThroughputError {
+    #[error("iperf3 not found at {path}")]
+    Iperf3NotFound { path: String },
+
+    #[error("iperf3 process exited with code {code}: {stderr}")]
+    Iperf3Failed { code: i32, stderr: String },
+
+    #[error("no 10GbE-capable interface detected")]
+    No10GbeInterface,
+
+    #[error("thermal limit exceeded ({temp_c}°C); test aborted")]
+    ThermalAbort { temp_c: f64 },
+
+    #[error("peer {peer} not reachable for LAN test")]
+    PeerUnreachable { peer: String },
+}
+
+// Scheduler errors
+#[derive(Debug, thiserror::Error)]
+pub enum SchedulerError {
+    #[error("invalid cron expression: {expr}")]
+    InvalidCron { expr: String },
+
+    #[error("schedule '{name}' already exists")]
+    DuplicateSchedule { name: String },
+
+    #[error("resource conflict: {resource} is in use by '{holder}'")]
+    ResourceConflict { resource: String, holder: String },
+}
 ```
 
 ### Rules
 
 1. **Never swallow errors.** If you handle an error, log it. If you can't handle it, propagate it.
 2. **Structured errors for probes.** Probe failures are data, not crashes. Record them as measurement results with error context.
-3. **Graceful degradation.** If a subsystem fails (e.g., BLE adapter missing), log a warning and continue without it.
+3. **Graceful degradation.** If a subsystem fails (e.g., iperf3 not installed, Tailscale not configured), log a warning and continue without it or fall back to the native engine.
 4. **Timeouts everywhere.** Every network operation has an explicit timeout. No unbounded waits.
 
 ---
@@ -210,25 +285,42 @@ pub enum ProbeError {
 ### Unit Tests
 
 - Live alongside the code in `#[cfg(test)]` modules.
-- Cover: schema validation, probe result parsing, verdict rules, redaction routines, acceleration parity.
+- Cover: schema validation, probe result parsing, verdict rules, redaction routines, acceleration parity, cron expression parsing, iperf3 JSON parsing.
 - Run with: `cargo nextest run`
 
 ### Integration Tests
 
 - Live in `tests/`.
 - Scenarios: LAN-only, DNS failure, captive portal, IPv6 broken, bufferbloat, packet loss simulation.
-- Use mock network interfaces where possible; real hardware for CI on Pi.
 - Run with: `cargo nextest run --profile integration`
+
+### Throughput Test Scenarios
+
+- LAN throughput with mock iperf3 (inject canned JSON output)
+- WAN throughput with simulated bandwidth limits (tc/netem in test environment)
+- Thermal abort simulation (mock thermal zone readings)
+- iperf3 missing/crashed gracefully falls back to native engine
+- Multi-stream tests produce correct aggregate throughput
+- 10GbE PCIe NIC detection on Pi 5 hardware
+
+### Scheduler Test Scenarios
+
+- Cron expression parsing: standard expressions, edge cases (@reboot, */5, ranges)
+- Mutual exclusion: two speed tests submitted simultaneously; only one runs
+- Priority preemption: user-triggered test preempts scheduled background test
+- Missed-run detection: simulate device downtime across a scheduled window
+- Schedule persistence: create schedules, restart daemon, verify schedules survive
+- Dry-run accuracy: predicted schedule matches actual execution over 24h
 
 ### Soak Tests
 
 - Live in `tests/soak/`.
 - 7--14 day continuous run before any release.
-- Validate: no disk fill, no memory leaks, clean reboot after power cuts, upgrade/rollback cycles.
+- Validate: no disk fill, no memory leaks, clean reboot after power cuts, upgrade/rollback cycles, no scheduler drift, no test collisions.
 
 ### Coverage
 
-- Target: 80%+ line coverage for core modules (`probes/`, `detect/`, `storage/`, `evidence/`).
+- Target: 80%+ line coverage for core modules (`probes/`, `detect/`, `storage/`, `evidence/`, `throughput/`, `scheduler/`).
 - Tool: `cargo llvm-cov`
 
 ### Pre-Commit Checks
@@ -249,13 +341,13 @@ cargo nextest run
 2. `cargo clippy -- -D warnings`
 3. `cargo nextest run`
 4. `cargo audit` (dependency vulnerability scan)
-5. Build for `x86_64` and `aarch64`
+5. Build for `aarch64` (Pi 5 target)
 6. License compliance check
 
 ### On Merge to `main`
 
 1. All PR checks
-2. Integration test suite
+2. Integration test suite (on Pi 5 hardware where available)
 3. Build release artifacts
 4. Tag as `nightly`
 
@@ -281,6 +373,7 @@ cargo nextest run
 - No inbound WAN ports ever opened by PacketParamedic.
 - Tailscale integration uses WireGuard (zero-trust, encrypted).
 - All outbound measurement traffic uses standard protocols; no tunneling without user consent.
+- iperf3 spawned as a child process with strict timeouts; never left running as a daemon.
 
 ### Data Handling
 
@@ -320,6 +413,8 @@ cargo nextest run
 - Timestamps stored in UTC. Always.
 - Enums stored as TEXT (human-readable), not integers.
 - Indexes on columns used in WHERE clauses and JOINs.
+- Schedule state stored in a `schedules` table with columns for name, cron expression, test type, enabled flag, and last-run timestamp.
+- Throughput results stored with link speed, stream count, direction, and per-second samples for trending.
 
 ---
 
@@ -368,6 +463,19 @@ cargo nextest run
 | GET | `/api/v1/incidents/:id` | Incident detail with evidence |
 | POST | `/api/v1/export/bundle` | Generate export bundle |
 | GET | `/api/v1/probes/status` | Current probe schedule and status |
+| POST | `/api/v1/speed-test` | Trigger a throughput test (LAN or WAN) |
+| GET | `/api/v1/speed-test/latest` | Latest throughput test results |
+| GET | `/api/v1/speed-test/history` | Historical throughput results (paginated) |
+| GET | `/api/v1/schedules` | List all schedules |
+| POST | `/api/v1/schedules` | Create a new schedule |
+| GET | `/api/v1/schedules/:name` | Get schedule details |
+| PUT | `/api/v1/schedules/:name` | Update a schedule |
+| DELETE | `/api/v1/schedules/:name` | Delete a schedule |
+| POST | `/api/v1/schedules/:name/enable` | Enable a schedule |
+| POST | `/api/v1/schedules/:name/disable` | Disable a schedule |
+| GET | `/api/v1/schedules/:name/history` | Execution history for a schedule |
+| GET | `/api/v1/schedules/dry-run` | Preview upcoming scheduled runs |
+| GET | `/api/v1/network/interfaces` | List network interfaces with speed capabilities |
 
 ---
 
@@ -380,15 +488,15 @@ cargo nextest run
 - Every log line includes: `timestamp`, `level`, `module`, `span` context.
 - Log levels:
   - `ERROR`: Something is broken and needs attention.
-  - `WARN`: Something unexpected but handled (e.g., probe timeout, missing optional hardware).
-  - `INFO`: Significant events (service start/stop, self-test complete, incident detected).
-  - `DEBUG`: Detailed operation flow (probe results, SQL queries).
+  - `WARN`: Something unexpected but handled (e.g., probe timeout, missing optional hardware, thermal throttle during test).
+  - `INFO`: Significant events (service start/stop, self-test complete, incident detected, scheduled test executed, throughput test result).
+  - `DEBUG`: Detailed operation flow (probe results, SQL queries, scheduler decisions, iperf3 JSON output).
   - `TRACE`: Wire-level detail (packet contents, raw responses).
 
 ### Metrics (Future)
 
 - Expose Prometheus-compatible metrics at `/metrics` (optional).
-- Key metrics: probe latency histograms, incident count, disk usage, uptime.
+- Key metrics: probe latency histograms, incident count, disk usage, uptime, throughput test results, scheduler queue depth.
 
 ### Support Bundles
 
@@ -396,7 +504,8 @@ Always exportable, always working. A support bundle includes:
 - Last 24h of journald logs (filtered to PacketParamedic units).
 - Current config (redacted).
 - Latest self-test report.
-- Hardware inventory JSON.
+- Hardware inventory JSON (including 10GbE NIC status).
+- Active schedule list and recent execution history.
 - Disk and memory usage snapshot.
 
 ---
@@ -406,8 +515,9 @@ Always exportable, always working. A support bundle includes:
 ### Image Build
 
 - Reproducible builds via a build script in `tools/`.
-- Output: a `.img` file flashable to SD/SSD, or a `.deb` package for existing installs.
-- Build includes: compiled binaries, systemd units, default config, tmpfiles.d entries.
+- Output: a `.img` file flashable to NVMe SSD (Pi 5 PCIe) or microSD, or a `.deb` package for existing installs.
+- Build includes: compiled binaries, systemd units, default config, default schedule profiles, tmpfiles.d entries.
+- Target: Pi 5 only. No multi-platform image builds.
 
 ### Update Strategy
 
@@ -418,10 +528,12 @@ Always exportable, always working. A support bundle includes:
 
 ### Systemd Integration
 
-- `packetparamedic.service`: Main daemon (API + probes + detection).
+- `packetparamedic.service`: Main daemon (API + probes + scheduler + throughput + detection).
 - `packetparamedic-updater.service`: Background update checker.
 - Watchdog: systemd `WatchdogSec=30` with periodic health ping from the daemon.
 - `RestartSec=5`, `Restart=on-failure` for all services.
+- Throughput tests spawn iperf3 as a child process; never as a separate systemd service. The main daemon manages iperf3 lifecycle and enforces timeouts.
+- The scheduler runs in-process within the main daemon (not a separate cron or systemd timer). This ensures bandwidth-aware coordination is centralized.
 
 ---
 
@@ -445,8 +557,9 @@ Always exportable, always working. A support bundle includes:
 ### Release Checklist
 
 - [ ] All CI checks pass
-- [ ] Integration tests pass on Pi hardware
+- [ ] Integration tests pass on Pi 5 hardware
 - [ ] Soak test results reviewed (7+ days, no regressions)
+- [ ] Scheduler runs without drift or collisions for full soak period
 - [ ] Changelog updated
 - [ ] Version bumped in `Cargo.toml`
 - [ ] Release tag created and signed
@@ -462,15 +575,16 @@ Always exportable, always working. A support bundle includes:
 2. **Write a clear description.** State what changed, why, and how to test it.
 3. **Self-review first.** Read your own diff before requesting review.
 4. **Link to the roadmap.** Reference the phase/checklist item this PR addresses.
+5. **Pi 5 only.** Do not introduce compatibility shims for older hardware.
 
 ### For Reviewers
 
 1. **Correctness first.** Does it do what it claims? Are edge cases handled?
-2. **Security second.** Any new inputs validated? Any new network exposure?
+2. **Security second.** Any new inputs validated? Any new network exposure? Is iperf3 spawned safely?
 3. **Maintainability third.** Will a future developer understand this in 6 months?
 4. **Style last.** `cargo fmt` and `clippy` handle most style issues. Don't nitpick what the tools already enforce.
 
 ### Approval Requirements
 
 - 1 approval required for standard changes.
-- 2 approvals required for: security-sensitive changes, database schema changes, systemd unit changes, dependency additions.
+- 2 approvals required for: security-sensitive changes, database schema changes, systemd unit changes, dependency additions, scheduler coordination logic.
