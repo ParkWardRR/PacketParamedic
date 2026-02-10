@@ -44,7 +44,7 @@
 
 ## Who is this for?
 
-PacketParamedic is designed for three specific types of users (see [personas.md](personas.md) for details):
+PacketParamedic is designed for three specific types of users (see [personas.md](personas.md) for details, and [BUYERS_GUIDE.md](BUYERS_GUIDE.md) for hardware advice):
 
 1.  **The Tech-Curious (Alex):** You run a home server, you want to know *why* Netflix is buffering, and you want a simple "It's the ISP / It's me" answer without becoming a network engineer.
 2.  **The Household Manager (Jamie):** You just want stable internet for work and streaming. You need a "credibility box" that proves to the ISP that the issue is on their end, not yours.

@@ -119,26 +119,32 @@ async fn main() -> Result<()> {
         }
         Commands::SelfTest { json } => {
             tracing::info!("Running hardware self-test");
-            let results = packetparamedic::selftest::run().await?;
+            let report = packetparamedic::selftest::run().await?;
             if json {
-                let json_output = serde_json::to_string_pretty(&results)?;
+                let json_output = serde_json::to_string_pretty(&report)?;
                 println!("{}", json_output);
             } else {
                 println!("\nPacketParamedic Hardware Self-Test");
-                println!("{:<20} | {:<10} | {}", "Component", "Status", "Details");
-                println!("{:-<20}-|-{:-<10}-|-{:-<40}", "", "", "");
-                for res in results {
+                println!("{:<25} | {:<10} | {}", "Component", "Status", "Details");
+                println!("{:-<25}-|-{:-<10}-|-{:-<40}", "", "", "");
+                for res in &report.results {
                     let status_str = match res.status {
                         packetparamedic::selftest::TestStatus::Pass => "PASS",
                         packetparamedic::selftest::TestStatus::Fail => "FAIL",
                         packetparamedic::selftest::TestStatus::Warning => "WARN",
                         packetparamedic::selftest::TestStatus::Skipped => "SKIP",
                     };
-                    println!("{:<20} | {:<10} | {}", res.component, status_str, res.details);
-                    if let Some(rem) = res.remediation {
-                         println!("{:<20} | {:<10} |   -> Recommendation: {}", "", "", rem);
+                    println!("{:<25} | {:<10} | {}", res.component, status_str, res.details);
+                    if let Some(rem) = &res.remediation {
+                         println!("{:<25} | {:<10} |   -> Recommendation: {}", "", "", rem);
                     }
                 }
+                println!("\n=== Persona Readiness ===");
+                for (persona, compatible) in report.compatibility {
+                    let check = if compatible { "✅ READY" } else { "❌ NOT READY" };
+                    println!("{:<25} : {}", persona, check);
+                }
+                println!("(See BUYERS_GUIDE.md for details on requirements)");
                 println!();
             }
         }
