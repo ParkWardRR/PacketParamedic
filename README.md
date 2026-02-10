@@ -1,477 +1,437 @@
 <p align="center">
-  <h1 align="center">PacketParamedic</h1>
-  <p align="center">
-    <strong>Appliance-grade network diagnostics for your home and small office.</strong><br>
-    <em>Pi 5 exclusive. ARM NEON + GPU accelerated. 10GbE-ready. Scheduled diagnostics. Built in Rust.</em>
-  </p>
-  <p align="center">
-    <a href="https://blueoakcouncil.org/license/1.0.0"><img src="https://img.shields.io/badge/license-BlueOak--1.0.0-blue.svg" alt="License: Blue Oak 1.0.0"></a>
-    <img src="https://img.shields.io/badge/platform-Raspberry%20Pi%205-c51a4a.svg" alt="Platform: Raspberry Pi 5">
-    <img src="https://img.shields.io/badge/arch-aarch64%20Cortex--A76-informational.svg" alt="Architecture: aarch64 Cortex-A76">
-    <img src="https://img.shields.io/badge/lang-Rust-orange.svg" alt="Language: Rust">
-    <img src="https://img.shields.io/badge/async-Tokio-blue.svg" alt="Async: Tokio">
-    <img src="https://img.shields.io/badge/API-axum-purple.svg" alt="API: axum">
-    <img src="https://img.shields.io/badge/UI-htmx-blueviolet.svg" alt="UI: htmx">
-    <img src="https://img.shields.io/badge/storage-SQLite%20WAL-green.svg" alt="Storage: SQLite WAL">
-    <img src="https://img.shields.io/badge/accel-ARM%20NEON-red.svg" alt="Acceleration: ARM NEON">
-    <img src="https://img.shields.io/badge/GPU-Vulkan%201.2%20%7C%20OpenGL%20ES%203.1-yellow.svg" alt="GPU: Vulkan 1.2 | OpenGL ES 3.1">
-    <img src="https://img.shields.io/badge/throughput-10GbE-ff6600.svg" alt="Throughput: 10GbE">
-    <img src="https://img.shields.io/badge/speed--test-iperf3-00cc44.svg" alt="Speed Test: iperf3">
-    <img src="https://img.shields.io/badge/scheduler-cron--like-9944cc.svg" alt="Scheduler: cron-like">
-    <img src="https://img.shields.io/badge/remote-Tailscale-0A66C2.svg" alt="Remote: Tailscale">
-    <img src="https://img.shields.io/badge/BLE-BlueZ%20%2B%20bluer-lightblue.svg" alt="BLE: BlueZ + bluer">
-    <img src="https://img.shields.io/badge/init-systemd-grey.svg" alt="Init: systemd">
-    <img src="https://img.shields.io/badge/logs-journald-grey.svg" alt="Logs: journald">
-    <img src="https://img.shields.io/badge/OS-Pi%20OS%20Bookworm-darkgreen.svg" alt="OS: Pi OS Bookworm">
-    <img src="https://img.shields.io/badge/status-alpha-yellow.svg" alt="Status: Alpha">
-  </p>
+  <img src="https://img.shields.io/badge/%F0%9F%A9%BA-PacketParamedic-00b4d8?style=for-the-badge&labelColor=0d1117" alt="PacketParamedic" height="40"/>
+</p>
+
+<p align="center">
+  <strong>Your Raspberry Pi 5 just became a network doctor.</strong><br/>
+  Automated diagnostics, speed tests, anomaly detection, and blame analysis — all in one box.
 </p>
 
 ---
 
-> **Pi 5 only.** PacketParamedic targets Raspberry Pi 5 exclusively. No Pi 4, no Pi 3, no backward compatibility. Forward-looking, no legacy. Pi 5 gives us native PCIe for 10GbE, Cortex-A76 with guaranteed NEON, VideoCore VII with Vulkan 1.2, and the thermal/power headroom to sustain line-rate testing.
+## Badges
+
+<table>
+<tr><th colspan="2">Project</th></tr>
+<tr>
+  <td>Version</td>
+  <td>
+    <img src="https://img.shields.io/badge/version-0.1.0--alpha.1-blue?style=flat-square" alt="version"/>
+  </td>
+</tr>
+<tr>
+  <td>License</td>
+  <td>
+    <img src="https://img.shields.io/badge/license-Blue%20Oak%201.0.0-brightgreen?style=flat-square" alt="license"/>
+  </td>
+</tr>
+<tr>
+  <td>Edition</td>
+  <td>
+    <img src="https://img.shields.io/badge/rust-2021-orange?style=flat-square&logo=rust&logoColor=white" alt="rust edition"/>
+  </td>
+</tr>
+<tr>
+  <td>MSRV</td>
+  <td>
+    <img src="https://img.shields.io/badge/MSRV-1.75-orange?style=flat-square&logo=rust&logoColor=white" alt="msrv"/>
+  </td>
+</tr>
+<tr><th colspan="2">Stack</th></tr>
+<tr>
+  <td>Runtime</td>
+  <td>
+    <img src="https://img.shields.io/badge/Tokio-async-purple?style=flat-square" alt="tokio"/>
+    <img src="https://img.shields.io/badge/Axum-0.8-purple?style=flat-square" alt="axum"/>
+  </td>
+</tr>
+<tr>
+  <td>Database</td>
+  <td>
+    <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="sqlite"/>
+  </td>
+</tr>
+<tr>
+  <td>CLI</td>
+  <td>
+    <img src="https://img.shields.io/badge/Clap-4-yellow?style=flat-square" alt="clap"/>
+  </td>
+</tr>
+<tr>
+  <td>DNS</td>
+  <td>
+    <img src="https://img.shields.io/badge/trust--dns-0.23-teal?style=flat-square" alt="trust-dns"/>
+  </td>
+</tr>
+<tr>
+  <td>HTTP</td>
+  <td>
+    <img src="https://img.shields.io/badge/Reqwest-0.12-blue?style=flat-square" alt="reqwest"/>
+  </td>
+</tr>
+<tr><th colspan="2">Target Hardware</th></tr>
+<tr>
+  <td>Platform</td>
+  <td>
+    <img src="https://img.shields.io/badge/Raspberry%20Pi%205-aarch64-c51a4a?style=flat-square&logo=raspberrypi&logoColor=white" alt="rpi5"/>
+  </td>
+</tr>
+<tr>
+  <td>CPU Tuning</td>
+  <td>
+    <img src="https://img.shields.io/badge/Cortex--A76-NEON%20SIMD-ff6600?style=flat-square" alt="cortex-a76"/>
+  </td>
+</tr>
+<tr>
+  <td>GPU Accel</td>
+  <td>
+    <img src="https://img.shields.io/badge/Vulkan-1.2-red?style=flat-square&logo=vulkan&logoColor=white" alt="vulkan"/>
+    <img src="https://img.shields.io/badge/OpenGL%20ES-3.1-green?style=flat-square&logo=opengl&logoColor=white" alt="gles"/>
+  </td>
+</tr>
+<tr><th colspan="2">Build</th></tr>
+<tr>
+  <td>Release</td>
+  <td>
+    <img src="https://img.shields.io/badge/LTO-enabled-success?style=flat-square" alt="lto"/>
+    <img src="https://img.shields.io/badge/codegen--units-1-success?style=flat-square" alt="codegen"/>
+    <img src="https://img.shields.io/badge/symbols-stripped-success?style=flat-square" alt="strip"/>
+  </td>
+</tr>
+<tr>
+  <td>Packaging</td>
+  <td>
+    <img src="https://img.shields.io/badge/.deb-aarch64-purple?style=flat-square" alt="deb"/>
+    <img src="https://img.shields.io/badge/container-OCI-blue?style=flat-square&logo=docker&logoColor=white" alt="container"/>
+    <img src="https://img.shields.io/badge/systemd-service-lightgrey?style=flat-square&logo=systemd&logoColor=white" alt="systemd"/>
+  </td>
+</tr>
+</table>
 
 ---
 
-## What is PacketParamedic?
+## What is this thing?
 
-PacketParamedic is a Raspberry Pi 5-based network diagnostic appliance that answers one question with evidence:
+You know when your WiFi starts acting up and you have no idea if it's *your* router, *your ISP*, or the website itself? That's the problem.
 
-> **"Is it my Wi-Fi, my router, or my ISP?"**
+**PacketParamedic** is a Rust program that turns a Raspberry Pi 5 into a dedicated network detective. It sits on your network, runs tests on a schedule, stores everything in a local database, and when things go wrong it tells you **whose fault it is** — yours, your ISP's, or the service you're trying to reach.
 
-It runs unattended, collects structured measurements over time, detects anomalies, and produces shareable evidence bundles you can hand to your ISP or use to troubleshoot yourself.
-
-### Key Capabilities
-
-- **Blame attribution** -- Distinguishes LAN, Wi-Fi, router, DNS, and ISP issues with evidence. Uses a specialized **Logistic Regression classifier** trained on synthetic failure patterns to output probabilities (e.g., "98% generic ISP failure").
-- **Continuous monitoring** -- Scheduled ICMP, HTTP, DNS, and TCP probes build a baseline over days and weeks.
-- **Incident detection** -- Statistical anomaly detection flags latency spikes, packet loss, route changes, and DNS shifts.
-- **10GbE throughput testing** -- Stress test LAN links and measure WAN bandwidth up to 10 Gigabit Ethernet via Pi 5 PCIe, using iperf3 or a native Rust engine.
-- **Scheduled diagnostics** -- Cron-like scheduling for all probes and tests with bandwidth-aware coordination, priority queues, and configurable test windows.
-- **ISP speed tier validation** -- Automated recurring speed tests that track whether your ISP delivers the bandwidth you pay for, with historical trending.
-- **Evidence bundles** -- Export timestamped, redacted reports suitable for ISP support tickets.
-- **Hardware self-test** -- Validates Pi 5 hardware (RAM, Board), Wi-Fi adapters (Monitor Mode support), 2.5GbE/Multi-Gig NICs, thermals, and power integrity before testing.
-- **Hardware acceleration** -- Cortex-A76 NEON SIMD for compute-heavy paths; VideoCore VII GPU offload (Vulkan 1.2 / OpenGL ES 3.1) where beneficial. Policies ensure every op has a scalar CPU fallback.
-- **Appliance-grade reliability** -- Survives power cuts, manages disk space, and runs headless with zero maintenance.
+It does this by firing off probes (ping, TCP, DNS, HTTP), running speed tests, tracking anomalies over time, and feeding everything into a blame classifier that says: "yeah, it's your ISP" or "nah, that's on you."
 
 ---
 
-## Architecture
+## How it works (the big picture)
 
 ```mermaid
 graph TB
-    subgraph RaspberryPi["Raspberry Pi 5"]
-        subgraph Core["Core Engine"]
-            Probes["Probes Engine<br/><small>ICMP | HTTP | DNS | TCP</small>"]
-            Throughput["Throughput Engine<br/><small>iperf3 | native | 10GbE PCIe</small>"]
-            Scheduler["Scheduler<br/><small>cron-like | priority queue</small>"]
-            Detect["Anomaly Detector<br/><small>Statistical analysis</small>"]
-            Evidence["Evidence Builder<br/><small>ISP-ready reports</small>"]
-            Scheduler --> Probes
-            Scheduler --> Throughput
-            Probes --> Detect
-            Throughput --> Detect
-            Detect --> Evidence
+    subgraph PI["Raspberry Pi 5"]
+        CLI["CLI Interface<br/><code>packetparamedic</code>"]
+        API["REST API<br/><code>:8080/api/v1/*</code>"]
+        SCHED["Scheduler<br/>(cron-based)"]
+
+        subgraph PROBES["Probe Engine"]
+            ICMP["ICMP<br/>Ping"]
+            TCP["TCP<br/>Connect"]
+            DNS["DNS<br/>Resolve"]
+            HTTP["HTTP<br/>GET"]
         end
 
-        subgraph Accel["Acceleration Layer · Pi 5"]
-            NEON["Cortex-A76 NEON SIMD"]
-            GPU["VideoCore VII<br/><small>Vulkan 1.2 | OpenGL ES 3.1</small>"]
+        subgraph THROUGHPUT["Throughput Engine"]
+            IPERF["iperf3<br/>wrapper"]
+            NATIVE["Native Rust<br/>fallback"]
         end
 
-        subgraph Data["Data Layer"]
-            SQLite["SQLite TSDB<br/><small>WAL mode</small>"]
-            Schema["Unified Event Schema"]
+        subgraph BRAIN["Analysis"]
+            DETECT["Anomaly<br/>Detection"]
+            BLAME["Blame Classifier<br/>(Logistic Regression)"]
         end
 
-        subgraph API["API & UI"]
-            Axum["axum REST API<br/><small>/api/v1/*</small>"]
-            HTMX["htmx Web UI<br/><small>Server-rendered</small>"]
-            Axum --> HTMX
-        end
-
-        subgraph Platform["Platform Services"]
-            Systemd["systemd units"]
-            Journald["journald logs"]
-            Selftest["Hardware Self-Test"]
-        end
-
-        subgraph HW["Pi 5 Hardware"]
-            PCIe["PCIe M.2 HAT<br/><small>10GbE NIC</small>"]
-            Onboard["Onboard 1GbE"]
-        end
-
-        Core --> Data
-        Core -.-> Accel
-        Data --> API
-        Platform --> Core
-        Throughput -.-> HW
+        ACCEL["Hardware Acceleration<br/>NEON | Vulkan | GLES | CPU"]
+        DB[(SQLite<br/>WAL mode)]
+        SELFTEST["Self-Test<br/>Board / Thermal / NIC"]
     end
 
-    subgraph Builtin["Built-in Connectivity"]
-        BLE["BLE 5.0 GATT<br/><small>Nearby admin · provisioning</small>"]
-    end
+    SCHED -->|triggers| PROBES
+    SCHED -->|triggers| THROUGHPUT
+    PROBES --> DB
+    THROUGHPUT --> DB
+    DB --> BRAIN
+    BRAIN --> DB
+    ACCEL -.->|speeds up| BRAIN
+    CLI --> PROBES
+    CLI --> THROUGHPUT
+    CLI --> BRAIN
+    CLI --> SELFTEST
+    API --> DB
 
-    subgraph Clients["BLE Clients"]
-        iOS["iOS Companion App<br/><small>Core Bluetooth · Swift</small>"]
-        WebBLE["Web Bluetooth<br/><small>Android Chrome · Desktop Chrome/Edge</small>"]
-    end
-
-    subgraph Optional["Optional Connectivity"]
-        Tailscale["Tailscale<br/><small>Zero-trust remote</small>"]
-        Cellular["Cellular<br/><small>OOB mgmt</small>"]
-    end
-
-    API --> BLE
-    BLE --> iOS
-    BLE --> WebBLE
-    API --> Tailscale
-    API --> Cellular
+    style PI fill:#0d1117,stroke:#00b4d8,color:#fff
+    style PROBES fill:#1a1a2e,stroke:#e94560,color:#fff
+    style THROUGHPUT fill:#1a1a2e,stroke:#0f3460,color:#fff
+    style BRAIN fill:#1a1a2e,stroke:#00b4d8,color:#fff
 ```
 
-### Acceleration Pipeline
+---
 
-```mermaid
-graph LR
-    Input["Measurement Data"] --> Manager{"Accel<br/>Manager"}
-    Manager -->|"Always available"| NEON["Cortex-A76<br/>NEON SIMD"]
-    Manager -->|"VideoCore VII"| GPU["Vulkan 1.2<br/>OpenGL ES 3.1"]
-    Manager -->|"Reference"| CPU["Scalar CPU<br/>fallback"]
-    NEON --> Verify["Parity Check"]
-    GPU --> Verify
-    CPU --> Verify
-    Verify --> Output["Result + accel metadata"]
-```
+## The probe lifecycle
 
-### Diagnostic Flow
+Every probe follows the same pattern: fire a request, measure how long it takes, record whether it worked, store the result.
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant API as axum API
-    participant Sched as Scheduler
-    participant Probes as Probe Engine
-    participant Tput as Throughput Engine
-    participant DB as SQLite TSDB
-    participant Detect as Anomaly Detector
-    participant Evidence as Evidence Builder
+    participant S as Scheduler
+    participant P as Probe
+    participant T as Target
+    participant DB as SQLite
 
-    User->>API: POST /api/v1/blame-check
-    API->>Sched: Submit job (priority: high)
-    Sched->>Sched: Check for conflicts / acquire slot
-    Sched->>Probes: Dispatch probe battery
-    Probes->>Probes: ICMP gateway + WAN
-    Probes->>Probes: DNS resolver check
-    Probes->>Probes: HTTP/TCP endpoints
-    Probes->>DB: Store all results
+    S->>P: trigger (cron fires)
+    P->>T: send request (ping / TCP SYN / DNS query / HTTP GET)
+    T-->>P: response (or timeout)
+    P->>P: measure latency, check success
+    P->>DB: store ProbeResult { target, latency_ms, success, timestamp }
 
-    User->>API: POST /api/v1/speed-test
-    API->>Sched: Submit job (priority: normal)
-    Sched->>Sched: Wait for probe battery to finish
-    Sched->>Tput: Dispatch throughput test (10GbE PCIe)
-    Tput->>Tput: iperf3 / native engine
-    Tput->>DB: Store throughput results
-
-    DB->>Detect: Analyze against baseline
-    Detect->>Evidence: Build verdict + raw data
-    Evidence->>API: Return blame report
-    API->>User: JSON verdict + confidence + evidence
+    Note over DB: Results accumulate over time
+    DB->>DB: Anomaly detection runs
+    DB->>DB: Blame classifier runs when enough data
 ```
 
 ---
 
-## Tech Stack
+## Blame analysis — who broke my internet?
 
-| Layer | Choice | Rationale |
-|---|---|---|
-| **OS** | Raspberry Pi OS Lite (Bookworm) -- Pi 5 only | Native Pi 5 support; Cortex-A76 + VideoCore VII + PCIe |
-| **Runtime** | Rust + Tokio + axum + tower | Lightweight async stack; low memory, safe concurrency |
-| **Acceleration** | Cortex-A76 NEON SIMD + VideoCore VII (Vulkan 1.2 / OpenGL ES 3.1) | Pi 5 native hardware acceleration with CPU reference fallback |
-| **Throughput** | iperf3 (wrapped) + native Rust fallback | Industry-standard 10GbE line-rate testing; native fallback for minimal deployments |
-| **10GbE** | PCIe M.2 HAT NIC | Pi 5 native PCIe -- true 10GbE without USB bottlenecks |
-| **Scheduling** | In-process cron engine (Tokio) | Bandwidth-aware coordination of all probes and tests; no external scheduler dependency |
-| **Storage** | SQLite (WAL mode) | Zero-ops local-first event store; crash-safe concurrent access |
-| **UI** | Server-rendered HTML + htmx | No SPA build pipeline; fast on low-power hardware |
-| **Observability** | `tracing` + `tracing-journald` | Structured logs into journald; great for support bundles |
-| **Services** | systemd units + tmpfiles.d | Appliance-grade supervision, easy rollback and diagnostics |
-| **Remote admin** | Tailscale (optional) | Zero-trust, no inbound ports, WireGuard encrypted |
-| **BLE** | BlueZ + bluer | Pi 5 built-in Bluetooth 5.0; nearby provisioning and recovery via GATT |
-| **Cellular** | SIM HAT/modem (optional) | Out-of-band management when WAN is down |
+This is the coolest part. PacketParamedic doesn't just tell you "the network is down" — it tells you **who to yell at**.
 
-### BLE Client Platform Compatibility
+```mermaid
+flowchart LR
+    subgraph INPUTS["13 Features"]
+        A["Gateway RTT + Loss"]
+        B["WAN RTT + Loss"]
+        C["DNS Latency + Fail Rate"]
+        D["HTTP + TCP Fail Rates"]
+        E["Throughput Metrics"]
+    end
 
-PacketParamedic exposes a BLE GATT service for nearby provisioning and admin. How you connect depends on your client platform:
+    subgraph MODEL["Logistic Regression"]
+        W["Weighted Sum<br/>+ Sigmoid"]
+    end
 
-| Platform | App required? | Recommended path | Notes |
-|---|---|---|---|
-| **iOS** | Yes | Native iOS companion app (Core Bluetooth + Swift) | Web Bluetooth is not available in iOS Safari or PWAs. A native companion app is required. |
-| **Android** | No | Web UI + Web Bluetooth API in Chrome | Permissions/UX can be finicky; still workable for provisioning. No separate app install needed. |
-| **Desktop (macOS / Windows / Linux)** | No | Web UI + Web Bluetooth in Chrome or Edge | Requires HTTPS or secure context. Hardware/OS BLE stacks vary. |
+    subgraph VERDICT["Verdict"]
+        ME["🏠 <b>me</b><br/>Your network/hardware"]
+        ISP["🌐 <b>isp</b><br/>Your internet provider"]
+        SVC["☁️ <b>service</b><br/>The remote server"]
+    end
 
-> **Why a native iOS app?** Apple does not implement the Web Bluetooth API in Safari (or any iOS browser engine, since all iOS browsers use WebKit). The only way to interact with the PacketParamedic BLE GATT service from an iPhone or iPad is through a native app using Apple's Core Bluetooth framework.
+    INPUTS --> MODEL --> VERDICT
+
+    style INPUTS fill:#1a1a2e,stroke:#e94560,color:#fff
+    style MODEL fill:#1a1a2e,stroke:#00b4d8,color:#fff
+    style VERDICT fill:#1a1a2e,stroke:#00ff88,color:#fff
+```
+
+The model looks at data from all the probes and speed tests, calculates a score for each possible cause, and picks the most likely one with a confidence percentage.
 
 ---
 
-## Getting Started
+## Hardware acceleration pipeline
 
-### Prerequisites
+When you're crunching numbers on thousands of probe results, the Pi's GPU can actually help. The acceleration manager picks the fastest available backend automatically.
 
-- **Raspberry Pi 5** (4 GB+ RAM recommended)
-- Raspberry Pi OS Lite (Bookworm, 64-bit)
-- Rust toolchain (`rustup` -- see [rustup.rs](https://rustup.rs))
-- SQLite 3.35+
-- iperf3 3.x (optional -- native Rust fallback available)
-- 10GbE PCIe NIC via M.2 HAT (optional -- for high-speed LAN/WAN testing)
+```mermaid
+flowchart TD
+    DATA["Probe Data<br/>(f32 arrays)"]
+    MGR{"Acceleration<br/>Manager"}
 
-### Build
+    NEON["ARM NEON<br/>SIMD intrinsics<br/><i>best for small batches</i>"]
+    VK["Vulkan 1.2<br/>Compute shaders<br/><i>best for large batches</i>"]
+    GL["OpenGL ES 3.1<br/>Fragment shaders<br/><i>GPU fallback</i>"]
+    CPU["Scalar CPU<br/>Plain loops<br/><i>always works</i>"]
 
-```bash
-# Clone the repository
-git clone https://github.com/ParkWardRR/PacketParamedic.git
-cd PacketParamedic
+    RESULT["Stats: min / max / mean / variance"]
 
-# Build in release mode (enables NEON auto-vectorization on Cortex-A76)
-cargo build --release
+    DATA --> MGR
+    MGR -->|"payload < threshold"| NEON
+    MGR -->|"payload >= threshold"| VK
+    MGR -->|"no Vulkan"| GL
+    MGR -->|"no GPU"| CPU
 
-# Run the self-test (checks Pi 5 hardware, Wi-Fi, 10GbE NIC, thermals, acceleration)
-./target/release/packetparamedic self-test
+    NEON --> RESULT
+    VK --> RESULT
+    GL --> RESULT
+    CPU --> RESULT
+
+    style MGR fill:#0d1117,stroke:#00b4d8,color:#fff
 ```
-
-### Cross-compile for Pi 5 (from x86)
-
-```bash
-# Install the target
-rustup target add aarch64-unknown-linux-gnu
-
-# Build with cross (handles sysroot and linker)
-cross build --release --target aarch64-unknown-linux-gnu
-```
-
-### Run
-
-```bash
-# Start the daemon (uses systemd in production)
-./target/release/packetparamedic serve
-
-# Quick blame check from CLI
-./target/release/packetparamedic blame-check
-```
-
-The web UI is available at `http://<pi-ip>:8080` once the server is running.
 
 ---
 
-## Usage
+## Project structure
 
-### CLI
+```
+src/
+├── main.rs              # CLI entrypoint (clap commands)
+├── lib.rs               # crate root
+├── probes/              # ICMP, TCP, DNS, HTTP — the eyes and ears
+├── throughput/          # iperf3 wrapper + native Rust speed tests
+├── scheduler/           # cron engine, profiles, concurrency control
+├── storage/             # SQLite schema, migrations, WAL setup
+├── accel/               # NEON, Vulkan, GLES, CPU fallback
+├── analysis/            # blame classifier (logistic regression)
+├── detect/              # anomaly detection, incident severity
+├── selftest/            # hardware validation (is this actually a Pi 5?)
+├── system/              # NTP sync, disk health
+├── evidence/            # support bundle export
+└── api/                 # REST API (Axum)
+config/
+└── schedules.toml       # default cron schedules
+systemd/                 # service files for daemon mode
+fixtures/                # test data (iperf3 outputs at 1G–100G)
+tools/                   # CI, .deb builder, container builder
+```
+
+---
+
+## CLI usage
 
 ```bash
-# Run hardware self-test (Pi 5 board, Wi-Fi, 10GbE NIC, thermals, NEON/GPU)
-packetparamedic self-test
+# start the daemon (API + scheduler)
+packetparamedic serve --bind 0.0.0.0:8080
 
-# Run a blame check ("Is it me or my ISP?")
+# run a hardware self-test
+packetparamedic selftest
+
+# who broke my internet?
 packetparamedic blame-check
 
-# Run a 10GbE LAN stress test against a peer
-packetparamedic speed-test --mode lan --peer 192.168.1.100 --duration 60s
+# run a speed test
+packetparamedic speed-test --mode wan --duration 30s --streams 1
 
-# Run a WAN bandwidth test
-packetparamedic speed-test --mode wan
-
-# Export an evidence bundle for your ISP
-packetparamedic export-bundle --output report.zip
-
-# List all scheduled jobs
+# manage scheduled tests
 packetparamedic schedule list
-
-# Add a daily speed test at 3am
-packetparamedic schedule add --name "nightly-speed" --cron "0 3 * * *" --test speed-test
-
-# Show what will run in the next 24 hours
+packetparamedic schedule add --name "nightly" --cron "0 3 * * *" --test speed-test-light
 packetparamedic schedule dry-run --hours 24
 
-# Check service status
-systemctl status packetparamedic
+# export a support bundle
+packetparamedic export-bundle --output bundle.zip
 ```
 
-### API
+---
 
-All functionality is exposed via a local REST API:
+## API endpoints
+
+All routes live under `/api/v1` and return JSON.
+
+| Method | Route | What it does |
+|--------|-------|-------------|
+| `GET` | `/health` | Status + version |
+| `GET` | `/self-test/latest` | Last hardware self-test result |
+| `GET` | `/incidents` | Detected anomalies |
+| `GET` | `/probes/status` | Active probe count |
+| `GET` | `/speed-test/latest` | Most recent speed test |
+| `GET` | `/speed-test/history` | All past speed tests |
+| `GET` | `/schedules` | Configured cron schedules |
+| `GET` | `/schedules/dry-run` | Preview upcoming scheduled runs |
+| `GET` | `/network/interfaces` | Detected network interfaces |
+
+---
+
+## Default schedules
+
+These ship out of the box in `config/schedules.toml`:
+
+| Schedule | Cron | What it runs |
+|----------|------|-------------|
+| Gateway ping | `* * * * *` | ICMP probe to your router (every minute) |
+| DNS + HTTP check | `*/5 * * * *` | DNS resolve + HTTP GET (every 5 minutes) |
+| Nightly speed test | `0 3 * * *` | WAN throughput test (3 AM daily) |
+| Weekly blame check | `0 4 * * 0` | Full blame analysis (4 AM every Sunday) |
+
+Only one heavy test (speed/throughput) runs at a time — there's a semaphore that prevents overlap.
+
+---
+
+## Building from source
 
 ```bash
-# Trigger a blame check
-curl -X POST http://localhost:8080/api/v1/blame-check
+# standard build
+cargo build --release
 
-# Get the latest self-test report
-curl http://localhost:8080/api/v1/self-test/latest
+# cross-compile for Raspberry Pi 5
+cross build --release --target aarch64-unknown-linux-gnu
 
-# Trigger a LAN throughput test (10GbE)
-curl -X POST http://localhost:8080/api/v1/speed-test \
-  -H 'Content-Type: application/json' \
-  -d '{"mode": "lan", "peer": "192.168.1.100", "duration_secs": 60}'
+# run the full local CI (format, lint, test, build)
+./tools/ci-local.sh
 
-# Trigger a WAN bandwidth test
-curl -X POST http://localhost:8080/api/v1/speed-test \
-  -d '{"mode": "wan"}'
+# build a .deb package
+./tools/build-deb.sh
 
-# List recent incidents
-curl http://localhost:8080/api/v1/incidents?limit=10
-
-# List all schedules
-curl http://localhost:8080/api/v1/schedules
-
-# Create a recurring schedule
-curl -X POST http://localhost:8080/api/v1/schedules \
-  -H 'Content-Type: application/json' \
-  -d '{"name": "nightly-speed", "cron": "0 3 * * *", "test": "speed-test", "enabled": true}'
-
-# Dry-run: preview next 24h of scheduled activity
-curl http://localhost:8080/api/v1/schedules/dry-run?hours=24
-
-# Export a support bundle
-curl -X POST http://localhost:8080/api/v1/export/bundle -o bundle.zip
+# build a container image
+./tools/build-container.sh
 ```
 
 ---
 
-## Project Structure
+## Environment variables
 
+| Variable | Default | Description |
+|----------|---------|------------|
+| `PP_BIND_ADDR` | `0.0.0.0:8080` | Daemon listen address |
+| `PP_DB_PATH` | — | SQLite database path |
+| `PP_LOG_LEVEL` | `info` | Log verbosity (`trace` / `debug` / `info` / `warn` / `error`) |
+| `PP_DATA_DIR` | — | Data storage directory |
+| `PP_IPERF3_PATH` | — | Path to iperf3 binary |
+| `PP_SCHEDULER_ENABLED` | — | Enable/disable cron scheduler |
+| `PP_SPEED_TEST_WINDOW` | — | Cron expression for allowed speed test windows |
+| `PP_DAILY_BW_BUDGET_GB` | — | Daily bandwidth cap for automated tests |
+
+---
+
+## Database
+
+SQLite with WAL (Write-Ahead Logging) for crash safety. Key tables:
+
+```mermaid
+erDiagram
+    probe_results {
+        text id PK
+        text target
+        real latency_ms
+        boolean success
+        text timestamp
+    }
+    throughput_results {
+        text id PK
+        text mode
+        real bandwidth_mbps
+        text direction
+        text timestamp
+    }
+    incidents {
+        text id PK
+        text severity
+        text description
+        text timestamp
+    }
+    blame_predictions {
+        text id PK
+        text verdict
+        real confidence
+        text timestamp
+    }
+    schedules {
+        text id PK
+        text name
+        text cron_expr
+        text test_type
+    }
+
+    probe_results ||--o{ incidents : "triggers"
+    probe_results ||--o{ blame_predictions : "feeds"
+    throughput_results ||--o{ blame_predictions : "feeds"
+    schedules ||--o{ probe_results : "generates"
+    schedules ||--o{ throughput_results : "generates"
 ```
-PacketParamedic/
-├── src/
-│   ├── main.rs            # Entry point and CLI
-│   ├── lib.rs             # Library root for testability
-│   ├── api/               # axum routes and handlers
-│   ├── probes/            # ICMP, HTTP, DNS, TCP probe implementations
-│   ├── storage/           # SQLite schema, queries, migrations
-│   ├── detect/            # Anomaly detection and incident grouping
-│   ├── evidence/          # Report and bundle generation
-│   ├── selftest/          # Hardware, Wi-Fi, 10GbE, thermal self-test
-│   ├── accel/             # Acceleration manager (NEON / GPU / CPU fallback)
-│   ├── throughput/        # iperf3 wrapper + native Rust throughput engine
-│   └── scheduler/         # Cron-like scheduling engine with priority coordination
-├── templates/             # HTML templates for htmx UI
-├── static/                # CSS, minimal JS
-├── config/                # Default schedule profiles (TOML)
-├── systemd/               # Unit files for deployment
-├── tests/                 # Integration and soak test harnesses
-├── benches/               # Acceleration and throughput benchmarks
-├── ios/                   # iOS companion app (Swift + Core Bluetooth)
-│   ├── PacketParamedic/   # Xcode project
-│   └── README.md          # iOS-specific build and usage instructions
-├── roadmap.md             # Development roadmap (checklist)
-├── CONTRIBUTING.md        # Development plan, standards, and best practices
-└── README.md
-```
-
----
-
-## 10GbE Throughput Testing
-
-PacketParamedic supports high-speed throughput testing up to 10 Gigabit Ethernet via the Pi 5's native PCIe bus.
-
-### Hardware
-
-| Speed | Hardware | Interface | Notes |
-|---|---|---|---|
-| 1 GbE | Onboard Ethernet | Built-in | Always available on Pi 5 |
-| 10 GbE | PCIe NIC via M.2 HAT | PCIe gen 2 x1 | True 10GbE; no USB bottleneck |
-
-> Pi 5's PCIe gen 2 x1 lane provides ~5 GT/s (practical ~3.9 Gbps after overhead with a single lane). For full 10GbE line rate, use a NIC that supports PCIe gen 3 or leverage the Pi 5's external PCIe connector where available. PacketParamedic auto-detects your actual negotiated link speed and adjusts test parameters accordingly.
-
-### Test Modes
-
-| Mode | Description |
-|---|---|
-| **LAN Stress** | Sustained throughput between two LAN peers (requires iperf3 server on peer) |
-| **WAN Bandwidth** | Throughput to remote iperf3 servers or public speed test infrastructure (Ookla, Cloudflare, M-Lab) |
-| **Bidirectional** | Simultaneous upload + download for full-duplex validation |
-| **Multi-stream** | Parallel TCP streams (1--16) to test for per-flow bottlenecks |
-| **Endurance** | Long-duration runs (1h, 24h) with thermal and CPU monitoring |
-
-### Safety
-
-All throughput tests enforce:
-- Thermal monitoring with auto-abort on CPU throttle.
-- Mutual exclusion: only one throughput test runs at a time.
-- Test windows: bandwidth-heavy tests can be restricted to off-peak hours.
-- Rate limits: WAN tests respect configurable daily bandwidth budgets.
-
----
-
-## Scheduling
-
-PacketParamedic includes a built-in scheduling engine for all probes and tests.
-
-### Default Schedules
-
-| Schedule | Interval | Test | Adjustable |
-|---|---|---|---|
-| Gateway ping | Every 60s | ICMP to gateway | Yes |
-| DNS check | Every 5 min | DNS resolver timing | Yes |
-| HTTP check | Every 5 min | HTTP reachability | Yes |
-| Quick speed test | Daily (randomized) | Light WAN throughput | Yes |
-| Full blame check | Weekly | Complete probe battery | Yes |
-
-### Features
-
-- **Cron syntax** -- Standard 5-field cron expressions for recurring schedules.
-- **One-shot triggers** -- Run any test immediately via API or CLI.
-- **Bandwidth-aware** -- Throughput tests never overlap; probes yield to speed tests.
-- **Priority queue** -- blame-check > probes > speed tests > stress tests. User-triggered tests preempt scheduled work.
-- **Test windows** -- Restrict heavy tests to defined hours (e.g., 02:00--05:00).
-- **Bandwidth budgets** -- Limit total daily/weekly WAN bandwidth consumed by testing.
-- **Missed-run detection** -- Logs when a scheduled run was missed due to downtime.
-- **Dry-run preview** -- See what will run in the next N hours before it happens.
-
----
-
-## Acceleration
-
-PacketParamedic uses Pi 5 hardware acceleration natively:
-
-| Tier | Technology | Use Case |
-|---|---|---|
-| **SIMD** | Cortex-A76 NEON (ASIMD) -- always available | Batch metric computation, statistical analysis |
-| **GPU Compute** | VideoCore VII -- OpenGL ES 3.1 | Parallel data processing where beneficial |
-| **GPU Compute** | VideoCore VII -- Vulkan 1.2 | Compute shaders for heavy analysis workloads |
-
-**Correctness guarantee:** Every accelerated codepath has a reference CPU implementation. Both must produce identical results. The acceleration manager records which path was used for every operation, ensuring reproducible diagnostics.
-
----
-
-## Contributing
-
-Contributions are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) for coding standards, branch conventions, and testing requirements before submitting a PR.
-
-### Quick Guidelines
-
-1. **Fork and branch** from `main`.
-2. **Pi 5 only** -- do not add codepaths for older Pi models.
-3. **Write tests** for new functionality.
-4. **Run `cargo clippy` and `cargo fmt`** before committing.
-5. **Keep PRs focused** -- one feature or fix per PR.
-6. **Document "why"** in commit messages, not "what".
-7. **Backend first** -- build every backend function before touching the UI. Then front end optimization, then back end optimization.
-
----
-
-## Security
-
-PacketParamedic is designed as a network appliance with a strong security posture:
-
-- No default passwords; authentication required for all API access.
-- Minimal open ports (only the local web UI port by default).
-- All actions are auditable via journald.
-- Optional features (monitor mode, injection testing) require explicit opt-in.
-- Tailscale integration uses zero-trust networking with no inbound WAN ports.
-- Each systemd service runs with least-privilege capabilities (`CAP_NET_RAW`, `CAP_NET_ADMIN`).
-- Supply chain secured via `cargo audit` + `cargo deny` on every build.
-
-To report a security issue, please open a private advisory on GitHub.
 
 ---
 
 ## License
 
-[Blue Oak Model License 1.0.0](https://blueoakcouncil.org/license/1.0.0) (SPDX: `BlueOak-1.0.0`)
+[Blue Oak Model License 1.0.0](https://blueoakcouncil.org/license/1.0.0) — a permissive license that gives you maximum freedom to use, modify, and distribute this software while protecting contributors from liability.
