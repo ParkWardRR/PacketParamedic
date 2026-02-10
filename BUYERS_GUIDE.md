@@ -8,12 +8,12 @@ This guide helps you choose the right hardware for your PacketParamedic applianc
 
 | Feature | **Alex** (Tech-Curious) | **Jamie** (Household Manager) | **Sam** (Home Lab Expert) |
 | :--- | :--- | :--- | :--- |
-| **Compute** | Raspberry Pi 5 (4GB) | Raspberry Pi 5 (4GB/8GB) | Raspberry Pi 5 (8GB recommended) |
-| **Storage** | 32GB microSD (A2 class) | 64GB+ NVMe SSD (Reliability) | 256GB+ NVMe SSD (Performance/Log retention) |
-| **Network** | Built-in Gigabit Ethernet | Built-in Gigabit Ethernet | PCIe 2.5GbE or 10GbE Card (e.g., Pineberry Pi Hat) |
-| **Power** | Official 27W USB-C | Official 27W USB-C (UPS recommended) | Official 27W + PoE+ HAT (optional) |
-| **Case** | Official Case with Fan | Passive Cooling / Silent Case | Active Cooling / Armor Case |
-| **Est. Cost** | ~$90 - $120 | ~$150 - $200 | ~$200 - $300 |
+| **Compute** | Pi 5 (4GB) | Pi 5 (4GB/8GB) | Pi 5 (8GB) |
+| **Storage** | 32GB SD (A1/A2) | 128GB NVMe (Reliability) | 256GB+ NVMe (Permormance) |
+| **Network** | Built-in 1GbE | Built-in 1GbE | PCIe 2.5G/10G HAT |
+| **Power** | Official 27W | 27W + Mini-UPS | 27W + PoE+ HAT |
+| **Cooling** | Active Fan | Silent/Passive | Active + PCIe Cooling |
+| **Cost** | ~$90 | ~$180 | ~$250+ |
 
 ---
 
