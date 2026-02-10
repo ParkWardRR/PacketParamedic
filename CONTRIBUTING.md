@@ -3,6 +3,8 @@
 > This document defines how we build PacketParamedic. It covers architecture decisions, coding standards, testing strategy, CI/CD, security, and contribution workflow.
 >
 > **Target hardware: Raspberry Pi 5 only.** No backward compatibility with Pi 4 or earlier.
+>
+> **Build order mantra:** Thoroughly build EVERY function backend first. Then build the front end. Then do front end optimization. Then do back end optimization. No skipping ahead.
 
 ---
 
@@ -42,6 +44,8 @@
 7. **Pi 5 only.** No backward compatibility with Pi 4 or earlier. Target Cortex-A76, VideoCore VII, and PCIe natively. Do not add codepaths, feature flags, or conditional logic for older hardware. If it doesn't run on Pi 5, it's not our problem.
 
 8. **Bandwidth-aware coordination.** Only one throughput-heavy test runs at a time. The scheduler enforces mutual exclusion and priority ordering to prevent tests from interfering with each other or with the user's network.
+
+9. **Backend first, always.** Thoroughly build EVERY function backend first. Then build the front end. Then do front end optimization. Then do back end optimization. Do not skip ahead. Do not start UI work until the backend function it depends on is complete, tested, and working. This is the build order -- no exceptions.
 
 ---
 

@@ -452,6 +452,7 @@ Contributions are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) for 
 4. **Run `cargo clippy` and `cargo fmt`** before committing.
 5. **Keep PRs focused** -- one feature or fix per PR.
 6. **Document "why"** in commit messages, not "what".
+7. **Backend first** -- build every backend function before touching the UI. Then front end optimization, then back end optimization.
 
 ---
 

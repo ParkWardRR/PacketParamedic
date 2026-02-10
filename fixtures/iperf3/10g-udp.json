@@ -1,0 +1,14 @@
+{
+  "start": {
+    "connected": [{"socket": 5, "local_host": "192.168.1.10", "local_port": 43215, "remote_host": "192.168.1.20", "remote_port": 5201}],
+    "version": "iperf 3.16",
+    "system_info": "Linux pi5 6.6.31+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.6.31-1+rpt1 aarch64",
+    "test_start": {"protocol": "UDP", "num_streams": 8, "blksize": 8192, "omit": 0, "duration": 30, "bytes": 0, "blocks": 0, "reverse": 0, "tos": 0}
+  },
+  "intervals": [],
+  "end": {
+    "sum_sent": {"start": 0, "end": 30.0001, "seconds": 30.0001, "bytes": 34687500000, "bits_per_second": 9250000000.00, "jitter_ms": 0.015, "lost_packets": 312, "packets": 4233398, "lost_percent": 0.007, "sender": true},
+    "sum_received": {"start": 0, "end": 30.0001, "seconds": 30.0001, "bytes": 34684944384, "bits_per_second": 9249318502.40, "jitter_ms": 0.015, "lost_packets": 312, "packets": 4233398, "lost_percent": 0.007},
+    "cpu_utilization_percent": {"host_total": 84.67, "host_user": 24.89, "host_system": 59.78, "remote_total": 71.42, "remote_user": 18.56, "remote_system": 52.86}
+  }
+}
