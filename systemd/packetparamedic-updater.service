@@ -1,0 +1,16 @@
+[Unit]
+Description=PacketParamedic Update Checker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/packetparamedic update-check
+User=packetparamedic
+Group=packetparamedic
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

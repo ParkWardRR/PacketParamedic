@@ -1,0 +1,35 @@
+# PacketParamedic -- Default Schedule Profiles
+#
+# All schedules are user-overridable and can be disabled via API, CLI, or UI.
+# Cron expressions use standard 5-field format: min hour day month weekday
+
+[schedules.gateway-ping]
+cron = "* * * * *"          # Every minute
+test = "icmp-gateway"
+enabled = true
+description = "ICMP ping to default gateway"
+
+[schedules.dns-check]
+cron = "*/5 * * * *"        # Every 5 minutes
+test = "dns-resolver"
+enabled = true
+description = "DNS resolver timing and identification"
+
+[schedules.http-check]
+cron = "*/5 * * * *"        # Every 5 minutes
+test = "http-reachability"
+enabled = true
+description = "HTTP reachability to reference endpoints"
+
+[schedules.daily-speed-test]
+cron = "0 3 * * *"          # 3:00 AM daily (randomized in practice)
+test = "speed-test-light"
+enabled = true
+description = "Light WAN speed test for daily baseline"
+randomize_minutes = 30      # Jitter window to avoid thundering herd
+
+[schedules.weekly-blame-check]
+cron = "0 4 * * 0"          # 4:00 AM Sunday
+test = "blame-check"
+enabled = true
+description = "Full blame check: LAN + WAN + DNS + routing"

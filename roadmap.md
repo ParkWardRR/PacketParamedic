@@ -4,6 +4,8 @@
 >
 > **Target hardware: Raspberry Pi 5 only.** No backward compatibility with Pi 4 or earlier. Forward-looking, no legacy.
 
+> **Build order mantra:** Thoroughly build EVERY function backend first. Then build the front end. Then do front end optimization. Then do back end optimization. No skipping ahead.
+
 ---
 
 ## Tech Stack
