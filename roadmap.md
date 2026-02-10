@@ -20,7 +20,9 @@
 | Throughput | iperf3 (wrapped) + native Rust fallback | Industry-standard for 10GbE line-rate testing; Rust fallback when iperf3 unavailable |
 | 10GbE | PCIe M.2 HAT NIC | Pi 5 native PCIe -- true 10GbE without USB bottlenecks |
 | Scheduling | Tokio in-process cron engine | Unified scheduler for all probes and tests; bandwidth-aware coordination |
-| BLE | BlueZ + bluer | Pi 5 has built-in Bluetooth 5.0 / BLE; bluer is the official Rust interface |
+| BLE (server) | BlueZ + bluer | Pi 5 has built-in Bluetooth 5.0 / BLE; bluer is the official Rust interface |
+| BLE (iOS client) | Swift + Core Bluetooth | Native iOS companion app; Web Bluetooth unavailable on iOS |
+| BLE (Android/Desktop client) | Web Bluetooth API | Chrome/Edge; no native app needed for provisioning |
 | Remote admin | Tailscale (optional) | No inbound ports; zero-trust appliance management |
 
 ---
@@ -290,21 +292,57 @@
 
 ---
 
-## Phase 12: BLE Nearby Admin & OOB Cellular (Week 27--34)
+## Phase 12: BLE Nearby Admin, Client Apps & OOB Cellular (Week 27--36)
 
-### 12.1 BLE "Nearby Admin" & Provisioning (Pi 5 built-in Bluetooth 5.0)
+### 12.1 BLE GATT Service (Pi 5 built-in Bluetooth 5.0)
 - [ ] Secure pairing + provisioning (Wi-Fi creds, admin token, enable Tailscale)
 - [ ] Recovery actions: reboot, factory reset trigger, export support bundle via BLE
 - [ ] BLE GATT service for status queries (health, last incident, uptime) without opening the web UI
 - [ ] Auto-discoverable via BLE advertisement when in provisioning mode
+- [ ] Define stable GATT service/characteristic UUIDs and document the BLE protocol
 
-### 12.2 Cellular Management Plane (optional)
+### 12.2 iOS Companion App (Core Bluetooth + Swift)
+> Web Bluetooth is not available in iOS Safari or any iOS browser (all use WebKit). A native companion app is the only option for iPhone/iPad users.
+
+- [ ] Xcode project scaffolding (`ios/` directory in repo, SwiftUI + Core Bluetooth)
+- [ ] BLE scanning and secure pairing with PacketParamedic GATT service
+- [ ] Wi-Fi provisioning flow (enter SSID/passphrase, send over BLE)
+- [ ] Admin token exchange and storage in iOS Keychain
+- [ ] Status dashboard: health, uptime, last incident, last speed-test result (read via GATT characteristics)
+- [ ] Recovery actions: reboot, factory reset trigger via BLE
+- [ ] Support bundle export trigger via BLE (download over local HTTP once Wi-Fi is up)
+- [ ] iOS 16+ deployment target (minimum for modern Core Bluetooth APIs)
+- [ ] App Store distribution (or TestFlight for beta)
+
+### 12.3 Android & Desktop BLE via Web Bluetooth
+> Android Chrome and desktop Chrome/Edge support the Web Bluetooth API. No native app required.
+
+- [ ] Web Bluetooth integration in the htmx Web UI (progressive enhancement)
+- [ ] BLE device scanning and pairing from the browser
+- [ ] Wi-Fi provisioning flow via Web Bluetooth (same GATT protocol as iOS companion)
+- [ ] Status read and recovery actions via Web Bluetooth
+- [ ] HTTPS / secure context requirement documented (Web Bluetooth requires it)
+- [ ] Tested on: Android Chrome, macOS Chrome, Windows Chrome/Edge, Linux Chrome
+- [ ] Graceful fallback: if Web Bluetooth is unavailable (e.g., Firefox, older browsers), show instructions to use a supported browser or the iOS companion app
+
+### 12.4 Cellular Management Plane (optional)
 - [ ] Outbound-only management tunnel policy
 - [ ] Data budget controls + emergency-only mode
 - [ ] Strong separation: management traffic vs measurement traffic
 
+### BLE Client Platform Matrix
+
+| Platform | App required? | Path | Notes |
+|---|---|---|---|
+| iOS | Yes | Native companion (Core Bluetooth + Swift) | Web Bluetooth not available in iOS Safari/PWAs |
+| Android | No | Web UI + Web Bluetooth in Chrome | Permissions UX can be finicky; workable for provisioning |
+| Desktop (macOS/Windows/Linux) | No | Web UI + Web Bluetooth in Chrome/Edge | Requires HTTPS/secure context; BLE stacks vary by OS |
+
 ### Acceptance
-- [ ] BLE provisioning works out of box on Pi 5 with no additional hardware
+- [ ] BLE GATT provisioning works out of box on Pi 5 with no additional hardware
+- [ ] iOS companion app pairs, provisions Wi-Fi, reads status, and triggers recovery via BLE
+- [ ] Android Chrome and desktop Chrome can provision and query status via Web Bluetooth
+- [ ] If Web Bluetooth is unavailable, the UI guides the user to a supported path
 - [ ] If primary WAN dies, unit is reachable via BLE (always) or cellular (if enabled) without blowing data caps
 
 ---

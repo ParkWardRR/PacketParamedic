@@ -115,6 +115,9 @@ PacketParamedic/
 ├── benches/               # Benchmarks
 ├── tools/                 # Build scripts, image builders
 ├── docs/                  # Additional documentation
+├── ios/                   # iOS companion app (Swift + Core Bluetooth)
+│   ├── PacketParamedic/   # Xcode project (SwiftUI + Core Bluetooth)
+│   └── README.md          # iOS-specific build and usage docs
 ├── roadmap.md
 ├── CONTRIBUTING.md
 └── README.md
@@ -193,7 +196,7 @@ cargo watch -x run
 - **Commit messages:** Imperative mood, present tense. First line under 72 characters. Body explains "why", not "what".
 - **Comments:** Explain _why_, not _what_. Code should be self-documenting. Doc comments (`///`) on all public items.
 - **Magic numbers:** Named constants, always.
-- **Feature flags:** Use Cargo features for optional subsystems (Tailscale, cellular). BLE is always available on Pi 5 and is not feature-gated. Core functionality has no feature gates.
+- **Feature flags:** Use Cargo features for optional subsystems (Tailscale, cellular). BLE is always available on Pi 5 and is not feature-gated. Core functionality has no feature gates. The iOS companion app lives in `ios/` and is a separate Xcode project (not managed by Cargo). Web Bluetooth integration is part of the Web UI and requires no feature flag.
 - **Pi 5 only:** Do not add `#[cfg]` gates, feature flags, or runtime checks for Pi 4 or earlier. Assume Cortex-A76, VideoCore VII, and PCIe are always present.
 
 ### Throughput & Scheduling
@@ -365,7 +368,7 @@ cargo nextest run
 
 - All API endpoints require authentication (token-based).
 - Admin token generated on first boot; displayed once, stored hashed.
-- BLE provisioning uses secure pairing with user confirmation.
+- BLE provisioning uses secure pairing with user confirmation (iOS companion app via Core Bluetooth, Android/Desktop via Web Bluetooth).
 
 ### Network Security
 
@@ -587,4 +590,4 @@ Always exportable, always working. A support bundle includes:
 ### Approval Requirements
 
 - 1 approval required for standard changes.
-- 2 approvals required for: security-sensitive changes, database schema changes, systemd unit changes, dependency additions, scheduler coordination logic.
+- 2 approvals required for: security-sensitive changes, database schema changes, systemd unit changes, dependency additions, scheduler coordination logic, BLE GATT protocol changes, iOS companion app releases.
