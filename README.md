@@ -89,6 +89,39 @@
     <img src="https://img.shields.io/badge/OpenGL%20ES-3.1-green?style=flat-square&logo=opengl&logoColor=white" alt="gles"/>
   </td>
 </tr>
+<tr><th colspan="2">Web UI</th></tr>
+<tr>
+  <td>Frontend</td>
+  <td>
+    <img src="https://img.shields.io/badge/htmx-server--rendered-blue?style=flat-square" alt="htmx"/>
+  </td>
+</tr>
+<tr><th colspan="2">Connectivity</th></tr>
+<tr>
+  <td>BLE</td>
+  <td>
+    <img src="https://img.shields.io/badge/BlueZ-bluer-blue?style=flat-square" alt="ble"/>
+  </td>
+</tr>
+<tr>
+  <td>iOS App</td>
+  <td>
+    <img src="https://img.shields.io/badge/Swift-Core%20Bluetooth-orange?style=flat-square&logo=swift&logoColor=white" alt="swift"/>
+  </td>
+</tr>
+<tr>
+  <td>Remote</td>
+  <td>
+    <img src="https://img.shields.io/badge/Tailscale-optional-blue?style=flat-square" alt="tailscale"/>
+  </td>
+</tr>
+<tr><th colspan="2">Observability</th></tr>
+<tr>
+  <td>Logging</td>
+  <td>
+    <img src="https://img.shields.io/badge/tracing-journald-lightgrey?style=flat-square" alt="tracing"/>
+  </td>
+</tr>
 <tr><th colspan="2">Build</th></tr>
 <tr>
   <td>Release</td>
@@ -118,6 +151,33 @@ You know when your WiFi starts acting up and you have no idea if it's *your* rou
 
 It does this by firing off probes (ping, TCP, DNS, HTTP), running speed tests, tracking anomalies over time, and feeding everything into a blame classifier that says: "yeah, it's your ISP" or "nah, that's on you."
 
+The full vision goes beyond diagnostics: a server-rendered web UI (htmx), BLE nearby admin from your phone, an iOS companion app (Core Bluetooth + Swift), optional Tailscale for secure remote access, path tracing, and advanced RF diagnostics — all running on a single Pi 5 appliance with no cloud dependency.
+
+---
+
+## Roadmap
+
+Development is organized into phases, built backend-first. See [`roadmap.md`](roadmap.md) for full details, checklists, and acceptance criteria.
+
+| Phase | Name | Status |
+|-------|------|--------|
+| 0 | Project Definition | Done |
+| 1 | Backend Foundation (OS image, SQLite WAL, systemd) | Done |
+| 2 | Hardware Self-Test (board, thermal, NIC, Wi-Fi) | Done |
+| 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | In progress — NEON done, GPU backends scaffolded |
+| 4 | Data Layer & Evidence (schema, migrations, blame trainer) | Done |
+| 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | In progress — probes done, blame-check flow WIP |
+| 6 | Performance & Throughput (iperf3, native Rust, 2.5GbE) | Not started |
+| 6.5 | Scheduling Engine (cron, bandwidth coordination) | Scaffolded |
+| 7 | Path Tracing & Change Detection (traceroute/MTR) | Not started |
+| 8 | Incidents & Anomaly Detection | Not started |
+| 9 | Test Phase (unit, integration, soak, security) | Not started |
+| 10 | UX/UI (htmx web dashboard, onboarding, schedule mgmt) | Not started |
+| 11 | Secure Remote Access (Tailscale) | Not started |
+| 12 | BLE Admin, iOS App, Web Bluetooth, Cellular OOB | Not started |
+| 13 | Advanced Diagnostics (RF capture, QoS, stress tests) | Not started |
+| 14 | Future High-Performance (5GbE / 10GbE) | Deferred |
+
 ---
 
 ## How it works (the big picture)
@@ -127,6 +187,7 @@ graph TB
     subgraph PI["Raspberry Pi 5"]
         CLI["CLI Interface<br/><code>packetparamedic</code>"]
         API["REST API<br/><code>:8080/api/v1/*</code>"]
+        WEBUI["Web UI<br/>(htmx + SSR)"]
         SCHED["Scheduler<br/>(cron-based)"]
 
         subgraph PROBES["Probe Engine"]
@@ -134,6 +195,7 @@ graph TB
             TCP["TCP<br/>Connect"]
             DNS["DNS<br/>Resolve"]
             HTTP["HTTP<br/>GET"]
+            MTR["Traceroute<br/>/ MTR"]
         end
 
         subgraph THROUGHPUT["Throughput Engine"]
@@ -149,7 +211,12 @@ graph TB
         ACCEL["Hardware Acceleration<br/>NEON | Vulkan | GLES | CPU"]
         DB[(SQLite<br/>WAL mode)]
         SELFTEST["Self-Test<br/>Board / Thermal / NIC"]
+        BLE["BLE GATT<br/>(BlueZ / bluer)"]
     end
+
+    PHONE["iOS App<br/>(Core Bluetooth)"]
+    BROWSER["Web Bluetooth<br/>(Android / Desktop)"]
+    TAILSCALE["Tailscale<br/>(optional remote)"]
 
     SCHED -->|triggers| PROBES
     SCHED -->|triggers| THROUGHPUT
@@ -162,7 +229,12 @@ graph TB
     CLI --> THROUGHPUT
     CLI --> BRAIN
     CLI --> SELFTEST
+    WEBUI --> API
     API --> DB
+    PHONE -->|BLE| BLE
+    BROWSER -->|BLE| BLE
+    BLE --> API
+    TAILSCALE -.->|tunnel| API
 
     style PI fill:#0d1117,stroke:#00b4d8,color:#fff
     style PROBES fill:#1a1a2e,stroke:#e94560,color:#fff
