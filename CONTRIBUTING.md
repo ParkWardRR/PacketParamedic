@@ -91,7 +91,7 @@ PacketParamedic/
 ├── tools/                 # Build scripts, image builders
 ├── docs/                  # Additional documentation
 ├── roadmap.md
-├── dev_plan.md
+├── CONTRIBUTING.md
 └── README.md
 ```
 
