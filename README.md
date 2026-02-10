@@ -1,145 +1,44 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/%F0%9F%A9%BA-PacketParamedic-00b4d8?style=for-the-badge&labelColor=0d1117" alt="PacketParamedic" height="40"/>
-</p>
+<div align="center">
 
-<p align="center">
-  <strong>Your Raspberry Pi 5 just became a network doctor.</strong><br/>
-  Automated diagnostics, speed tests, anomaly detection, and blame analysis — all in one box.
-</p>
+  <img src="https://img.shields.io/badge/%F0%9F%A9%BA-PacketParamedic-00b4d8?style=for-the-badge&labelColor=0d1117" alt="PacketParamedic" height="60"/>
+
+  # PacketParamedic
+  
+  **The ultimate network diagnostic appliance for Raspberry Pi 5.**
+  <br/>
+  *Automated diagnostics, speed tests, anomaly detection, and blame analysis — all in one box.*
+
+  [![Version](https://img.shields.io/badge/version-0.1.0--alpha.1-blue?style=for-the-badge&logo=github)](https://github.com/ParkWardRR/PacketParamedic)
+  [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-brightgreen?style=for-the-badge&logo=open-source-initiative&logoColor=white)](https://blueoakcouncil.org/license/1.0.0)
+  [![Raspberry Pi 5](https://img.shields.io/badge/Raspberry%20Pi%205-Only-c51a4a?style=for-the-badge&logo=raspberrypi&logoColor=white)](https://www.raspberrypi.com/products/raspberry-pi-5/)
+  [![Rust](https://img.shields.io/badge/Built%20With-Rust-orange?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+  [![CI](https://img.shields.io/badge/CI-Passing-success?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/ParkWardRR/PacketParamedic/actions)
+
+</div>
+
+<div align="center">
+  <h3>Stack & Technologies</h3>
+</div>
+
+<div align="center">
+
+| Core | Network | Data |
+|:---:|:---:|:---:|
+| [![Tokio](https://img.shields.io/badge/Tokio-async-purple?style=flat-square&logo=rust&logoColor=white)](https://tokio.rs/) | [![Reqwest](https://img.shields.io/badge/Reqwest-Http-blue?style=flat-square&logo=rust&logoColor=white)](https://docs.rs/reqwest) | [![SQLite](https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://sqlite.org/) |
+| [![Axum](https://img.shields.io/badge/Axum-API-purple?style=flat-square&logo=rust&logoColor=white)](https://github.com/tokio-rs/axum) | [![Trust-DNS](https://img.shields.io/badge/Trust--DNS-Resolver-teal?style=flat-square&logo=rust&logoColor=white)](https://github.com/bluejekyll/trust-dns) | [![Serde](https://img.shields.io/badge/Serde-JSON-orange?style=flat-square&logo=rust&logoColor=white)](https://serde.rs/) |
+| [![Clap](https://img.shields.io/badge/Clap-CLI-yellow?style=flat-square&logo=rust&logoColor=white)](https://github.com/clap-rs/clap) | [![Bluetooth](https://img.shields.io/badge/BlueZ-BLE-blue?style=flat-square&logo=bluetooth&logoColor=white)](http://www.bluez.org/) | [![Htmx](https://img.shields.io/badge/HTMX-Frontend-336699?style=flat-square&logo=htmx&logoColor=white)](https://htmx.org/) |
+
+| Hardware Acceleration |
+|:---:|
+| [![Vulkan](https://img.shields.io/badge/Vulkan-1.2-red?style=flat-square&logo=vulkan&logoColor=white)](https://www.vulkan.org/) [![OpenGL](https://img.shields.io/badge/OpenGL%20ES-3.1-green?style=flat-square&logo=opengl&logoColor=white)](https://www.khronos.org/opengles/) [![NEON](https://img.shields.io/badge/ARM-NEON-ff6600?style=flat-square&logo=arm&logoColor=white)](https://developer.arm.com/Architectures/Neon) |
+
+</div>
+
+<br/>
+
+> **ELI15:** PacketParamedic is a digital doctor for your home internet. You plug it into your router, and it constantly checks your connection health. If your internet is slow or broken, it uses math and logic to figure out if it's **your fault** (your Wi-Fi), **your ISP's fault** (the cable company), or **the website's fault** (server down). It runs entirely on a Raspberry Pi 5 with no cloud subscription required.
 
 ---
-
-## Badges
-
-<table>
-<tr><th colspan="2">Project</th></tr>
-<tr>
-  <td>Version</td>
-  <td>
-    <img src="https://img.shields.io/badge/version-0.1.0--alpha.1-blue?style=flat-square" alt="version"/>
-  </td>
-</tr>
-<tr>
-  <td>License</td>
-  <td>
-    <img src="https://img.shields.io/badge/license-Blue%20Oak%201.0.0-brightgreen?style=flat-square" alt="license"/>
-  </td>
-</tr>
-<tr>
-  <td>Edition</td>
-  <td>
-    <img src="https://img.shields.io/badge/rust-2021-orange?style=flat-square&logo=rust&logoColor=white" alt="rust edition"/>
-  </td>
-</tr>
-<tr>
-  <td>MSRV</td>
-  <td>
-    <img src="https://img.shields.io/badge/MSRV-1.75-orange?style=flat-square&logo=rust&logoColor=white" alt="msrv"/>
-  </td>
-</tr>
-<tr><th colspan="2">Stack</th></tr>
-<tr>
-  <td>Runtime</td>
-  <td>
-    <img src="https://img.shields.io/badge/Tokio-async-purple?style=flat-square" alt="tokio"/>
-    <img src="https://img.shields.io/badge/Axum-0.8-purple?style=flat-square" alt="axum"/>
-  </td>
-</tr>
-<tr>
-  <td>Database</td>
-  <td>
-    <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="sqlite"/>
-  </td>
-</tr>
-<tr>
-  <td>CLI</td>
-  <td>
-    <img src="https://img.shields.io/badge/Clap-4-yellow?style=flat-square" alt="clap"/>
-  </td>
-</tr>
-<tr>
-  <td>DNS</td>
-  <td>
-    <img src="https://img.shields.io/badge/trust--dns-0.23-teal?style=flat-square" alt="trust-dns"/>
-  </td>
-</tr>
-<tr>
-  <td>HTTP</td>
-  <td>
-    <img src="https://img.shields.io/badge/Reqwest-0.12-blue?style=flat-square" alt="reqwest"/>
-  </td>
-</tr>
-<tr><th colspan="2">Target Hardware</th></tr>
-<tr>
-  <td>Platform</td>
-  <td>
-    <img src="https://img.shields.io/badge/Raspberry%20Pi%205-aarch64-c51a4a?style=flat-square&logo=raspberrypi&logoColor=white" alt="rpi5"/>
-  </td>
-</tr>
-<tr>
-  <td>CPU Tuning</td>
-  <td>
-    <img src="https://img.shields.io/badge/Cortex--A76-NEON%20SIMD-ff6600?style=flat-square" alt="cortex-a76"/>
-  </td>
-</tr>
-<tr>
-  <td>GPU Accel</td>
-  <td>
-    <img src="https://img.shields.io/badge/Vulkan-1.2-red?style=flat-square&logo=vulkan&logoColor=white" alt="vulkan"/>
-    <img src="https://img.shields.io/badge/OpenGL%20ES-3.1-green?style=flat-square&logo=opengl&logoColor=white" alt="gles"/>
-  </td>
-</tr>
-<tr><th colspan="2">Web UI</th></tr>
-<tr>
-  <td>Frontend</td>
-  <td>
-    <img src="https://img.shields.io/badge/htmx-server--rendered-blue?style=flat-square" alt="htmx"/>
-  </td>
-</tr>
-<tr><th colspan="2">Connectivity</th></tr>
-<tr>
-  <td>BLE</td>
-  <td>
-    <img src="https://img.shields.io/badge/BlueZ-bluer-blue?style=flat-square" alt="ble"/>
-  </td>
-</tr>
-<tr>
-  <td>iOS App</td>
-  <td>
-    <img src="https://img.shields.io/badge/Swift-Core%20Bluetooth-orange?style=flat-square&logo=swift&logoColor=white" alt="swift"/>
-  </td>
-</tr>
-<tr>
-  <td>Remote</td>
-  <td>
-    <img src="https://img.shields.io/badge/Tailscale-optional-blue?style=flat-square" alt="tailscale"/>
-  </td>
-</tr>
-<tr><th colspan="2">Observability</th></tr>
-<tr>
-  <td>Logging</td>
-  <td>
-    <img src="https://img.shields.io/badge/tracing-journald-lightgrey?style=flat-square" alt="tracing"/>
-  </td>
-</tr>
-<tr><th colspan="2">Build</th></tr>
-<tr>
-  <td>Release</td>
-  <td>
-    <img src="https://img.shields.io/badge/LTO-enabled-success?style=flat-square" alt="lto"/>
-    <img src="https://img.shields.io/badge/codegen--units-1-success?style=flat-square" alt="codegen"/>
-    <img src="https://img.shields.io/badge/symbols-stripped-success?style=flat-square" alt="strip"/>
-  </td>
-</tr>
-<tr>
-  <td>Packaging</td>
-  <td>
-    <img src="https://img.shields.io/badge/.deb-aarch64-purple?style=flat-square" alt="deb"/>
-    <img src="https://img.shields.io/badge/container-OCI-blue?style=flat-square&logo=docker&logoColor=white" alt="container"/>
-    <img src="https://img.shields.io/badge/systemd-service-lightgrey?style=flat-square&logo=systemd&logoColor=white" alt="systemd"/>
-  </td>
-</tr>
-</table>
 
 ---
 
