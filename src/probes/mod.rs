@@ -2,6 +2,7 @@ use anyhow::Result;
 use std::time::Duration;
 
 pub mod icmp;
+pub mod http;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ProbeType {
