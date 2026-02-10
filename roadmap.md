@@ -158,6 +158,7 @@
 - [x] Train Logistic Regression (Softmax) on synthetic data
 - [x] Export `blame_lr.json` model artifact
 - [x] Implement inference engine in Rust (load JSON, predict)
+- [x] Implement feature aggregator (`src/analysis/aggregator.rs`) to bridge SQLite -> Model
 
 ### Acceptance
 - [ ] "Export ISP ticket bundle" (API/CLI) produces a shareable report with timeline + key metrics
