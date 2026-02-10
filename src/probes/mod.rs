@@ -3,6 +3,8 @@ use std::time::Duration;
 
 pub mod icmp;
 pub mod http;
+pub mod tcp;
+pub mod dns;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ProbeType {
