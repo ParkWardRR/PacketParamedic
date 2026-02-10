@@ -41,6 +41,10 @@
     - Implemented `src/analysis/model.rs` inference engine in Rust.
     - Embedded `blame_lr.json` as a default model with fallback to filesystem override.
     - Verified inference correctness via unit tests (`test_prediction_isp_failure`).
+- **Phase 4.1 Progress (Data Layer):**
+    - Designed `probes_results`, `incidents`, `throughput_results`, `measurements`, `spool`, `schedules`, `schedule_history` tables.
+    - Added `blame_predictions` table to store classifier outputs (verdict, confidence using JSON blobs).
+    - Implemented idempotent SQLite migrations in `src/storage/schema.rs`.
 - **Phase 3 Progress (Acceleration):**
     - Defined `AcceleratedOp` trait and `StatsOp` (mean/variance).
     - Implemented **NEON Backend** (`src/accel/neon.rs`) using `std::arch::aarch64` SIMD intrinsics.

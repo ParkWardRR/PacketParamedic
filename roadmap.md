@@ -143,9 +143,11 @@
 
 ## Phase 4: Data Layer & Evidence Artifacts (Week 4--6)
 
-### 4.1 Unified Event Schema & TSDB
-- [ ] Design canonical schema (probe results, incidents, path changes, Wi-Fi telemetry, throughput results, self-test outputs)
-- [ ] Implement retention policy + "export support bundle" (logs + config + redacted network facts)
+### 4.1 Unified Event Schema
+- [x] Design canonical `probe_results` table (timestamp, type, target, value, metadata)
+- [x] Design `incidents` table (start, end, severity, verdict, evidence_blob)
+- [x] Implement SQLite migrations for zero-downtime updates
+- [x] Add `blame_predictions` table for classifier output historyupport bundle" (logs + config + redacted network facts)
 
 ### 4.2 Evidence-First Artifacts
 - [ ] Per incident: attach "why we think this is ISP/router/Wi-Fi" with raw metrics

@@ -86,7 +86,20 @@ pub fn migrate(conn: &Connection) -> Result<()> {
         CREATE INDEX IF NOT EXISTS idx_probe_results_created ON probe_results(created_at);
         CREATE INDEX IF NOT EXISTS idx_incidents_created ON incidents(created_at);
         CREATE INDEX IF NOT EXISTS idx_throughput_created ON throughput_results(created_at);
-        CREATE INDEX IF NOT EXISTS idx_schedule_history_name ON schedule_history(schedule_name);",
+        CREATE INDEX IF NOT EXISTS idx_schedule_history_name ON schedule_history(schedule_name);
+
+        CREATE TABLE IF NOT EXISTS blame_predictions (
+            id INTEGER PRIMARY KEY,
+            verdict TEXT NOT NULL,
+            confidence REAL NOT NULL,
+            probabilities_json TEXT NOT NULL,
+            features_json TEXT NOT NULL,
+            is_preliminary INTEGER NOT NULL DEFAULT 0,
+            analysis_window_start TEXT,
+            analysis_window_end TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_blame_created ON blame_predictions(created_at);",
     )?;
     Ok(())
 }
