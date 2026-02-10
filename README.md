@@ -42,6 +42,16 @@
 
 ---
 
+## Who is this for?
+
+PacketParamedic is designed for three specific types of users (see [personas.md](personas.md) for details):
+
+1.  **The Tech-Curious (Alex):** You run Pi-hole, you want to know *why* Netflix is buffering, and you want a simple "It's the ISP / It's me" answer without becoming a network engineer.
+2.  **The Household Manager (Jamie):** You just want stable internet for work and streaming. You need a "credibility box" that proves to the ISP that the issue is on their end, not yours.
+3.  **The Home Lab Expert (Sam):** You want raw metrics, API access, Prometheus/Grafana integration, and a dedicated hardware probe to monitor your 2.5GbE uplink 24/7.
+
+---
+
 ## What is this thing?
 
 You know when your WiFi starts acting up and you have no idea if it's *your* router, *your ISP*, or the website itself? That's the problem.

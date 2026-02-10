@@ -29,6 +29,29 @@
 
 ---
 
+## Roadmap
+
+| Phase | Name | Status | Primary Persona |
+|-------|------|--------|-----------------|
+| 0 | Project Definition | Done | All |
+| 1 | Backend Foundation (OS image, SQLite WAL, systemd) | Done | Sam (Architecture) |
+| 2 | Hardware Self-Test (board, thermal, NIC, Wi-Fi) | Done | Sam (Verification) |
+| 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | In progress | Sam (Performance) |
+| 4 | Data Layer & Evidence (schema, migrations, blame trainer) | Done | All (Foundation) |
+| 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | In progress | Alex (Diagnostics) |
+| 6 | Performance & Throughput (iperf3, native Rust, 2.5GbE) | Not started | Jamie (Streaming), Sam |
+| 6.5 | Scheduling Engine (cron, bandwidth coordination) | Scaffolded | Sam (Control), Jamie (Quiet) |
+| 7 | Path Tracing & Change Detection (traceroute/MTR) | Not started | Sam, Alex |
+| 8 | Incidents & Anomaly Detection | Not started | Alex, Jamie (Answers) |
+| 9 | Test Phase (unit, integration, soak, security) | Not started | Jamie (Reliability) |
+| 10 | UX/UI (htmx web dashboard, onboarding, schedule mgmt) | Not started | Alex, Jamie (Usability) |
+| 11 | Secure Remote Access (Tailscale) | Not started | Sam, Jamie (Support) |
+| 12 | BLE Admin, iOS App, Web Bluetooth, Cellular OOB | Not started | Jamie (Setup), Sam |
+| 13 | Advanced Diagnostics (RF capture, QoS, stress tests) | Not started | Sam (Deep Dive) |
+| 14 | Future High-Performance (5GbE / 10GbE) | Deferred | Sam (Future) |
+
+---
+
 ## Phase 0: Project Definition (1--3 days)
 
 ### Goals
