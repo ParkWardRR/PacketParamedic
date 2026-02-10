@@ -13,6 +13,7 @@ pub mod selftest;
 pub mod storage;
 pub mod throughput;
 pub mod system;
+pub mod analysis;
 
 use anyhow::Result;
 

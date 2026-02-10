@@ -35,6 +35,12 @@
     - **Wi-Fi Progress (Phase 2.2):**
         - Implemented `src/selftest/wifi.rs` to parse `iw list` output.
         - Detects monitor/AP/managed modes and warns if hardware lacks monitor support.
+- **Phase 4.3 Progress (Blame Classifier):**
+    - Created `tools/blame-trainer` (Go) to generate synthetic "ISP vs Router vs Wi-Fi" patterns.
+    - Trained Logistic Regression model (Softmax) achieving 100% on synthetic verification set.
+    - Implemented `src/analysis/model.rs` inference engine in Rust.
+    - Embedded `blame_lr.json` as a default model with fallback to filesystem override.
+    - Verified inference correctness via unit tests (`test_prediction_isp_failure`).
 - **Phase 3 Progress (Acceleration):**
     - Defined `AcceleratedOp` trait and `StatsOp` (mean/variance).
     - Implemented **NEON Backend** (`src/accel/neon.rs`) using `std::arch::aarch64` SIMD intrinsics.

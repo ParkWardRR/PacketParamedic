@@ -150,8 +150,16 @@
 ### 4.2 Evidence-First Artifacts
 - [ ] Per incident: attach "why we think this is ISP/router/Wi-Fi" with raw metrics
 
+### 4.3 Blame Classifier (Go + Synthetic Data)
+- [x] Create `tools/blame-trainer` Go module
+- [x] Implement synthetic data generator (Wi-Fi vs Router vs ISP patterns)
+- [x] Train Logistic Regression (Softmax) on synthetic data
+- [x] Export `blame_lr.json` model artifact
+- [x] Implement inference engine in Rust (load JSON, predict)
+
 ### Acceptance
 - [ ] "Export ISP ticket bundle" (API/CLI) produces a shareable report with timeline + key metrics
+- [ ] Blame classifier outputs reasonable probabilities for clear-cut failure modes
 
 ---
 
