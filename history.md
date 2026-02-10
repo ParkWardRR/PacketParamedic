@@ -45,6 +45,8 @@
 - **Phase 5 Progress (Core Probes):**
     - Implemented `IcmpProbe` (`src/probes/icmp.rs`) using system `ping` wrapper (MVP).
     - Implemented `HttpProbe` (`src/probes/http.rs`) using `reqwest` for availability/latency.
+    - Implemented `DnsProbe` (`src/probes/dns.rs`) using `trust-dns-resolver`.
+    - Implemented `TcpProbe` (`src/probes/tcp.rs`) using `tokio::net::TcpStream`.
 - **Phase 4.1 Progress (Data Layer):**
     - Designed `probes_results`, `incidents`, `throughput_results`, `measurements`, `spool`, `schedules`, `schedule_history` tables.
     - Added `blame_predictions` table to store classifier outputs (verdict, confidence using JSON blobs).

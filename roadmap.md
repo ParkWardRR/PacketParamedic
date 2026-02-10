@@ -171,8 +171,8 @@
 ### 5.1 Availability & Latency Probes
 - [x] ICMP Probe (Gateway + WAN targets) - `src/probes/icmp.rs`
 - [x] HTTP Probe (TTFB + status code) - `src/probes/http.rs`
-- [ ] DNS Probe (Resolution time + A record validation)
-- [ ] TCP Probe (Connect time)
+- [x] DNS Probe (Resolution time + A record validation) - `src/probes/dns.rs`
+- [x] TCP Probe (Connect time) - `src/probes/tcp.rs`
 
 ### 5.2 Blame Check (LAN vs WAN)
 - [ ] Gateway health checks (LAN RTT/loss, DNS resolution path)
