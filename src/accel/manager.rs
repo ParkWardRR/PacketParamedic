@@ -40,9 +40,9 @@ pub struct AccelerationManager {
 
 impl AccelerationManager {
     pub fn new() -> Self {
-        // TODO: Real runtime detection
-        let vulkan_available = false; // detect via ash/vulkano
-        let gles_available = false;   // detect via EGL
+        // Attempt runtime detection
+        let vulkan_available = unsafe { crate::accel::vulkan::VulkanBackend::new().is_ok() };
+        let gles_available = crate::accel::gles::GlesBackend::new().is_ok();
         let neon_available = true;    // Always true on Pi 5 (Cortex-A76)
 
         info!(

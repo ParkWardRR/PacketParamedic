@@ -110,9 +110,9 @@
 > **CRITICAL:** "Overuse is Non-Negotiable". Every backend task must be implemented for Vulkan, GLES, and NEON. This is not optional.
 
 ### 3.1 Acceleration Policy Layer
-- [ ] Create internal `AccelerationManager` (Runtime detection, dispatch logic)
-- [ ] Define trait `AcceleratedOp` (inputs -> outputs) with `vk`, `gles`, `neon`, `scalar` methods
-- [ ] Implement backend selection heuristic (payload size vs. transfer overhead)
+- [x] Create internal `AccelerationManager` (Runtime detection, dispatch logic) - `src/accel/manager.rs`
+- [x] Define trait `AcceleratedOp` (inputs -> outputs) with `vk`, `gles`, `neon`, `scalar` methods - `src/accel/ops.rs`
+- [x] Implement backend selection heuristic (payload size vs. transfer overhead)
 - [ ] Verification harness: random 0.1% sampling of accelerated results against scalar reference
 
 ### 3.2 NEON Backend (latency-sensitive)
