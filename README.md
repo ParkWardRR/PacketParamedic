@@ -43,15 +43,15 @@ It runs unattended, collects structured measurements over time, detects anomalie
 
 ### Key Capabilities
 
-- **Blame attribution** -- Distinguishes LAN, Wi-Fi, router, DNS, and ISP issues with evidence.
+- **Blame attribution** -- Distinguishes LAN, Wi-Fi, router, DNS, and ISP issues with evidence. Uses a specialized **Logistic Regression classifier** trained on synthetic failure patterns to output probabilities (e.g., "98% generic ISP failure").
 - **Continuous monitoring** -- Scheduled ICMP, HTTP, DNS, and TCP probes build a baseline over days and weeks.
 - **Incident detection** -- Statistical anomaly detection flags latency spikes, packet loss, route changes, and DNS shifts.
 - **10GbE throughput testing** -- Stress test LAN links and measure WAN bandwidth up to 10 Gigabit Ethernet via Pi 5 PCIe, using iperf3 or a native Rust engine.
 - **Scheduled diagnostics** -- Cron-like scheduling for all probes and tests with bandwidth-aware coordination, priority queues, and configurable test windows.
 - **ISP speed tier validation** -- Automated recurring speed tests that track whether your ISP delivers the bandwidth you pay for, with historical trending.
 - **Evidence bundles** -- Export timestamped, redacted reports suitable for ISP support tickets.
-- **Hardware self-test** -- Validates Pi 5 hardware, Wi-Fi adapters, 10GbE NIC, thermals, and power integrity before testing.
-- **Hardware acceleration** -- Cortex-A76 NEON SIMD for compute-heavy paths; VideoCore VII GPU offload (Vulkan 1.2 / OpenGL ES 3.1) where beneficial.
+- **Hardware self-test** -- Validates Pi 5 hardware (RAM, Board), Wi-Fi adapters (Monitor Mode support), 2.5GbE/Multi-Gig NICs, thermals, and power integrity before testing.
+- **Hardware acceleration** -- Cortex-A76 NEON SIMD for compute-heavy paths; VideoCore VII GPU offload (Vulkan 1.2 / OpenGL ES 3.1) where beneficial. Policies ensure every op has a scalar CPU fallback.
 - **Appliance-grade reliability** -- Survives power cuts, manages disk space, and runs headless with zero maintenance.
 
 ---
