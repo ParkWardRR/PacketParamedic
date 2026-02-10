@@ -90,12 +90,12 @@
 - [x] Confirm PSU stability (brownout flags) and USB bus stability
 - [x] Validate Pi 5 active cooler presence and fan operation
 
-### 2.4 Network Interface & 10GbE Detection
+### 2.4 Network Interface & Multi-Gig Detection
 - [x] Enumerate all network interfaces (onboard 1GbE, PCIe NICs via M.2 HAT)
-- [x] Detect 10GbE-capable PCIe NIC and validate driver status
+- [x] Detect 2.5GbE/Multi-Gig PCIe NIC and validate driver status
 - [x] Report PCIe lane width and negotiated link speed
 - [x] Validate negotiated vs advertised link speed (ethtool)
-- [x] Warn if thermal limits may constrain sustained 10GbE throughput
+- [x] Warn if legacy cabling limits speeds (e.g. 100Mbps on 1GbE link)
 
 ### Acceptance
 - [ ] One-call "Run Self-Test" (API/CLI) produces pass/fail report + remediation steps
@@ -121,7 +121,8 @@
 - [ ] Benchmark NEON vs scalar (ensure >2x speedup on small batches)
 
 ### 3.3 OpenGL ES 3 Backend (render-pass compute)
-- [ ] Initialize headless EGL context (Mesa V3D)
+- [x] Integrate `glow` and `glutin` for EGL context management (staged in `src/accel/gles.rs`)
+- [ ] Initialize headless EGL context (Mesa V3D) - requires runtime verification
 - [ ] Implement `gles3_computeish` path using fragment shaders + FBOs
 - [ ] Map 2D grid tasks (heatmaps, pattern scanning) to render passes
 - [ ] Buffer readback optimization (PBOs)
@@ -175,39 +176,31 @@
 
 ### 6.1 Speed Testing Framework
 - [ ] Multi-provider speed testing (scheduled + on-demand)
-- [ ] iperf3 wrapper for high-throughput testing (LAN and WAN, `--json` output parsing)
-- [ ] Native Rust throughput engine as fallback (no iperf3 dependency required)
-- [ ] Auto-detect maximum link speed and scale test parameters accordingly
-- [ ] Support 1GbE (onboard) and 10GbE (PCIe) link speeds
+- [ ] iperf3 wrapper for high-throughput testing
+- [ ] Native Rust throughput engine as fallback
+- [ ] Support specific speed limits: 250Mbps, 500Mbps, 750Mbps, 1Gbps, 2.5Gbps
+- [ ] Auto-scale TCP window sizes for 2.5Gbps targets
 
-### 6.2 10GbE LAN Stress Testing
+### 6.2 2.5GbE LAN Stress Testing
 - [ ] LAN peer discovery for iperf3 server/client pairing
-- [ ] Sustained throughput test (TCP: 30s, 60s, 300s configurable windows)
-- [ ] UDP flood test with configurable bandwidth targets and loss thresholds
-- [ ] Bidirectional (full-duplex) throughput measurement
-- [ ] Multi-stream testing (1, 4, 8, 16 parallel TCP streams)
-- [ ] MTU / jumbo frame validation (1500 vs 9000 byte)
-- [ ] CPU utilization tracking during throughput tests (detect Pi bottleneck vs network bottleneck)
-- [ ] Thermal monitoring during sustained 10GbE tests (auto-abort on throttle)
+- [ ] Sustained throughput test (TCP: 30s, 60s, 300s)
+- [ ] UDP flood test with configurable bandwidth targets
+- [ ] Verify modest hardware (Pi 5) can saturate 2.5Gbps line rate
 
-### 6.3 10GbE WAN Bandwidth Testing
-- [ ] WAN throughput measurement to configurable remote iperf3 endpoints
-- [ ] Integration with public speed test infrastructure (Ookla, Cloudflare, M-Lab)
-- [ ] 10Gbps-capable test server targeting (filter servers by capacity)
-- [ ] Multi-connection WAN tests to saturate high-bandwidth links
-- [ ] Upload + download + bidirectional WAN throughput
-- [ ] WAN baseline tracking (daily/weekly trend with 10GbE resolution)
-- [ ] ISP speed tier validation ("Am I getting the 10Gbps I pay for?")
+### 6.3 WAN Bandwidth Testing (up to 2.5Gbps)
+- [ ] WAN throughput measurement to configurable remote endpoints
+- [ ] Tier validation: "Am I getting my 250/500/1000/2500 Mbps?"
+- [ ] Link saturation tests for 1Gbps+ connections
 
 ### 6.4 Quality Metrics
 - [ ] Jitter + loss tracking
-- [ ] Bufferbloat / latency-under-load grading (including at 10GbE rates)
+- [ ] Bufferbloat / latency-under-load grading
 - [ ] "Consistent testing" mode (daily/weekly baselines)
 
 ### Acceptance
 - [ ] Can distinguish: "bandwidth OK, latency/jitter bad" vs "true throughput issue"
-- [ ] 10GbE LAN stress test saturates PCIe link and reports CPU vs network bottleneck
-- [ ] WAN bandwidth test correctly measures throughput up to 10Gbps when hardware supports it
+- [ ] LAN stress test consistently hits ~2.35Gbps on 2.5GbE hardware
+- [ ] WAN bandwidth test validates ISP tiers 250Mbps through 2.5Gbps
 
 ---
 
@@ -394,3 +387,12 @@
 - [ ] **Performance:** Acceleration policy never breaks correctness; clean fallback paths
 - [ ] **Scheduling:** Default schedules produce correct results; no test collisions in 7-day soak
 - [ ] **Pi 5 only:** No codepaths for Pi 4 or earlier; all testing on Pi 5 hardware
+
+---
+
+## Phase 14: Future High-Performance (5GbE / 10GbE)
+> Deferred to focus on mass-market 1Gbps--2.5Gbps tiers first.
+
+- [ ] 10GbE PCIe NIC support (Aquantia/Intel driver validation on Pi 5)
+- [ ] 5GbE / 10GbE throughput tuning (IRQ affinity, jumbo frames)
+- [ ] Thermal management for sustained 10Gbps flows on Pi 5

@@ -61,6 +61,8 @@ uuid = { version = "1", features = ["v4", "serde"] }
 
 # Template rendering
 askama = "0.12"
+glutin = { version = "0.32.3", features = ["egl"] }
+glow = "0.16.0"
 
 [dev-dependencies]
 tokio-test = "0.4"

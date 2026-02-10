@@ -38,3 +38,10 @@
     - Implemented **NEON Backend** (`src/accel/neon.rs`) using `std::arch::aarch64` SIMD intrinsics.
     - Implemented Scalar CPU verification (`src/accel/cpu.rs`).
     - Verified NEON correctness via unit tests (parity with scalar).
+    - **OpenGL ES 3 Progress:**
+        - Added `glow` and `glutin` dependencies for headless EGL.
+        - Staged `src/accel/gles.rs` structure for compute shader compilation.
+- **Scope Change:**
+    - Reprioritized throughput targets: 250Mbps/500Mbps/1Gbps/2.5Gbps now.
+    - Deferred 5GbE/10GbE to Phase 14 (Future).
+    - Updated `roadmap.md` Phases 2, 6, and 14 to reflect this focus.
