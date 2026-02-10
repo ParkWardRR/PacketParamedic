@@ -60,6 +60,21 @@ pub async fn run_scheduler_loop(scheduler: Scheduler) {
                                 let p = probes::tcp::TcpProbe;
                                 p.run(target, timeout).await
                             },
+                             "blame" => {
+                                 // Blame check is special: it reads from DB and writes to DB.
+                                 // Target field is ignored (or could specify model?)
+                                 match crate::analysis::runner::perform_blame_analysis(scheduler.get_pool()).await {
+                                     Ok(_) => {
+                                         info!(schedule=%name, "Blame analysis complete");
+                                         return; // Success, return early as we don't have a measurement to save
+                                     }
+                                     Err(e) => {
+                                         // Create a dummy failure measurement or just log error?
+                                         // Let's create a dummy so we log failure
+                                          Err(e)
+                                     }
+                                 }
+                            },
                             _ => {
                                 warn!(schedule=%name, kind=%probe_kind, "Unknown probe type");
                                 return;

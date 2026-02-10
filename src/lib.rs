@@ -34,8 +34,13 @@ pub async fn serve(bind: &str, db_path: &str) -> Result<()> {
 
     // 4. Start API Server
     let addr: std::net::SocketAddr = bind.parse()?;
-    // TODO: Pass pool/scheduler state to router
-    let app = api::router();
+    
+    let app_state = api::state::AppState {
+        pool: pool.clone(),
+        scheduler: scheduler.clone(),
+    };
+    
+    let app = api::router(app_state);
 
     tracing::info!(%addr, "PacketParamedic listening");
     let listener = tokio::net::TcpListener::bind(addr).await?;
