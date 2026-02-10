@@ -65,6 +65,8 @@ glutin = { version = "0.32.3", features = ["egl"] }
 glow = "0.16.0"
 ash = "0.38.0"
 async-trait = "0.1.89"
+r2d2 = "0.8.10"
+r2d2_sqlite = "0.25"
 
 [dev-dependencies]
 tokio-test = "0.4"

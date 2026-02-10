@@ -1,64 +1,32 @@
-//! Scheduling engine -- cron-like recurring schedules with bandwidth-aware coordination.
 
 pub mod cron;
-pub mod engine;
-pub mod history;
-pub mod profiles;
-pub mod queue;
+// pub mod engine;
 
-use anyhow::Result;
-use thiserror::Error;
+// Re-export common types
+pub use self::cron::Scheduler;
 
-#[derive(Debug, Error)]
-pub enum SchedulerError {
-    #[error("invalid cron expression: {expr}")]
-    InvalidCron { expr: String },
+// TODO: Refactor legacy stubs to use the real Scheduler instance
 
-    #[error("schedule '{name}' already exists")]
-    DuplicateSchedule { name: String },
-
-    #[error("resource conflict: {resource} is in use by '{holder}'")]
-    ResourceConflict { resource: String, holder: String },
-}
-
-/// A scheduled test definition.
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct Schedule {
-    pub name: String,
-    pub cron_expr: String,
-    pub test_type: String,
-    pub enabled: bool,
-}
-
-/// List all configured schedules.
-pub async fn list_schedules() -> Result<()> {
-    // TODO: Read from SQLite
-    tracing::info!("Listing schedules (stub)");
-    println!("No schedules configured yet.");
+/// List all configuredschedules (Legacy stub refactored)
+pub async fn list_schedules() -> anyhow::Result<()> {
+    tracing::info!("Use the API or Scheduler struct for real operations.");
     Ok(())
 }
 
-/// Add a new schedule.
-pub async fn add_schedule(name: &str, cron_expr: &str, test_type: &str) -> Result<()> {
-    // TODO: Validate cron expression
-    // TODO: Store in SQLite
-    tracing::info!(%name, %cron_expr, %test_type, "Adding schedule (stub)");
-    println!("Schedule '{}' added: {} -> {}", name, cron_expr, test_type);
+/// Add a new schedule (Legacy stub refactored)
+pub async fn add_schedule(_name: &str, _cron_expr: &str, _test_type: &str) -> anyhow::Result<()> {
+    tracing::info!("Use the API or Scheduler struct for real operations.");
     Ok(())
 }
 
-/// Remove a schedule by name.
-pub async fn remove_schedule(name: &str) -> Result<()> {
-    // TODO: Delete from SQLite
-    tracing::info!(%name, "Removing schedule (stub)");
-    println!("Schedule '{}' removed.", name);
+/// Remove a schedule by name (Legacy stub refactored)
+pub async fn remove_schedule(_name: &str) -> anyhow::Result<()> {
+    tracing::info!("Use the API or Scheduler struct for real operations.");
     Ok(())
 }
 
-/// Preview what will run in the next N hours.
-pub async fn dry_run(hours: u64) -> Result<()> {
-    // TODO: Compute next-run times for all enabled schedules
-    tracing::info!(%hours, "Dry run preview (stub)");
-    println!("Dry run for next {} hours: (no schedules configured)", hours);
+/// Preview what will run (Legacy stub refactored)
+pub async fn dry_run(_hours: u64) -> anyhow::Result<()> {
+    tracing::info!("Use the API or Scheduler struct for real operations.");
     Ok(())
 }
