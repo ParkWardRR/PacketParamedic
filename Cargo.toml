@@ -64,6 +64,7 @@ askama = "0.12"
 glutin = { version = "0.32.3", features = ["egl"] }
 glow = "0.16.0"
 ash = "0.38.0"
+async-trait = "0.1.89"
 
 [dev-dependencies]
 tokio-test = "0.4"

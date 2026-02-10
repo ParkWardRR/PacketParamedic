@@ -1,35 +1,47 @@
-//! Network probe implementations: ICMP, HTTP, DNS, TCP.
-
-pub mod dns;
-pub mod http;
-pub mod icmp;
-pub mod tcp;
-
 use anyhow::Result;
-use thiserror::Error;
+use std::time::Duration;
 
-#[derive(Debug, Error)]
-pub enum ProbeError {
-    #[error("DNS resolution failed for {host}: {source}")]
-    DnsResolution {
-        host: String,
-        source: std::io::Error,
-    },
+pub mod icmp;
 
-    #[error("connection timed out after {timeout_ms}ms")]
-    Timeout { timeout_ms: u64 },
-
-    #[error("unexpected response: status {status}")]
-    UnexpectedStatus { status: u16 },
+#[derive(Debug, Clone, PartialEq)]
+pub enum ProbeType {
+    Icmp,
+    Dns,
+    Http,
+    Tcp,
 }
 
-/// Run a full blame check: gateway, DNS, WAN reachability.
+impl std::fmt::Display for ProbeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ProbeType::Icmp => write!(f, "icmp"),
+            ProbeType::Dns => write!(f, "dns"),
+            ProbeType::Http => write!(f, "http"),
+            ProbeType::Tcp => write!(f, "tcp"),
+        }
+    }
+}
+
+pub struct Measurement {
+    pub probe_type: ProbeType,
+    pub target: String,
+    pub value: f64, // ms for latency, or custom value
+    pub unit: String,
+    pub success: bool,
+    pub timestamp: std::time::SystemTime,
+}
+
+/// Trait for all active probes
+#[async_trait::async_trait]
+pub trait Probe: Send + Sync {
+    /// Run the probe against a target
+    /// Returns a Measurement result
+    async fn run(&self, target: &str, timeout: Duration) -> Result<Measurement>;
+}
+
+/// Run a blame check sequence (stub)
 pub async fn blame_check() -> Result<()> {
-    tracing::info!("Blame check: probing gateway...");
-    // TODO: ICMP gateway probe
-    // TODO: DNS resolver check
-    // TODO: HTTP/TCP WAN reachability
-    // TODO: Compare LAN vs WAN to attribute blame
-    tracing::info!("Blame check complete (stub)");
+    // TODO: Implement full blame check logic
+    tracing::info!("Blame check stub. Use 'packetparamedic self-test' for hardware checks.");
     Ok(())
 }
