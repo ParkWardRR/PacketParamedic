@@ -42,6 +42,9 @@
     - Embedded `blame_lr.json` as a default model with fallback to filesystem override.
     - Verified inference correctness via unit tests (`test_prediction_isp_failure`).
     - Implemented `FeatureAggregator` (`src/analysis/aggregator.rs`) to compute classifier inputs from SQLite `measurements`.
+- **Phase 5 Progress (Core Probes):**
+    - Implemented `IcmpProbe` (`src/probes/icmp.rs`) using system `ping` wrapper (MVP).
+    - Implemented `HttpProbe` (`src/probes/http.rs`) using `reqwest` for availability/latency.
 - **Phase 4.1 Progress (Data Layer):**
     - Designed `probes_results`, `incidents`, `throughput_results`, `measurements`, `spool`, `schedules`, `schedule_history` tables.
     - Added `blame_predictions` table to store classifier outputs (verdict, confidence using JSON blobs).

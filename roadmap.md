@@ -169,10 +169,10 @@
 ## Phase 5: Core Measurement MVP (Week 6--9)
 
 ### 5.1 Availability & Latency Probes
-- [ ] Implement ICMP probe with scheduling and target sets
-- [ ] Implement HTTP probe with evidence outputs
-- [ ] Implement DNS probe (resolution timing, resolver identification)
-- [ ] Implement TCP probe (connection timing, port reachability)
+- [x] ICMP Probe (Gateway + WAN targets) - `src/probes/icmp.rs`
+- [x] HTTP Probe (TTFB + status code) - `src/probes/http.rs`
+- [ ] DNS Probe (Resolution time + A record validation)
+- [ ] TCP Probe (Connect time)
 
 ### 5.2 Blame Check (LAN vs WAN)
 - [ ] Gateway health checks (LAN RTT/loss, DNS resolution path)
