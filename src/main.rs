@@ -111,7 +111,7 @@ async fn main() -> Result<()> {
     match cli.command {
         Commands::Serve { bind } => {
             tracing::info!(%bind, "Starting PacketParamedic daemon");
-            packetparamedic::serve(&bind).await?;
+            packetparamedic::serve(&bind, "data/packetparamedic.db").await?;
         }
         Commands::SelfTest => {
             tracing::info!("Running hardware self-test");
@@ -133,18 +133,42 @@ async fn main() -> Result<()> {
             packetparamedic::throughput::run_test(&mode, peer.as_deref(), &duration, streams)
                 .await?;
         }
-        Commands::Schedule { action } => match action {
-            ScheduleAction::List => {
-                packetparamedic::scheduler::list_schedules().await?;
-            }
-            ScheduleAction::Add { name, cron, test } => {
-                packetparamedic::scheduler::add_schedule(&name, &cron, &test).await?;
-            }
-            ScheduleAction::Remove { name } => {
-                packetparamedic::scheduler::remove_schedule(&name).await?;
-            }
-            ScheduleAction::DryRun { hours } => {
-                packetparamedic::scheduler::dry_run(hours).await?;
+        Commands::Schedule { action } => {
+            let pool = packetparamedic::storage::open_pool("data/packetparamedic.db")?;
+            let scheduler = packetparamedic::scheduler::Scheduler::new(pool);
+            
+            match action {
+                ScheduleAction::List => {
+                    let list = scheduler.list().await?;
+                    if list.is_empty() {
+                        println!("No schedules found.");
+                    } else {
+                        println!("{:<20} | {:<15} | {:<10} | {}", "Name", "Cron", "Test", "Enabled");
+                        println!("{:-<20}-|-{:-<15}-|-{:-<10}-|-{:-<7}", "", "", "", "");
+                        for (name, cron, test, enabled) in list {
+                            println!("{:<20} | {:<15} | {:<10} | {}", name, cron, test, enabled);
+                        }
+                    }
+                }
+                ScheduleAction::Add { name, cron, test } => {
+                    scheduler.add_schedule(&name, &cron, &test).await?;
+                    println!("Schedule '{}' added.", name);
+                }
+                ScheduleAction::Remove { name } => {
+                    scheduler.remove(&name).await?;
+                    println!("Schedule '{}' removed.", name);
+                }
+                ScheduleAction::DryRun { hours } => {
+                    let preview = scheduler.preview_next_runs(hours).await?;
+                    if preview.is_empty() {
+                         println!("No runs scheduled in next {} hours.", hours);
+                    } else {
+                        println!("Upcoming runs (next {} hours):", hours);
+                        for (time, name, test) in preview {
+                            println!("{} : {} ({})", time, name, test);
+                        }
+                    }
+                }
             }
         },
         Commands::ExportBundle { output } => {

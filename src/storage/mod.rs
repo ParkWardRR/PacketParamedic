@@ -28,3 +28,29 @@ pub fn open_pool(path: &str) -> Result<Pool> {
     
     Ok(pool)
 }
+
+use crate::probes::Measurement;
+use chrono::{DateTime, Utc};
+
+/// Save a probe measurement RESULT to the database.
+pub fn save_measurement(pool: &Pool, m: &Measurement) -> Result<()> {
+    let conn = pool.get()?;
+    
+    // Convert SystemTime to RFC3339 string
+    let dt: DateTime<Utc> = m.timestamp.into();
+    let created_at = dt.to_rfc3339();
+
+    conn.execute(
+        "INSERT INTO measurements (probe_type, target, value, unit, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5)",
+        rusqlite::params![
+            m.probe_type.to_string(),
+            m.target,
+            m.value,
+            m.unit,
+            created_at
+        ],
+    )?;
+    
+    Ok(())
+}

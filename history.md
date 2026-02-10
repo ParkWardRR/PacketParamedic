@@ -47,6 +47,11 @@
     - Implemented `HttpProbe` (`src/probes/http.rs`) using `reqwest` for availability/latency.
     - Implemented `DnsProbe` (`src/probes/dns.rs`) using `trust-dns-resolver`.
     - Implemented `TcpProbe` (`src/probes/tcp.rs`) using `tokio::net::TcpStream`.
+- **Phase 6.5 Progress (Scheduling):**
+    - Upgraded storage to use `r2d2` connection pooling (`src/storage/mod.rs`).
+    - Implemented persistent scheduler with `cron` crate and SQLite `schedules` table.
+    - Implemented execution loop (`src/scheduler/engine.rs`) to spawn probe tasks.
+    - Updated `packetparamedic serve` to run scheduler in background.
 - **Phase 4.1 Progress (Data Layer):**
     - Designed `probes_results`, `incidents`, `throughput_results`, `measurements`, `spool`, `schedules`, `schedule_history` tables.
     - Added `blame_predictions` table to store classifier outputs (verdict, confidence using JSON blobs).

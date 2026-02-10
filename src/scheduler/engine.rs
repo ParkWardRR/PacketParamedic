@@ -1,18 +1,88 @@
-//! Core scheduler loop -- Tokio-based, runs in-process within the main daemon.
+use crate::scheduler::Scheduler;
+use crate::storage::save_measurement;
+use crate::probes::{self, Probe};
+use std::time::Duration;
+use tracing::{info, warn, error};
 
-use anyhow::Result;
-use tokio::sync::Semaphore;
+/// Main scheduler execution loop.
+/// Spawns a background task that polls for due schedules every 10 seconds.
+pub async fn run_scheduler_loop(scheduler: Scheduler) {
+    info!("Scheduler engine started");
+    
+    let mut interval = tokio::time::interval(Duration::from_secs(10));
+    
+    loop {
+        interval.tick().await;
 
-/// The throughput semaphore: only one throughput-heavy test at a time.
-static THROUGHPUT_PERMIT: Semaphore = Semaphore::const_new(1);
+        match scheduler.check_due_tasks().await {
+            Ok(tasks) => {
+                for (name, full_test_string) in tasks {
+                    info!(schedule=%name, "Task due");
 
-/// Acquire the throughput slot (blocks until available or timeout).
-pub async fn acquire_throughput_slot(
-    timeout: std::time::Duration,
-) -> Result<tokio::sync::SemaphorePermit<'static>> {
-    match tokio::time::timeout(timeout, THROUGHPUT_PERMIT.acquire()).await {
-        Ok(Ok(permit)) => Ok(permit),
-        Ok(Err(_)) => anyhow::bail!("throughput semaphore closed"),
-        Err(_) => anyhow::bail!("timed out waiting for throughput slot"),
+                    // clone for async task
+                    let scheduler = scheduler.clone();
+                    let name = name.clone();
+                    let full_test_string = full_test_string.clone();
+
+                    tokio::spawn(async move {
+                        // Mark as run BEFORE execution to prevent double-scheduling
+                        if let Err(e) = scheduler.update_last_run(&name).await {
+                             error!(schedule=%name, "Failed to update last_run: {}", e);
+                             return; 
+                        }
+
+                        // Parse "type:target" e.g. "icmp:8.8.8.8"
+                        // Or just "icmp" (invalid)
+                        let parts: Vec<&str> = full_test_string.splitn(2, ':').collect();
+                        if parts.len() != 2 {
+                             warn!(schedule=%name, spec=%full_test_string, "Invalid test spec. Expected 'type:target'");
+                             return;
+                        }
+                        let probe_kind = parts[0];
+                        let target = parts[1];
+
+                        let timeout = Duration::from_secs(5);
+                        
+                        let result = match probe_kind {
+                            "icmp" => {
+                                let p = probes::icmp::IcmpProbe;
+                                p.run(target, timeout).await
+                            },
+                             "http" => {
+                                let p = probes::http::HttpProbe::default();
+                                p.run(target, timeout).await
+                            },
+                            "dns" => {
+                                let p = probes::dns::DnsProbe::default();
+                                p.run(target, timeout).await
+                            },
+                            "tcp" => {
+                                let p = probes::tcp::TcpProbe;
+                                p.run(target, timeout).await
+                            },
+                            _ => {
+                                warn!(schedule=%name, kind=%probe_kind, "Unknown probe type");
+                                return;
+                            }
+                        };
+
+                        match result {
+                            Ok(m) => {
+                                info!(schedule=%name, kind=%probe_kind, target=%target, value=%m.value, success=%m.success, "Probe finished");
+                                if let Err(e) = save_measurement(scheduler.get_pool(), &m) {
+                                    error!(schedule=%name, "Failed to save measurement: {}", e);
+                                }
+                            },
+                            Err(e) => {
+                                error!(schedule=%name, "Probe failed: {}", e);
+                            }
+                        }
+                    });
+                }
+            },
+            Err(e) => {
+                error!("Failed to check due tasks: {}", e);
+            }
+        }
     }
 }

@@ -219,11 +219,11 @@
 ## Phase 6.5: Scheduling Engine (Week 11--14)
 
 ### 6.5.1 Core Scheduler
-- [ ] Cron-like recurring schedule engine (second/minute/hour/day/week granularity)
-- [ ] One-shot (ad-hoc) test triggers via API and CLI
+- [x] Cron-like recurring schedule engine (second/minute/hour/day/week granularity) - `cron` crate + `r2d2` pool
+- [x] One-shot (ad-hoc) test triggers via API and CLI
 - [ ] Named schedule profiles (e.g., "daily-baseline", "hourly-quick-check", "weekly-stress-test")
-- [ ] Schedule persistence in SQLite (survives reboots)
-- [ ] Timezone-aware scheduling with UTC normalization
+- [x] Schedule persistence in SQLite (survives reboots) - `schedules` table
+- [x] Timezone-aware scheduling with UTC normalization - `chrono`
 - [ ] Jitter/randomization option to avoid thundering herd on shared infrastructure
 
 ### 6.5.2 Bandwidth-Aware Coordination

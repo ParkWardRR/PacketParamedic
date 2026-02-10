@@ -5,6 +5,7 @@ use chrono::Utc;
 use crate::storage::Pool;
 
 /// A scheduler that persists tasks in SQLite and checks for runnable tasks.
+#[derive(Clone)]
 pub struct Scheduler {
     pool: Pool,
 }
@@ -12,6 +13,10 @@ pub struct Scheduler {
 impl Scheduler {
     pub fn new(pool: Pool) -> Self {
         Self { pool }
+    }
+    
+    pub fn get_pool(&self) -> &Pool {
+        &self.pool
     }
 
     /// Add a new schedule to the database
@@ -90,6 +95,66 @@ impl Scheduler {
         if changed == 0 {
             anyhow::bail!("Schedule '{}' not found", name);
         }
+        Ok(())
+    }
+
+    /// Check for tasks that are due to run.
+    /// Returns list of (name, test_type)
+    pub async fn check_due_tasks(&self) -> Result<Vec<(String, String)>> {
+        let conn = self.pool.get()?;
+        let mut stmt = conn.prepare("SELECT name, cron_expr, last_run_at, test_type FROM schedules WHERE enabled = 1")?;
+        
+        let rows = stmt.query_map([], |row| {
+             Ok((
+                 row.get::<_, String>(0)?,
+                 row.get::<_, String>(1)?,
+                 row.get::<_, Option<String>>(2)?,
+                 row.get::<_, String>(3)?,
+             ))
+        })?;
+
+        let now = Utc::now();
+        let mut due_tasks = Vec::new();
+
+        for r in rows {
+            let (name, cron_expr, last_run_at, test_type) = r?;
+            
+            let should_run = match last_run_at {
+                Some(last_run_str) => {
+                    // Parse last run time
+                    if let Ok(last_run) = chrono::DateTime::parse_from_rfc3339(&last_run_str) {
+                        let last_run_utc = last_run.with_timezone(&Utc);
+                        if let Ok(schedule) = CronSchedule::from_str(&cron_expr) {
+                            // Find next occurrence after last run
+                            if let Some(next_run) = schedule.after(&last_run_utc).next() {
+                                next_run <= now
+                            } else {
+                                false // Invalid schedule or finished?
+                            }
+                        } else {
+                            false // Invalid cron
+                        }
+                    } else {
+                        // Mangled date, run immediately and fix
+                        true
+                    }
+                },
+                None => true, // Never ran, run now
+            };
+
+            if should_run {
+                due_tasks.push((name, test_type));
+            }
+        }
+        
+        Ok(due_tasks)
+    }
+
+    /// Mark a task as just run
+    pub async fn update_last_run(&self, name: &str) -> Result<()> {
+        let conn = self.pool.get()?;
+        let now = Utc::now().to_rfc3339();
+        conn.execute("UPDATE schedules SET last_run_at = ?1, updated_at = ?1 WHERE name = ?2", rusqlite::params![now, name])?;
         Ok(())
     }
 }
