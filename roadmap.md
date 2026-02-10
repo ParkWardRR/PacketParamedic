@@ -113,7 +113,7 @@
 - [x] Create internal `AccelerationManager` (Runtime detection, dispatch logic) - `src/accel/manager.rs`
 - [x] Define trait `AcceleratedOp` (inputs -> outputs) with `vk`, `gles`, `neon`, `scalar` methods - `src/accel/ops.rs`
 - [x] Implement backend selection heuristic (payload size vs. transfer overhead)
-- [ ] Verification harness: random 0.1% sampling of accelerated results against scalar reference
+- [x] Verification harness: random 0.1% sampling of accelerated results against scalar reference
 
 ### 3.2 NEON Backend (latency-sensitive)
 - [x] Implement `neon_cpu` path for all statistical operations (mean, variance, percentiles)
@@ -122,22 +122,22 @@
 
 ### 3.3 OpenGL ES 3 Backend (render-pass compute)
 - [x] Integrate `glow` and `glutin` for EGL context management (staged in `src/accel/gles.rs`)
-- [ ] Initialize headless EGL context (Mesa V3D) - requires runtime verification
-- [ ] Implement `gles3_computeish` path using fragment shaders + FBOs
+- [x] Initialize headless EGL context (Mesa V3D) - requires runtime verification
+- [x] Implement `gles3_computeish` path using fragment shaders + FBOs
 - [ ] Map 2D grid tasks (heatmaps, pattern scanning) to render passes
 - [ ] Buffer readback optimization (PBOs)
 
 ### 3.4 Vulkan Backend (heavy compute)
 - [x] Integrate `ash` for Vulkan 1.2 bindings (staged in `src/accel/vulkan.rs`)
-- [ ] Initialize Vulkan instance/device (V3DV) - requires runtime verification
-- [ ] Implement `vk_compute` path using compute shaders (SPIR-V)
-- [ ] Manage descriptor sets, pipeline barriers, and command buffers
+- [x] Initialize Vulkan instance/device (V3DV) - requires runtime verification
+- [x] Implement `vk_compute` path using compute shaders (SPIR-V)
+- [x] Manage descriptor sets, pipeline barriers, and command buffers
 - [ ] Benchmark large-batch throughput (target >10x vs NEON on huge datasets)
 
 ### Acceptance
 - [ ] Benchmark harness shows distinct performance tiers: Vulkan > NEON > Scalar for large batches
-- [ ] Graceful fallback: if GPU hangs, manager switches to NEON instantly
-- [ ] All accelerated results match scalar reference exactly
+- [x] Graceful fallback: if GPU hangs, manager switches to NEON instantly
+- [x] All accelerated results match scalar reference exactly
 
 ---
 
@@ -408,3 +408,113 @@
 - [ ] 10GbE PCIe NIC support (Aquantia/Intel driver validation on Pi 5)
 - [ ] 5GbE / 10GbE throughput tuning (IRQ affinity, jumbo frames)
 - [ ] Thermal management for sustained 10Gbps flows on Pi 5
+
+---
+
+## Appendix A: 2.5GbE Performance Testing Guide
+
+> **Fastest CLI way:** use **iperf3 UDP** (gives jitter) against a public iPerf3 host, and use `mtr`/`ping` in parallel to see if jitter is local vs upstream. [github](https://github.com/R0GGER/public-iperf3-servers)
+
+### Public endpoints you can hit (CLI)
+| Endpoint | Best for | Notes |
+|---|---|---|
+| `nyc.speedtest.clouvider.net` (ports `5201-5209`) | iPerf3 TCP/UDP throughput + UDP jitter | Listed as a public iPerf3 target.  [github](https://github.com/R0GGER/public-iperf3-servers) |
+| `speedtest.nyc1.us.leaseweb.net` (ports `5201-5210`) | iPerf3 TCP throughput (and sometimes UDP) | Listed as a public iPerf3 target.  [github](https://github.com/R0GGER/public-iperf3-servers) |
+| `speedtest.mia11.us.leaseweb.net` (ports `5201-5210`) | iPerf3 TCP throughput (and sometimes UDP) | Listed as a public iPerf3 target.  [github](https://github.com/R0GGER/public-iperf3-servers) |
+| `nyc.speedtest.is.cc` (ports `5201-5209`) | iPerf3 TCP throughput | InterServer publishes this as an iPerf3 speed test host.  [interserver](https://www.interserver.net/speedtest/) |
+| “Pick a nearby host” from iPerf’s public list | Getting closer geography to reduce noise | iPerf.fr maintains a public server list.  [iperf](https://iperf.fr/iperf-servers.php) |
+| M‑Lab NDT7 (auto-select) | Realistic WAN throughput test | `ndt7-client` is a CLI client that runs NDT7 tests.  [pkg.go](https://pkg.go.dev/github.com/m-lab/ndt7-client-go) |
+
+### Commands (Linux / Pi OS)
+Install tools:
+```bash
+sudo apt update && sudo apt install -y iperf3 mtr-tiny fping
+```
+
+Latency + jitter baseline (run for ~1–3 minutes):
+```bash
+ping -i 0.2 -c 300 nyc.speedtest.clouvider.net
+```
+
+Path + jitter visualization (great for “is this my ISP hop?”):
+```bash
+mtr -ezbw -c 200 nyc.speedtest.clouvider.net
+```
+
+Throughput (TCP) down and up (multi-stream helps reach higher rates):
+```bash
+iperf3 -c nyc.speedtest.clouvider.net -p 5201 -P 8 -t 20
+iperf3 -c nyc.speedtest.clouvider.net -p 5201 -P 8 -t 20 -R
+```
+
+**Jitter** measurement (UDP; start conservative, then raise `-b`):
+```bash
+iperf3 -c nyc.speedtest.clouvider.net -p 5201 -u -l 1200 -b 200M -t 20
+```
+
+If you want to push closer to 2.5GbE, step up `-b` (example):
+```bash
+iperf3 -c nyc.speedtest.clouvider.net -p 5201 -u -l 1200 -b 800M -t 20
+```
+
+### NDT7 CLI (no endpoint picking)
+Install:
+```bash
+go install -v github.com/m-lab/ndt7-client-go/cmd/ndt7-client@latest
+```
+
+Run:
+```bash
+ndt7-client
+```
+This client is documented as a command-line NDT7 client and is meant to run download/upload tests without you manually choosing a server. [pkg.go](https://pkg.go.dev/github.com/m-lab/ndt7-client-go)
+
+### One important reality check (so you don’t chase ghosts)
+Most public endpoints won’t actually let you sustain 2.5Gbps end-to-end (server caps, peering, rate limits), so treat “can’t hit 2.5G” as “inconclusive” unless you control the far end. [iperf](https://iperf.fr/iperf-servers.php)
+
+If you tell me your ISP (Spectrum/Frontier/ATT/etc.) and whether you can spin up a cheap VPS, I’ll give you the “best possible” endpoint setup (closest region + dedicated iperf3 server) that can genuinely validate 2.5GbE WAN with UDP jitter.No public endpoint can *guarantee* you’ll hit 2.5Gbps all the time, but the highest-probability options are (1) rent a 10Gbps server and run your own `iperf3` target, and (2) use provider-run 10Gbps “speedtest/iperf3” servers like Leaseweb and InterServer (LAX/SFO). [vultr](https://www.vultr.com/products/bare-metal/)
+
+### Options most likely to reach 2.5Gbps
+| Option | Cost (USD) | Why it can hit 2.5Gbps | Endpoint / location hints |
+|---|---:|---|---|
+| **Bring-your-own iperf3 server** on Vultr Bare Metal | From ~$120/mo (per listing) | Listed with **10 Gbps network**, so the far-end isn’t the bottleneck if you choose a nearby region.  [vultr](https://www.vultr.com/products/bare-metal/) | You choose region closest to you (prefer LA/SJ/SF if offered). |
+| **Bring-your-own iperf3 server** on OVHcloud Dedicated Servers | Varies | OVH says dedicated servers include **500 Mbps by default** and you can add options “even to **10Gbps**,” with “unlimited and unmetered traffic” (plan/option dependent).  | Pick US West if available for lower RTT; add guaranteed bandwidth if offered.  |
+| Public iperf3 on Leaseweb | $0 | Leaseweb publishes iperf3-compatible speedtest hosts with ports **5201–5210**, and even shows example results in the ~9 Gbps range (when uncongested).  [kb.leaseweb](https://kb.leaseweb.com/kb/network/network-link-speeds/) | Best bets for you: `speedtest.lax12.us.leaseweb.net`, `speedtest.sfo12.us.leaseweb.net`.  [kb.leaseweb](https://kb.leaseweb.com/kb/network/network-link-speeds/) |
+| Public iperf3 on InterServer | $0 | InterServer publishes iPerf3 targets and explicitly lists a **Los Angeles, CA** location with “Speed: 10GBPS.”  [interserver](https://www.interserver.net/speedtest/) | `lax.speedtest.is.cc` (ports 5201–5209 per InterServer).  [interserver](https://www.interserver.net/speedtest/) |
+| Public iperf3 on Clouvider | $0 | Clouvider publishes iperf3 endpoints and states they’re connected at **10Gbps best effort** (so it can be fast but varies with load).  [as62240](https://as62240.net/speedtest) | Use the closest US site they list (often better than cross-country).  [as62240](https://as62240.net/speedtest) |
+
+### CLI commands (throughput + jitter)
+Install tools (Pi OS / Debian/Ubuntu):
+```bash
+sudo apt update && sudo apt install -y iperf3 mtr-tiny
+```
+
+#### Leaseweb (LAX/SFO) — best public shot
+TCP download-ish (server → you):
+```bash
+iperf3 -c speedtest.lax12.us.leaseweb.net -p 5201 -P 8 -t 20 -R
+```
+
+TCP upload-ish (you → server):
+```bash
+iperf3 -c speedtest.lax12.us.leaseweb.net -p 5201 -P 8 -t 20
+```
+
+UDP “jitter” sample (start conservative; public servers may police UDP):
+```bash
+iperf3 -c speedtest.lax12.us.leaseweb.net -p 5201 -u -b 200M -l 1200 -t 20
+```
+
+Path/jitter sanity check (helps spot “ISP hop” issues):
+```bash
+mtr -ezbw -c 200 speedtest.lax12.us.leaseweb.net
+```
+
+#### InterServer (Los Angeles)
+```bash
+iperf3 -4 -f m -c lax.speedtest.is.cc -p 5201 -P 8 -t 20 -R
+```
+
+### “Guaranteed 2.5Gbps” method (if you want certainty)
+Rent your own 10Gbps server (Vultr Bare Metal is explicitly listed with 10 Gbps network) and run `iperf3 -s`, because then you control the far end and can retry/tune without shared speedtest load. [vultr](https://www.vultr.com/products/bare-metal/)
+

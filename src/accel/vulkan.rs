@@ -127,12 +127,69 @@ impl VulkanBackend {
         
         Ok((pipelines[0], pipeline_layout))
     }
+    /// Run a compute dispatch with a given pipeline and descriptor set.
+    /// This is a simplified synchronous wrapper: Submit -> Wait.
+    pub unsafe fn run_compute(
+        &self,
+        pipeline: vk::Pipeline,
+        pipeline_layout: vk::PipelineLayout,
+        descriptor_set: vk::DescriptorSet,
+        group_count_x: u32,
+    ) -> Result<()> {
+        let command_pool_create_info = vk::CommandPoolCreateInfo::default()
+            .queue_family_index(self.compute_queue_family_index)
+            .flags(vk::CommandPoolCreateFlags::TRANSIENT);
+        
+        let command_pool = self.device.create_command_pool(&command_pool_create_info, None)?;
+        
+        let command_buffer_allocate_info = vk::CommandBufferAllocateInfo::default()
+            .command_pool(command_pool)
+            .level(vk::CommandBufferLevel::PRIMARY)
+            .command_buffer_count(1);
+            
+        let command_buffers = self.device.allocate_command_buffers(&command_buffer_allocate_info)?;
+        let command_buffer = command_buffers[0];
+        
+        let begin_info = vk::CommandBufferBeginInfo::default()
+            .flags(vk::CommandBufferUsageFlags::ONE_TIME_SUBMIT);
+            
+        self.device.begin_command_buffer(command_buffer, &begin_info)?;
+        
+        self.device.cmd_bind_pipeline(command_buffer, vk::PipelineBindPoint::COMPUTE, pipeline);
+        self.device.cmd_bind_descriptor_sets(
+            command_buffer,
+            vk::PipelineBindPoint::COMPUTE,
+            pipeline_layout,
+            0,
+            &[descriptor_set],
+            &[],
+        );
+        
+        self.device.cmd_dispatch(command_buffer, group_count_x, 1, 1);
+        
+        self.device.end_command_buffer(command_buffer)?;
+        
+        let command_buffers_submit = [command_buffer];
+        let submit_info = vk::SubmitInfo::default()
+            .command_buffers(&command_buffers_submit);
+            
+        let fence = self.device.create_fence(&vk::FenceCreateInfo::default(), None)?;
+        
+        self.device.queue_submit(self.compute_queue, &[submit_info], fence)?;
+        
+        // Wait for absolute completion (simple synchronous model for this appliance)
+        self.device.wait_for_fences(&[fence], true, u64::MAX)?;
+        
+        self.device.destroy_fence(fence, None);
+        self.device.destroy_command_pool(command_pool, None);
+        
+        Ok(())
+    }
 }
 
 impl Drop for VulkanBackend {
     fn drop(&mut self) {
         unsafe {
-            // self.device.destroy_pipeline... (handle in resource wrappers typically)
             self.device.destroy_device(None);
             self.instance.destroy_instance(None);
         }

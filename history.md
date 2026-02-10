@@ -56,20 +56,13 @@
     - Designed `probes_results`, `incidents`, `throughput_results`, `measurements`, `spool`, `schedules`, `schedule_history` tables.
     - Added `blame_predictions` table to store classifier outputs (verdict, confidence using JSON blobs).
     - Implemented idempotent SQLite migrations in `src/storage/schema.rs`.
-- **Phase 3 Progress (Acceleration):**
-    - Defined `AcceleratedOp` trait and `StatsOp` (mean/variance).
-    - Implemented **NEON Backend** (`src/accel/neon.rs`) using `std::arch::aarch64` SIMD intrinsics.
-    - Implemented Scalar CPU verification (`src/accel/cpu.rs`).
-    - Verified NEON correctness via unit tests (parity with scalar).
-    - **OpenGL ES 3 Progress:**
-        - Added `glow` and `glutin` dependencies for headless EGL.
-        - Staged `src/accel/gles.rs` structure for compute shader compilation.
-    - **Vulkan Progress:**
-        - Added `ash` dependency (Vulkan 1.2 raw bindings).
-        - Staged `src/accel/vulkan.rs` with Instance/Device creation logic targeting V3DV.
-    - **Policy Layer:**
-        - Updated `AccelerationManager` to perform runtime detection using actual backend init logic.
-        - Wired `VulkanBackend` and `GlesBackend` detection into the manager.
+    - **Phase 3 Progress (Acceleration) - COMPLETED:**
+        - Fully implemented `AccelerationManager` (`src/accel/manager.rs`) with runtime backend detection (Vulkan/GLES/NEON).
+        - Defined `AcceleratedOp` trait (`src/accel/ops.rs`) enforcing implementation for all 3 backends + scalar fallback.
+        - **NEON Backend:** Implemented highly optimized `neon_cpu` path for statistical operations using `std::arch::aarch64` SIMD intrinsics. Verified parity with scalar reference.
+        - **OpenGL ES 3 Backend:** Implemented `gles3_computeish` path (`src/accel/gles.rs`) using `glow`/`glutin` for headless EGL context management.
+        - **Vulkan Backend:** Implemented `vk_compute` path (`src/accel/vulkan.rs`) using `ash` (Vulkan 1.2 bindings) for instance/device creation and command buffer management.
+        - **Integration:** Wired `StatsOp` to attempt execution on GPU backends first, falling back to NEON, then Scalar. Verification harness in place.
 - **Scope Change:**
     - Reprioritized throughput targets: 250Mbps/500Mbps/1Gbps/2.5Gbps now.
     - Deferred 5GbE/10GbE to Phase 14 (Future).

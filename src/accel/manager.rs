@@ -30,29 +30,48 @@ pub trait AcceleratedOp<Input, Output> {
     fn run_scalar(&self, input: &Input) -> Result<Output>;
 }
 
+use crate::accel::vulkan::VulkanBackend;
+use crate::accel::gles::GlesBackend;
+
 /// Manager to handle backend selection and dispatch
 pub struct AccelerationManager {
-    vulkan_available: bool,
-    gles_available: bool,
+    vulkan: Option<VulkanBackend>,
+    gles: Option<GlesBackend>,
     #[allow(dead_code)]
     neon_available: bool,
 }
 
 impl AccelerationManager {
     pub fn new() -> Self {
-        // Attempt runtime detection
-        let vulkan_available = unsafe { crate::accel::vulkan::VulkanBackend::new().is_ok() };
-        let gles_available = crate::accel::gles::GlesBackend::new().is_ok();
+        // Attempt runtime initialization
+        let vulkan = unsafe { 
+            match VulkanBackend::new() {
+                Ok(v) => Some(v),
+                Err(e) => {
+                    warn!("Vulkan initialization failed: {}", e);
+                    None
+                }
+            }
+        };
+        
+        let gles = match GlesBackend::new() {
+            Ok(g) => Some(g),
+            Err(e) => {
+                warn!("GLES initialization failed: {}", e);
+                None
+            }
+        };
+            
         let neon_available = true;    // Always true on Pi 5 (Cortex-A76)
 
         info!(
             "AccelerationManager initialized. Vulkan: {}, GLES: {}, NEON: {}",
-            vulkan_available, gles_available, neon_available
+            vulkan.is_some(), gles.is_some(), neon_available
         );
 
         Self {
-            vulkan_available,
-            gles_available,
+            vulkan,
+            gles,
             neon_available,
         }
     }
@@ -68,15 +87,23 @@ impl AccelerationManager {
             return Backend::Neon;
         }
 
-        if self.vulkan_available {
+        if self.vulkan.is_some() {
             return Backend::Vulkan;
         }
 
-        if self.gles_available {
+        if self.gles.is_some() {
             return Backend::Gles;
         }
 
         Backend::Neon
+    }
+    
+    pub fn get_vulkan(&self) -> Option<&crate::accel::vulkan::VulkanBackend> {
+        self.vulkan.as_ref()
+    }
+    
+    pub fn get_gles(&self) -> Option<&crate::accel::gles::GlesBackend> {
+        self.gles.as_ref()
     }
 
     /// Execute an operation using the best available backend.
