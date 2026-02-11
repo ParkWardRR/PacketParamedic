@@ -30,8 +30,8 @@ pub trait AcceleratedOp<Input, Output> {
     fn run_scalar(&self, input: &Input) -> Result<Output>;
 }
 
-use crate::accel::vulkan::VulkanBackend;
 use crate::accel::gles::GlesBackend;
+use crate::accel::vulkan::VulkanBackend;
 
 /// Manager to handle backend selection and dispatch
 pub struct AccelerationManager {
@@ -41,10 +41,16 @@ pub struct AccelerationManager {
     neon_available: bool,
 }
 
+impl Default for AccelerationManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AccelerationManager {
     pub fn new() -> Self {
         // Attempt runtime initialization
-        let vulkan = unsafe { 
+        let vulkan = unsafe {
             match VulkanBackend::new() {
                 Ok(v) => Some(v),
                 Err(e) => {
@@ -53,7 +59,7 @@ impl AccelerationManager {
                 }
             }
         };
-        
+
         let gles = match GlesBackend::new() {
             Ok(g) => Some(g),
             Err(e) => {
@@ -61,12 +67,14 @@ impl AccelerationManager {
                 None
             }
         };
-            
-        let neon_available = true;    // Always true on Pi 5 (Cortex-A76)
+
+        let neon_available = true; // Always true on Pi 5 (Cortex-A76)
 
         info!(
             "AccelerationManager initialized. Vulkan: {}, GLES: {}, NEON: {}",
-            vulkan.is_some(), gles.is_some(), neon_available
+            vulkan.is_some(),
+            gles.is_some(),
+            neon_available
         );
 
         Self {
@@ -97,11 +105,11 @@ impl AccelerationManager {
 
         Backend::Neon
     }
-    
+
     pub fn get_vulkan(&self) -> Option<&crate::accel::vulkan::VulkanBackend> {
         self.vulkan.as_ref()
     }
-    
+
     pub fn get_gles(&self) -> Option<&crate::accel::gles::GlesBackend> {
         self.gles.as_ref()
     }

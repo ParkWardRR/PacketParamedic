@@ -10,7 +10,7 @@ pub struct TcpProbe;
 impl Probe for TcpProbe {
     async fn run(&self, target: &str, timeout: Duration) -> Result<Measurement> {
         let start = Instant::now();
-        
+
         // Target format: "host:port", e.g. "google.com:80"
         // If no port, default to 80? Or error?
         // Let's assume input includes port for now.
@@ -27,19 +27,17 @@ impl Probe for TcpProbe {
         let timestamp = SystemTime::now();
 
         match result {
-            Ok(Ok(_stream)) => {
-                Ok(Measurement {
-                    probe_type: ProbeType::Tcp,
-                    target: target.to_string(),
-                    value: duration.as_secs_f64() * 1000.0,
-                    unit: "ms".to_string(),
-                    success: true,
-                    timestamp,
-                })
-            },
+            Ok(Ok(_stream)) => Ok(Measurement {
+                probe_type: ProbeType::Tcp,
+                target: target.to_string(),
+                value: duration.as_secs_f64() * 1000.0,
+                unit: "ms".to_string(),
+                success: true,
+                timestamp,
+            }),
             Ok(Err(_)) => {
                 // Connection refused or other IO error
-                 Ok(Measurement {
+                Ok(Measurement {
                     probe_type: ProbeType::Tcp,
                     target: target.to_string(),
                     value: -1.0,
@@ -47,10 +45,10 @@ impl Probe for TcpProbe {
                     success: false,
                     timestamp,
                 })
-            },
+            }
             Err(_) => {
                 // Timeout
-                 Ok(Measurement {
+                Ok(Measurement {
                     probe_type: ProbeType::Tcp,
                     target: target.to_string(),
                     value: -1.0,

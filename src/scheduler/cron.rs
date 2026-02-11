@@ -1,8 +1,8 @@
-use anyhow::{Result, Context};
-use std::str::FromStr;
-use cron::Schedule as CronSchedule;
-use chrono::Utc;
 use crate::storage::Pool;
+use anyhow::{Context, Result};
+use chrono::Utc;
+use cron::Schedule as CronSchedule;
+use std::str::FromStr;
 
 /// A scheduler that persists tasks in SQLite and checks for runnable tasks.
 #[derive(Clone)]
@@ -14,7 +14,7 @@ impl Scheduler {
     pub fn new(pool: Pool) -> Self {
         Self { pool }
     }
-    
+
     pub fn get_pool(&self) -> &Pool {
         &self.pool
     }
@@ -29,7 +29,8 @@ impl Scheduler {
         conn.execute(
             "INSERT INTO schedules (name, cron_expr, test_type, enabled) VALUES (?1, ?2, ?3, 1)",
             rusqlite::params![name, cron_expr, test_type],
-        ).context("Failed to insert schedule")?;
+        )
+        .context("Failed to insert schedule")?;
 
         Ok(())
     }
@@ -38,14 +39,15 @@ impl Scheduler {
     /// This is strictly a dry-run preview, not the execution loop.
     pub async fn preview_next_runs(&self, hours: u64) -> Result<Vec<(String, String, String)>> {
         let conn = self.pool.get()?;
-        let mut stmt = conn.prepare("SELECT name, cron_expr, test_type FROM schedules WHERE enabled = 1")?;
-        
+        let mut stmt =
+            conn.prepare("SELECT name, cron_expr, test_type FROM schedules WHERE enabled = 1")?;
+
         let rows = stmt.query_map([], |row| {
-             Ok((
-                 row.get::<_, String>(0)?,
-                 row.get::<_, String>(1)?,
-                 row.get::<_, String>(2)?,
-             ))
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            ))
         })?;
 
         let now = Utc::now();
@@ -56,15 +58,17 @@ impl Scheduler {
             let (name, cron_expr, test_type) = r?;
             if let Ok(schedule) = CronSchedule::from_str(&cron_expr) {
                 for next_time in schedule.after(&now) {
-                    if next_time > end { break; }
+                    if next_time > end {
+                        break;
+                    }
                     preview.push((next_time.to_rfc3339(), name.clone(), test_type.clone()));
                 }
             }
         }
-        
+
         // Sort by time
         preview.sort_by(|a, b| a.0.cmp(&b.0));
-        
+
         Ok(preview)
     }
 
@@ -72,26 +76,29 @@ impl Scheduler {
     pub async fn list(&self) -> Result<Vec<(String, String, String, bool)>> {
         let conn = self.pool.get()?;
         let mut stmt = conn.prepare("SELECT name, cron_expr, test_type, enabled FROM schedules")?;
-        
+
         let rows = stmt.query_map([], |row| {
-             Ok((
-                 row.get::<_, String>(0)?,
-                 row.get::<_, String>(1)?,
-                 row.get::<_, String>(2)?,
-                 row.get::<_, i64>(3)? != 0,
-             ))
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, i64>(3)? != 0,
+            ))
         })?;
-        
+
         let mut list = Vec::new();
         for r in rows {
             list.push(r?);
         }
         Ok(list)
     }
-    
+
     pub async fn remove(&self, name: &str) -> Result<()> {
         let conn = self.pool.get()?;
-        let changed = conn.execute("DELETE FROM schedules WHERE name = ?1", rusqlite::params![name])?;
+        let changed = conn.execute(
+            "DELETE FROM schedules WHERE name = ?1",
+            rusqlite::params![name],
+        )?;
         if changed == 0 {
             anyhow::bail!("Schedule '{}' not found", name);
         }
@@ -102,15 +109,17 @@ impl Scheduler {
     /// Returns list of (name, test_type)
     pub async fn check_due_tasks(&self) -> Result<Vec<(String, String)>> {
         let conn = self.pool.get()?;
-        let mut stmt = conn.prepare("SELECT name, cron_expr, last_run_at, test_type FROM schedules WHERE enabled = 1")?;
-        
+        let mut stmt = conn.prepare(
+            "SELECT name, cron_expr, last_run_at, test_type FROM schedules WHERE enabled = 1",
+        )?;
+
         let rows = stmt.query_map([], |row| {
-             Ok((
-                 row.get::<_, String>(0)?,
-                 row.get::<_, String>(1)?,
-                 row.get::<_, Option<String>>(2)?,
-                 row.get::<_, String>(3)?,
-             ))
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, Option<String>>(2)?,
+                row.get::<_, String>(3)?,
+            ))
         })?;
 
         let now = Utc::now();
@@ -118,7 +127,7 @@ impl Scheduler {
 
         for r in rows {
             let (name, cron_expr, last_run_at, test_type) = r?;
-            
+
             let should_run = match last_run_at {
                 Some(last_run_str) => {
                     // Parse last run time
@@ -138,7 +147,7 @@ impl Scheduler {
                         // Mangled date, run immediately and fix
                         true
                     }
-                },
+                }
                 None => true, // Never ran, run now
             };
 
@@ -146,7 +155,7 @@ impl Scheduler {
                 due_tasks.push((name, test_type));
             }
         }
-        
+
         Ok(due_tasks)
     }
 
@@ -154,7 +163,10 @@ impl Scheduler {
     pub async fn update_last_run(&self, name: &str) -> Result<()> {
         let conn = self.pool.get()?;
         let now = Utc::now().to_rfc3339();
-        conn.execute("UPDATE schedules SET last_run_at = ?1, updated_at = ?1 WHERE name = ?2", rusqlite::params![now, name])?;
+        conn.execute(
+            "UPDATE schedules SET last_run_at = ?1, updated_at = ?1 WHERE name = ?2",
+            rusqlite::params![now, name],
+        )?;
         Ok(())
     }
 }

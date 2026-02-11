@@ -3,8 +3,8 @@
 mod routes;
 pub mod state;
 
-use axum::Router;
 use self::state::AppState;
+use axum::Router;
 
 /// Build the application router with all API routes.
 pub fn router(state: AppState) -> Router {

@@ -5,17 +5,17 @@ use serde::Serialize;
 use tracing::info;
 
 pub mod hardware;
-pub mod thermal;
 pub mod network;
+pub mod thermal;
 pub mod wifi;
 
 use std::collections::HashMap;
 
 /// Run the full hardware self-test suite.
-/// Returns a list of component results and persona compatibility.
+/// Returns a list of component results and use case compatibility.
 pub async fn run() -> Result<SelfTestReport> {
     info!("Self-test: checking Pi 5 hardware...");
-    
+
     let mut results = Vec::new();
 
     // 1. Board & RAM
@@ -31,13 +31,13 @@ pub async fn run() -> Result<SelfTestReport> {
 
     // 2. CPU Features (NEON)
     match hardware::check_cpu_features() {
-         Ok(res) => results.push(res),
-         Err(e) => results.push(ComponentResult {
-             component: "CPU Features".to_string(),
-             status: TestStatus::Fail,
-             details: format!("Failed to check CPU features: {}", e),
-             remediation: None,
-         }),
+        Ok(res) => results.push(res),
+        Err(e) => results.push(ComponentResult {
+            component: "CPU Features".to_string(),
+            status: TestStatus::Fail,
+            details: format!("Failed to check CPU features: {}", e),
+            remediation: None,
+        }),
     }
 
     // 3. GPU (VideoCore VII)
@@ -72,7 +72,7 @@ pub async fn run() -> Result<SelfTestReport> {
             remediation: Some("Ensure 'vcgencmd' is available.".to_string()),
         }),
     }
-    
+
     // 6. Network Interfaces (10GbE)
     match network::check_interfaces() {
         Ok(net_results) => results.extend(net_results),
@@ -96,9 +96,9 @@ pub async fn run() -> Result<SelfTestReport> {
     }
 
     info!("Self-test complete. {} check(s) run.", results.len());
-    
-    // Calculate Persona Compatibility
-    let compatibility = calculate_persona_compatibility(&results);
+
+    // Calculate Use Case Compatibility
+    let compatibility = calculate_use_case_compatibility(&results);
 
     Ok(SelfTestReport {
         results,
@@ -109,42 +109,50 @@ pub async fn run() -> Result<SelfTestReport> {
 #[derive(Debug, Serialize)]
 pub struct SelfTestReport {
     pub results: Vec<ComponentResult>,
-    pub compatibility: HashMap<String, bool>, // Persona Name -> Is Compatible
+    pub compatibility: HashMap<String, bool>, // Use Case Name -> Is Compatible
 }
 
-fn calculate_persona_compatibility(results: &[ComponentResult]) -> HashMap<String, bool> {
+fn calculate_use_case_compatibility(results: &[ComponentResult]) -> HashMap<String, bool> {
     let mut map = HashMap::new();
-    
+
     // Helper to find status of a component
     let get_status = |name_part: &str| -> TestStatus {
-        results.iter()
+        results
+            .iter()
             .find(|r| r.component.contains(name_part))
             .map(|r| r.status.clone())
             .unwrap_or(TestStatus::Fail)
     };
-    
+
     let get_details = |name_part: &str| -> String {
-        results.iter()
-             .find(|r| r.component.contains(name_part))
-             .map(|r| r.details.clone())
-             .unwrap_or_default()
+        results
+            .iter()
+            .find(|r| r.component.contains(name_part))
+            .map(|r| r.details.clone())
+            .unwrap_or_default()
     };
 
-    // ALEX (Tech-Curious): Needs Pi 5 (Board Pass) + minimal network
+    // Simple Troubleshooting: Needs Pi 5 (Board Pass) + minimal network
     // Board must PASS. Network must not be FAIL.
     let board_pass = get_status("Board") == TestStatus::Pass;
-    let net_ok = get_status("Network") != TestStatus::Fail && get_status("Interface") != TestStatus::Fail; 
-    map.insert("Alex (Tech-Curious)".to_string(), board_pass && net_ok);
+    let net_ok =
+        get_status("Network") != TestStatus::Fail && get_status("Interface") != TestStatus::Fail;
+    map.insert("Simple Troubleshooting".to_string(), board_pass && net_ok);
 
-    // JAMIE (Household): Needs reliability -> NVMe storage preferred (or at least storage pass) + Thermal Pass
+    // Reliability & Uptime: Needs reliability -> NVMe storage preferred (or at least storage pass) + Thermal Pass
     // We check if Storage details contain "NVMe"
     let storage_nvme = get_details("Storage").contains("NVMe");
     let thermal_pass = get_status("Thermal") == TestStatus::Pass;
-    map.insert("Jamie (Household)".to_string(), board_pass && net_ok && storage_nvme && thermal_pass);
+    map.insert(
+        "Reliability & Uptime".to_string(),
+        board_pass && net_ok && storage_nvme && thermal_pass,
+    );
 
-    // SAM (Expert): Needs performance -> 2.5GbE+ (Multi-Gig)
-    let multigig = results.iter().any(|r| r.details.contains("Multi-Gig") || r.details.contains("10GbE"));
-    map.insert("Sam (Expert)".to_string(), board_pass && multigig);
+    // High Performance: Needs performance -> 2.5GbE+ (Multi-Gig)
+    let multigig = results
+        .iter()
+        .any(|r| r.details.contains("Multi-Gig") || r.details.contains("10GbE"));
+    map.insert("High Performance".to_string(), board_pass && multigig);
 
     map
 }

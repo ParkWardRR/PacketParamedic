@@ -46,21 +46,21 @@
 Why? Because the Pi 5 is the first board with the PCIe bandwidth (for 10GbE), NEON/Vulkan compute power (for analysis), and I/O throughput to serve as a true diagnostic appliance. Older Pis will struggle with the database load and high-speed throughput tests.
 
 ### Which Pi 5 do you need?
-We have specific hardware recommendations for each user type. **[👉 Read the Buyer's Guide](BUYERS_GUIDE.md)** to see exactly what to buy.
+We have specific hardware recommendations for each use case. **[👉 Read the Buyer's Guide](BUYERS_GUIDE.md)** to see exactly what to buy.
 
-- **Alex (Tech-Curious)**: Can start cheap with just a Pi 5 and SD card (~$90).
-- **Jamie (Household Manager)**: Needs reliability (NVMe SSD + UPS) so the "evidence locker" never fails (~$180).
-- **Sam (Home Lab Expert)**: Needs raw speed (PCIe 2.5G/10G HAT) to saturate uplink (~$250+).
+- **Simple Troubleshooting**: Can start with just a Pi 5 and SD card.
+- **Reliability & Uptime**: Needs reliability (NVMe SSD) so the "evidence locker" never fails.
+- **High Performance**: Needs raw speed (PCIe 2.5G/10G HAT) to saturate uplink, or dual Wi-Fi radios for concurrent RF analysis.
 
 ---
 
 ## Who is this for?
 
-PacketParamedic is designed for three specific types of users (see [personas.md](personas.md) for details, and [BUYERS_GUIDE.md](BUYERS_GUIDE.md) for hardware advice):
+PacketParamedic is designed for three specific use cases (see [personas.md](personas.md) for details, and [BUYERS_GUIDE.md](BUYERS_GUIDE.md) for hardware advice):
 
-1.  **The Tech-Curious (Alex):** You have "Home Server Energy." You just want to know *why* Netflix is buffering without becoming a full-time network engineer. You want a simple "It's the ISP / It's me" answer.
-2.  **The Household Manager (Jamie):** You prioritize reliability for work and family streaming. You don't want a dashboard; you want a "credibility box" that proves to the ISP that the issue is on their end, not yours.
-3.  **The Home Lab Expert (Sam):** You want observability, not just vibes. You need raw metrics, API contracts, evidence export, and a dedicated 24/7 hardware probe for your 2.5GbE+ uplink.
+1.  **Simple Troubleshooting:** You have "Home Server Energy." You just want to know *why* Netflix is buffering without becoming a full-time network engineer. You want a simple "It's the ISP / It's me" answer.
+2.  **Reliability & Uptime:** You prioritize reliability for work and family streaming. You don't want a dashboard; you want a "credibility box" that proves to the ISP that the issue is on their end, not yours.
+3.  **High Performance:** You want observability, not just vibes. You need raw metrics, API contracts, evidence export, and a dedicated 24/7 hardware probe for your 2.5GbE+ uplink.
 
 ---
 

@@ -11,16 +11,16 @@
 //! - `neon_cpu` (ARM NEON)
 //! - `scalar_cpu` (Reference)
 
-pub mod manager;
-pub mod vulkan;
-pub mod gles;
-pub mod neon;
 pub mod cpu;
+pub mod gles;
+pub mod manager;
+pub mod neon;
+pub mod vulkan;
 
 pub mod ops;
 
 // Re-export key types
-pub use manager::{AccelerationManager, Backend, AcceleratedOp};
+pub use manager::{AcceleratedOp, AccelerationManager, Backend};
 
 /// Metadata recording which acceleration path was used.
 #[derive(Debug, serde::Serialize)]

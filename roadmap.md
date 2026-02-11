@@ -31,24 +31,24 @@
 
 ## Roadmap
 
-| Phase | Name | Status | Primary Persona |
+| Phase | Name | Status | Primary Use Case |
 |-------|------|--------|-----------------|
 | 0 | Project Definition | Done | All |
-| 1 | Backend Foundation (OS image, SQLite WAL, systemd) | Done | Sam (Architecture) |
-| 2 | Hardware Self-Test (board, thermal, NIC, Wi-Fi) | Done | Sam (Verification) |
-| 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | In progress | Sam (Performance) |
+| 1 | Backend Foundation (OS image, SQLite WAL, systemd) | Done | High Performance (Architecture) |
+| 2 | Hardware Self-Test (board, thermal, NIC, Wi-Fi) | Done | High Performance (Verification) |
+| 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | In progress | High Performance (Performance) |
 | 4 | Data Layer & Evidence (schema, migrations, blame trainer) | Done | All (Foundation) |
-| 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | In progress | Alex (Diagnostics) |
-| 6 | Performance & Throughput (iperf3, native Rust, 2.5GbE) | Not started | Jamie (Streaming), Sam |
-| 6.5 | Scheduling Engine (cron, bandwidth coordination) | Scaffolded | Sam (Control), Jamie (Quiet) |
-| 7 | Path Tracing & Change Detection (traceroute/MTR) | Not started | Sam, Alex |
-| 8 | Incidents & Anomaly Detection | Not started | Alex, Jamie (Answers) |
-| 9 | Test Phase (unit, integration, soak, security) | Not started | Jamie (Reliability) |
-| 10 | UX/UI (htmx web dashboard, onboarding, schedule mgmt) | Not started | Alex, Jamie (Usability) |
-| 11 | Secure Remote Access (Tailscale) | Not started | Sam, Jamie (Support) |
-| 12 | BLE Admin, iOS App, Web Bluetooth, Cellular OOB | Not started | Jamie (Setup), Sam |
-| 13 | Advanced Diagnostics (RF capture, QoS, stress tests) | Not started | Sam (Deep Dive) |
-| 14 | Future High-Performance (5GbE / 10GbE) | Deferred | Sam (Future) |
+| 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | In progress | Simple Troubleshooting (Diagnostics) |
+| 6 | Performance & Throughput (iperf3, native Rust, 2.5GbE) | Not started | Reliability (Streaming), High Performance |
+| 6.5 | Scheduling Engine (cron, bandwidth coordination) | Scaffolded | High Performance (Control), Reliability (Quiet) |
+| 7 | Path Tracing & Change Detection (traceroute/MTR) | Not started | High Performance, Simple Troubleshooting |
+| 8 | Incidents & Anomaly Detection | Not started | Simple Troubleshooting, Reliability (Answers) |
+| 9 | Test Phase (unit, integration, soak, security) | Not started | Reliability (Reliability) |
+| 10 | UX/UI (htmx web dashboard, onboarding, schedule mgmt) | Not started | Simple Troubleshooting, Reliability (Usability) |
+| 11 | Secure Remote Access (Tailscale) | Not started | High Performance, Reliability (Support) |
+| 12 | BLE Admin, iOS App, Web Bluetooth, Cellular OOB | Not started | Reliability (Setup), High Performance |
+| 13 | Advanced Diagnostics (RF capture, QoS, stress tests) | Not started | High Performance (Deep Dive) |
+| 14 | Future High-Performance (5GbE / 10GbE) | Deferred | High Performance (Future) |
 
 ---
 
@@ -112,6 +112,8 @@
 - [x] Detect CPU/GPU throttling under load (frequency drops)
 - [x] Confirm PSU stability (brownout flags) and USB bus stability
 - [x] Validate Pi 5 active cooler presence and fan operation
+- [ ] Detect Power over Ethernet (PoE+) presence (if HAT supports I2C/GPIO reporting)
+- [ ] Check for UPS presence (USB HID or I2C HAT) via standard protocols (NUT/upower)
 
 ### 2.4 Network Interface & Multi-Gig Detection
 - [x] Enumerate all network interfaces (onboard 1GbE, PCIe NICs via M.2 HAT)
@@ -399,6 +401,8 @@
 ## Phase 13: Advanced Diagnostics (Week 34+)
 
 - [ ] RF/monitor mode capture workflows (explicit opt-in only)
+- [ ] **Dual-radio simultaneous capture support** (concurrent channel monitoring)
+- [ ] **UPS graceful shutdown integration** (safe shutdown on low battery)
 - [ ] QoS detection heuristics
 - [ ] Stress test orchestrator: multi-protocol sustained load tests with strict safety limits
 - [ ] 10GbE endurance testing: 1-hour and 24-hour sustained throughput runs

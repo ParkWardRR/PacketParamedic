@@ -1,6 +1,9 @@
 //! API route definitions.
 
-use axum::{routing::{get, delete}, Json, Router};
+use axum::{
+    routing::{delete, get},
+    Json, Router,
+};
 use serde_json::{json, Value};
 
 use crate::api::state::AppState;
@@ -78,12 +81,18 @@ struct ScheduleDto {
 async fn list_schedules(State(state): State<AppState>) -> Json<Value> {
     match state.scheduler.list().await {
         Ok(list) => {
-            let dtos: Vec<ScheduleDto> = list.into_iter().map(|(name, cron, test, enabled)| {
-                ScheduleDto { name, cron, test, enabled }
-            }).collect();
+            let dtos: Vec<ScheduleDto> = list
+                .into_iter()
+                .map(|(name, cron, test, enabled)| ScheduleDto {
+                    name,
+                    cron,
+                    test,
+                    enabled,
+                })
+                .collect();
             Json(json!({ "data": dtos, "meta": { "total": dtos.len() } }))
-        },
-        Err(e) => Json(json!({ "error": e.to_string() }))
+        }
+        Err(e) => Json(json!({ "error": e.to_string() })),
     }
 }
 
@@ -93,9 +102,19 @@ async fn create_schedule(
     State(state): State<AppState>,
     Json(payload): Json<CreateSchedule>,
 ) -> (StatusCode, Json<Value>) {
-    match state.scheduler.add_schedule(&payload.name, &payload.cron, &payload.test).await {
-        Ok(_) => (StatusCode::CREATED, Json(json!({ "data": { "message": "created" } }))),
-        Err(e) => (StatusCode::BAD_REQUEST, Json(json!({ "error": e.to_string() })))
+    match state
+        .scheduler
+        .add_schedule(&payload.name, &payload.cron, &payload.test)
+        .await
+    {
+        Ok(_) => (
+            StatusCode::CREATED,
+            Json(json!({ "data": { "message": "created" } })),
+        ),
+        Err(e) => (
+            StatusCode::BAD_REQUEST,
+            Json(json!({ "error": e.to_string() })),
+        ),
     }
 }
 
@@ -104,8 +123,14 @@ async fn delete_schedule(
     axum::extract::Path(name): axum::extract::Path<String>,
 ) -> (StatusCode, Json<Value>) {
     match state.scheduler.remove(&name).await {
-        Ok(_) => (StatusCode::OK, Json(json!({ "data": { "message": "deleted" } }))),
-        Err(e) => (StatusCode::NOT_FOUND, Json(json!({ "error": e.to_string() })))
+        Ok(_) => (
+            StatusCode::OK,
+            Json(json!({ "data": { "message": "deleted" } })),
+        ),
+        Err(e) => (
+            StatusCode::NOT_FOUND,
+            Json(json!({ "error": e.to_string() })),
+        ),
     }
 }
 
@@ -115,12 +140,13 @@ async fn schedule_dry_run(
 ) -> Json<Value> {
     match state.scheduler.preview_next_runs(params.hours).await {
         Ok(preview) => {
-            let runs: Vec<Value> = preview.into_iter().map(|(time, name, test)| {
-                json!({ "time": time, "name": name, "test": test })
-            }).collect();
-             Json(json!({ "data": { "upcoming": runs } }))
-        },
-         Err(e) => Json(json!({ "error": e.to_string() }))
+            let runs: Vec<Value> = preview
+                .into_iter()
+                .map(|(time, name, test)| json!({ "time": time, "name": name, "test": test }))
+                .collect();
+            Json(json!({ "data": { "upcoming": runs } }))
+        }
+        Err(e) => Json(json!({ "error": e.to_string() })),
     }
 }
 

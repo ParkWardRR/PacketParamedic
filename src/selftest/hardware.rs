@@ -1,6 +1,6 @@
-use anyhow::{Result, Context};
-use std::fs;
 use crate::selftest::{ComponentResult, TestStatus};
+use anyhow::{Context, Result};
+use std::fs;
 use tracing::info;
 
 /// Check Raspberry Pi 5 hardware (Board & RAM)
@@ -8,7 +8,7 @@ pub fn check_board() -> Result<ComponentResult> {
     // 1. Check Model
     let model = fs::read_to_string("/sys/firmware/devicetree/base/model")
         .unwrap_or_else(|_| "Unknown Model".to_string());
-    
+
     let model = model.trim_end_matches('\0').trim();
     info!("Detected hardware model: {}", model);
 
@@ -22,9 +22,8 @@ pub fn check_board() -> Result<ComponentResult> {
     }
 
     // 2. Check RAM
-    let meminfo = fs::read_to_string("/proc/meminfo")
-        .context("Failed to read /proc/meminfo")?;
-    
+    let meminfo = fs::read_to_string("/proc/meminfo").context("Failed to read /proc/meminfo")?;
+
     // Parse MemTotal: 8192000 kB
     let mem_total_kb: u64 = meminfo
         .lines()
@@ -41,7 +40,7 @@ pub fn check_board() -> Result<ComponentResult> {
     } else {
         TestStatus::Warning
     };
-    
+
     let details = format!("Model: {}, RAM: {:.2} GB", model, mem_gb);
     let remediation = if matches!(status, TestStatus::Warning) {
         Some("Pi 5 with 4GB+ RAM is recommended for 10GbE throughput testing.".to_string())
@@ -62,7 +61,7 @@ pub fn check_cpu_features() -> Result<ComponentResult> {
     // On Pi 5 (Cortex-A76), ASIMD is always present.
     // We can verify via /proc/cpuinfo Features line containing 'asimd' or 'neon' (depending on kernel/arch)
     // Actually on aarch64 it's usually 'asimd'.
-    
+
     let cpuinfo = fs::read_to_string("/proc/cpuinfo")?;
     let has_asimd = cpuinfo.contains("asimd") || cpuinfo.contains("neon"); // 32-bit compat might say neon
 
@@ -89,7 +88,7 @@ pub fn check_gpu() -> Result<ComponentResult> {
     // Look for /dev/dri/card0 (or card1) and check if it's v3d
     let dri_path = std::path::Path::new("/dev/dri");
     if !dri_path.exists() {
-         return Ok(ComponentResult {
+        return Ok(ComponentResult {
             component: "GPU".to_string(),
             status: TestStatus::Fail,
             details: "/dev/dri does not exist. No GPU drivers loaded.".to_string(),
@@ -141,16 +140,16 @@ pub fn check_storage() -> Result<ComponentResult> {
         .args(["/", "-n", "-o", "SOURCE"])
         .output()?;
     let root_dev = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    
+
     // Identify if NVMe
     // /dev/mmcblk0p2 -> SD
     // /dev/nvme0n1p2 -> NVMe
-    
+
     let is_nvme = root_dev.contains("nvme");
     let is_sd = root_dev.contains("mmcblk");
-    
+
     if is_nvme {
-         Ok(ComponentResult {
+        Ok(ComponentResult {
             component: "Storage".to_string(),
             status: TestStatus::Pass,
             details: format!("Root FS on NVMe ({})", root_dev),
@@ -164,7 +163,7 @@ pub fn check_storage() -> Result<ComponentResult> {
             remediation: Some("NVMe SSD recommended for high-throughput logging.".to_string()),
         })
     } else {
-         Ok(ComponentResult {
+        Ok(ComponentResult {
             component: "Storage".to_string(),
             status: TestStatus::Warning,
             details: format!("Unknown storage device: {}", root_dev),

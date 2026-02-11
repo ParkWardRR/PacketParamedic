@@ -1,4 +1,4 @@
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use std::process::Command;
 
 /// Check available disk space/inodes on /var/lib/packetparamedic
@@ -23,7 +23,9 @@ pub fn check_disk_space(path: &str) -> Result<u64> {
     }
 
     let avail_str = lines.last().unwrap().trim();
-    let avail = avail_str.parse::<u64>().context("Invalid disk space value")?;
+    let avail = avail_str
+        .parse::<u64>()
+        .context("Invalid disk space value")?;
     Ok(avail)
 }
 

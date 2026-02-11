@@ -9,7 +9,9 @@ fn test_cli_help() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicates::str::contains("Appliance-grade network diagnostics"));
+        .stdout(predicates::str::contains(
+            "Appliance-grade network diagnostics",
+        ));
 }
 
 #[test]

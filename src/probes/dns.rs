@@ -11,8 +11,8 @@ pub struct DnsProbe {
 impl Default for DnsProbe {
     fn default() -> Self {
         // Use system config (from /etc/resolv.conf)
-        let resolver = TokioAsyncResolver::tokio_from_system_conf()
-            .expect("Failed to create DNS resolver");
+        let resolver =
+            TokioAsyncResolver::tokio_from_system_conf().expect("Failed to create DNS resolver");
         Self { resolver }
     }
 }
@@ -21,7 +21,7 @@ impl Default for DnsProbe {
 impl Probe for DnsProbe {
     async fn run(&self, target: &str, _timeout: Duration) -> Result<Measurement> {
         let start = Instant::now();
-        
+
         let result = self.resolver.lookup_ip(target).await;
 
         let duration = start.elapsed();
@@ -32,7 +32,7 @@ impl Probe for DnsProbe {
                 // If we got IP addresses, success.
                 // We don't necessarily care about the IPs themselves for availability, just that it resolved.
                 let success = lookup.iter().count() > 0;
-                
+
                 Ok(Measurement {
                     probe_type: ProbeType::Dns,
                     target: target.to_string(),
@@ -41,7 +41,7 @@ impl Probe for DnsProbe {
                     success,
                     timestamp,
                 })
-            },
+            }
             Err(_) => {
                 // Resolution failed (NXDOMAIN or Timeout)
                 Ok(Measurement {

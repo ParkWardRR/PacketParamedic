@@ -4,6 +4,7 @@
 //! throughput testing, anomaly detection, scheduling, and evidence collection.
 
 pub mod accel;
+pub mod analysis;
 pub mod api;
 pub mod detect;
 pub mod evidence;
@@ -11,9 +12,8 @@ pub mod probes;
 pub mod scheduler;
 pub mod selftest;
 pub mod storage;
-pub mod throughput;
 pub mod system;
-pub mod analysis;
+pub mod throughput;
 
 use anyhow::Result;
 
@@ -25,7 +25,7 @@ pub async fn serve(bind: &str, db_path: &str) -> Result<()> {
 
     // 2. Initialize Scheduler
     let scheduler = scheduler::Scheduler::new(pool.clone());
-    
+
     // 3. Start Scheduler Engine (background task)
     let scheduler_engine = scheduler.clone();
     tokio::spawn(async move {
@@ -34,12 +34,12 @@ pub async fn serve(bind: &str, db_path: &str) -> Result<()> {
 
     // 4. Start API Server
     let addr: std::net::SocketAddr = bind.parse()?;
-    
+
     let app_state = api::state::AppState {
         pool: pool.clone(),
         scheduler: scheduler.clone(),
     };
-    
+
     let app = api::router(app_state);
 
     tracing::info!(%addr, "PacketParamedic listening");

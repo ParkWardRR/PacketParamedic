@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use tracing::{info, warn};
 
@@ -23,19 +23,19 @@ pub struct BlameFeatures {
     pub gw_rtt_p50_ms: f64,
     pub gw_rtt_p95_ms: f64,
     pub gw_loss_pct: f64,
-    
+
     pub wan_rtt_p50_ms: f64,
     pub wan_rtt_p95_ms: f64,
     pub wan_loss_pct: f64,
-    
+
     pub delta_rtt_p50_ms: f64,
-    
+
     pub dns_ms_p50: f64,
     pub dns_fail_rate: f64,
-    
+
     pub http_fail_rate: f64,
     pub tcp_fail_rate: f64,
-    
+
     pub wan_down_mbps: f64,
     pub wan_up_mbps: f64,
 }
@@ -43,12 +43,19 @@ pub struct BlameFeatures {
 impl BlameFeatures {
     pub fn to_vector(&self) -> Vec<f64> {
         vec![
-            self.gw_rtt_p50_ms, self.gw_rtt_p95_ms, self.gw_loss_pct,
-            self.wan_rtt_p50_ms, self.wan_rtt_p95_ms, self.wan_loss_pct,
+            self.gw_rtt_p50_ms,
+            self.gw_rtt_p95_ms,
+            self.gw_loss_pct,
+            self.wan_rtt_p50_ms,
+            self.wan_rtt_p95_ms,
+            self.wan_loss_pct,
             self.delta_rtt_p50_ms,
-            self.dns_ms_p50, self.dns_fail_rate,
-            self.http_fail_rate, self.tcp_fail_rate,
-            self.wan_down_mbps, self.wan_up_mbps,
+            self.dns_ms_p50,
+            self.dns_fail_rate,
+            self.http_fail_rate,
+            self.tcp_fail_rate,
+            self.wan_down_mbps,
+            self.wan_up_mbps,
         ]
     }
 }
@@ -75,7 +82,7 @@ impl LogisticModel {
         } else {
             warn!("Model file not found at {}. Using embedded default.", path);
         }
-        
+
         serde_json::from_str(DEFAULT_MODEL_JSON).expect("Embedded default model is invalid JSON")
     }
 
@@ -83,7 +90,11 @@ impl LogisticModel {
     pub fn predict(&self, features: &BlameFeatures) -> Result<Prediction> {
         let raw = features.to_vector();
         if raw.len() != self.means.len() {
-            anyhow::bail!("Feature vector length mismatch. Expected {}, got {}", self.means.len(), raw.len());
+            anyhow::bail!(
+                "Feature vector length mismatch. Expected {}, got {}",
+                self.means.len(),
+                raw.len()
+            );
         }
 
         // 1. Standardize
@@ -162,27 +173,27 @@ mod tests {
             gw_rtt_p50_ms: 2.0,
             gw_rtt_p95_ms: 3.0,
             gw_loss_pct: 0.0,
-            
+
             wan_rtt_p50_ms: 100.0,
             wan_rtt_p95_ms: 150.0,
             wan_loss_pct: 5.0,
-            
+
             delta_rtt_p50_ms: 98.0,
-            
+
             dns_ms_p50: 50.0,
             dns_fail_rate: 0.05,
-            
+
             http_fail_rate: 0.05,
             tcp_fail_rate: 0.0,
-            
+
             wan_down_mbps: 100.0,
             wan_up_mbps: 10.0,
         };
 
         let prediction = model.predict(&features).unwrap();
-        
+
         println!("Prediction: {:?}", prediction);
-        
+
         assert_eq!(prediction.verdict, "isp");
         assert!(prediction.probabilities.get("isp").unwrap() > &0.9);
     }

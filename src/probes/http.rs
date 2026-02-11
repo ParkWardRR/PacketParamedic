@@ -1,7 +1,7 @@
 use super::{Measurement, Probe, ProbeType};
 use anyhow::Result;
-use std::time::{Duration, Instant, SystemTime};
 use reqwest::Client;
+use std::time::{Duration, Instant, SystemTime};
 
 /// HTTP Probe checking status code and TTFB
 pub struct HttpProbe {
@@ -37,11 +37,11 @@ impl Probe for HttpProbe {
             Ok(repl) => {
                 let success = repl.status().is_success();
                 let _status_code = repl.status().as_u16();
-                
+
                 // If success, value is latency. If 404/500, value is negative status code convention?
                 // Or we stick to latency but mark success=false.
                 // Let's stick to: value = latency, success = 200..299
-                
+
                 Ok(Measurement {
                     probe_type: ProbeType::Http,
                     target: target.to_string(),
@@ -50,17 +50,15 @@ impl Probe for HttpProbe {
                     success,
                     timestamp,
                 })
-            },
-            Err(_) => {
-                Ok(Measurement {
-                    probe_type: ProbeType::Http,
-                    target: target.to_string(),
-                    value: -1.0,
-                    unit: "ms".to_string(),
-                    success: false,
-                    timestamp,
-                })
             }
+            Err(_) => Ok(Measurement {
+                probe_type: ProbeType::Http,
+                target: target.to_string(),
+                value: -1.0,
+                unit: "ms".to_string(),
+                success: false,
+                timestamp,
+            }),
         }
     }
 }

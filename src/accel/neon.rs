@@ -6,7 +6,12 @@ use std::arch::aarch64::*;
 /// Computes Min, Max, Sum, SumSq in parallel using 128-bit vector registers.
 pub fn stats_f32(data: &[f32]) -> Result<StatsOutput> {
     if data.is_empty() {
-        return Ok(StatsOutput { min: 0.0, max: 0.0, mean: 0.0, variance: 0.0 });
+        return Ok(StatsOutput {
+            min: 0.0,
+            max: 0.0,
+            mean: 0.0,
+            variance: 0.0,
+        });
     }
 
     let len = data.len();
@@ -55,8 +60,12 @@ pub fn stats_f32(data: &[f32]) -> Result<StatsOutput> {
 
         while i < len {
             let val = *data.get_unchecked(i);
-            if val < rem_min { rem_min = val; }
-            if val > rem_max { rem_max = val; }
+            if val < rem_min {
+                rem_min = val;
+            }
+            if val > rem_max {
+                rem_max = val;
+            }
             rem_sum += val;
             rem_sum_sq += val * val;
             i += 1;
@@ -85,7 +94,7 @@ mod tests {
         let input = vec![1.0, 2.0, 3.0, 4.0, 5.0];
         let neon_res = stats_f32(&input).unwrap();
         let scalar_res = cpu::stats_f32(&input).unwrap();
-        
+
         // Assert equality (strict for simple ints, but floats might drift)
         assert_eq!(neon_res, scalar_res);
     }
@@ -99,8 +108,18 @@ mod tests {
 
         // Check closeness
         let epsilon = 1e-4;
-        assert!((neon_res.mean - scalar_res.mean).abs() < epsilon, "Mean mismatch: {} vs {}", neon_res.mean, scalar_res.mean);
-        assert!((neon_res.variance - scalar_res.variance).abs() < epsilon, "Var mismatch: {} vs {}", neon_res.variance, scalar_res.variance);
+        assert!(
+            (neon_res.mean - scalar_res.mean).abs() < epsilon,
+            "Mean mismatch: {} vs {}",
+            neon_res.mean,
+            scalar_res.mean
+        );
+        assert!(
+            (neon_res.variance - scalar_res.variance).abs() < epsilon,
+            "Var mismatch: {} vs {}",
+            neon_res.variance,
+            scalar_res.variance
+        );
     }
 
     #[test]
@@ -109,7 +128,7 @@ mod tests {
         let input: Vec<f32> = (0..1001).map(|i| (i % 100) as f32).collect();
         let neon_res = stats_f32(&input).unwrap();
         let scalar_res = cpu::stats_f32(&input).unwrap();
-        
+
         let epsilon = 1e-5;
         assert!((neon_res.mean - scalar_res.mean).abs() < epsilon);
     }

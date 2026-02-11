@@ -125,7 +125,7 @@ async fn main() -> Result<()> {
                 println!("{}", json_output);
             } else {
                 println!("\nPacketParamedic Hardware Self-Test");
-                println!("{:<25} | {:<10} | {}", "Component", "Status", "Details");
+                println!("{:<25} | {:<10} | Details", "Component", "Status");
                 println!("{:-<25}-|-{:-<10}-|-{:-<40}", "", "", "");
                 for res in &report.results {
                     let status_str = match res.status {
@@ -134,14 +134,21 @@ async fn main() -> Result<()> {
                         packetparamedic::selftest::TestStatus::Warning => "WARN",
                         packetparamedic::selftest::TestStatus::Skipped => "SKIP",
                     };
-                    println!("{:<25} | {:<10} | {}", res.component, status_str, res.details);
+                    println!(
+                        "{:<25} | {:<10} | {}",
+                        res.component, status_str, res.details
+                    );
                     if let Some(rem) = &res.remediation {
-                         println!("{:<25} | {:<10} |   -> Recommendation: {}", "", "", rem);
+                        println!("{:<25} | {:<10} |   -> Recommendation: {}", "", "", rem);
                     }
                 }
                 println!("\n=== Persona Readiness ===");
                 for (persona, compatible) in report.compatibility {
-                    let check = if compatible { "✅ READY" } else { "❌ NOT READY" };
+                    let check = if compatible {
+                        "✅ READY"
+                    } else {
+                        "❌ NOT READY"
+                    };
                     println!("{:<25} : {}", persona, check);
                 }
                 println!("(See BUYERS_GUIDE.md for details on requirements)");
@@ -152,7 +159,7 @@ async fn main() -> Result<()> {
             tracing::info!("Running blame check");
             // CLI immediate mode
             let report = packetparamedic::probes::run_blame_check().await?;
-            
+
             println!("\n=== PacketParamedic Diagnostic Report ===");
             println!("Verdict:    {}", report.verdict);
             println!("Confidence: {}%", report.confidence);
@@ -175,14 +182,14 @@ async fn main() -> Result<()> {
         Commands::Schedule { action } => {
             let pool = packetparamedic::storage::open_pool("data/packetparamedic.db")?;
             let scheduler = packetparamedic::scheduler::Scheduler::new(pool);
-            
+
             match action {
                 ScheduleAction::List => {
                     let list = scheduler.list().await?;
                     if list.is_empty() {
                         println!("No schedules found.");
                     } else {
-                        println!("{:<20} | {:<15} | {:<10} | {}", "Name", "Cron", "Test", "Enabled");
+                        println!("{:<20} | {:<15} | {:<10} | Enabled", "Name", "Cron", "Test");
                         println!("{:-<20}-|-{:-<15}-|-{:-<10}-|-{:-<7}", "", "", "", "");
                         for (name, cron, test, enabled) in list {
                             println!("{:<20} | {:<15} | {:<10} | {}", name, cron, test, enabled);
@@ -200,7 +207,7 @@ async fn main() -> Result<()> {
                 ScheduleAction::DryRun { hours } => {
                     let preview = scheduler.preview_next_runs(hours).await?;
                     if preview.is_empty() {
-                         println!("No runs scheduled in next {} hours.", hours);
+                        println!("No runs scheduled in next {} hours.", hours);
                     } else {
                         println!("Upcoming runs (next {} hours):", hours);
                         for (time, name, test) in preview {
@@ -209,7 +216,7 @@ async fn main() -> Result<()> {
                     }
                 }
             }
-        },
+        }
         Commands::ExportBundle { output } => {
             tracing::info!(%output, "Exporting support bundle");
             packetparamedic::evidence::export_bundle(&output).await?;
