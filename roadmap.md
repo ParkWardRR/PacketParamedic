@@ -39,7 +39,7 @@
 | 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | In progress | High Performance (Performance) |
 | 4 | Data Layer & Evidence (schema, migrations, blame trainer) | Done | All (Foundation) |
 | 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | In progress | Simple Troubleshooting (Diagnostics) |
-| 6 | Performance & Throughput (iperf3, native Rust, 2.5GbE) | Not started | Reliability (Streaming), High Performance |
+| 6 | Performance & Throughput (iperf3, native Rust, 1GbE) | Not started | Reliability (Streaming), High Performance |
 | 6.5 | Scheduling Engine (cron, bandwidth coordination) | Scaffolded | High Performance (Control), Reliability (Quiet) |
 | 7 | Path Tracing & Change Detection (traceroute/MTR) | Not started | High Performance, Simple Troubleshooting |
 | 8 | Incidents & Anomaly Detection | Not started | Simple Troubleshooting, Reliability (Answers) |
@@ -48,7 +48,7 @@
 | 11 | Secure Remote Access (Tailscale) | Not started | High Performance, Reliability (Support) |
 | 12 | BLE Admin, iOS App, Web Bluetooth, Cellular OOB | Not started | Reliability (Setup), High Performance |
 | 13 | Advanced Diagnostics (RF capture, QoS, stress tests) | Not started | High Performance (Deep Dive) |
-| 14 | Future High-Performance (5GbE / 10GbE) | Deferred | High Performance (Future) |
+| 14 | Future High-Performance (2.5GbE / 5GbE / 10GbE) | Deferred | High Performance (Future) |
 
 ---
 
@@ -215,19 +215,19 @@
 - [ ] Multi-provider speed testing (scheduled + on-demand)
 - [ ] iperf3 wrapper for high-throughput testing
 - [ ] Native Rust throughput engine as fallback
-- [ ] Support specific speed limits: 250Mbps, 500Mbps, 750Mbps, 1Gbps, 2.5Gbps
-- [ ] Auto-scale TCP window sizes for 2.5Gbps targets
+- [ ] Support specific speed limits: 250Mbps, 500Mbps, 750Mbps, 1Gbps
+- [ ] Auto-scale TCP window sizes for 1Gbps targets
 
-### 6.2 2.5GbE LAN Stress Testing
+### 6.2 1GbE LAN Stress Testing
 - [ ] LAN peer discovery for iperf3 server/client pairing
 - [ ] Sustained throughput test (TCP: 30s, 60s, 300s)
 - [ ] UDP flood test with configurable bandwidth targets
-- [ ] Verify modest hardware (Pi 5) can saturate 2.5Gbps line rate
+- [ ] Verify hardware can saturate 1Gbps line rate
 
-### 6.3 WAN Bandwidth Testing (up to 2.5Gbps)
+### 6.3 WAN Bandwidth Testing (up to 1Gbps)
 - [ ] WAN throughput measurement to configurable remote endpoints
-- [ ] Tier validation: "Am I getting my 250/500/1000/2500 Mbps?"
-- [ ] Link saturation tests for 1Gbps+ connections
+- [ ] Tier validation: "Am I getting my 250/500/1000 Mbps?"
+- [ ] Link saturation tests for 1Gbps connections
 
 ### 6.4 Quality Metrics
 - [ ] Jitter + loss tracking
@@ -236,8 +236,8 @@
 
 ### Acceptance
 - [ ] Can distinguish: "bandwidth OK, latency/jitter bad" vs "true throughput issue"
-- [ ] LAN stress test consistently hits ~2.35Gbps on 2.5GbE hardware
-- [ ] WAN bandwidth test validates ISP tiers 250Mbps through 2.5Gbps
+- [ ] LAN stress test consistently hits ~940Mbps on 1GbE hardware
+- [ ] WAN bandwidth test validates ISP tiers 250Mbps through 1Gbps
 
 ---
 
@@ -429,12 +429,14 @@
 
 ---
 
-## Phase 14: Future High-Performance (5GbE / 10GbE)
-> Deferred to focus on mass-market 1Gbps--2.5Gbps tiers first.
+## Phase 14: Future High-Performance (2.5GbE / 5GbE / 10GbE)
+> Deferred to focus on mass-market 1Gbps tiers first.
 
-- [ ] 10GbE PCIe NIC support (Aquantia/Intel driver validation on Pi 5)
-- [ ] 5GbE / 10GbE throughput tuning (IRQ affinity, jumbo frames)
-- [ ] Thermal management for sustained 10Gbps flows on Pi 5
+- [ ] 2.5GbE / 10GbE PCIe NIC support (Intel I225/I226, Aquantia AQC107)
+- [ ] Support specific speed limits: 2.5Gbps, 5Gbps, 10Gbps
+- [ ] Auto-scale TCP window sizes for 2.5Gbps+ targets
+- [ ] 2.5GbE / 10GbE throughput tuning (IRQ affinity, jumbo frames)
+- [ ] Thermal management for sustained high-bandwidth flows on Pi 5
 
 ---
 

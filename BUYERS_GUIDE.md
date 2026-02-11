@@ -50,20 +50,20 @@ This use case needs the minimum viable setup to get the software running and per
 ---
 
 ## 3. High Performance
-*“I want to saturate my 2.5GbE uplink and feed metrics to Prometheus.”*
+*“I want to saturate my Gigabit uplink and feed metrics to Prometheus.”*
 
-This use case uses PacketParamedic as a high-performance probe. The built-in 1GbE port is a bottleneck. You need to tap into the Pi 5's PCIe lane to add a faster NIC.
+This use case uses PacketParamedic as a high-performance probe. The built-in 1GbE port is perfect for the current feature set (Phase 6), but you can add a faster NIC now to be ready for future multi-gigabit updates (Phase 14).
 
 **Recommended Bill of Materials:**
 *   **Raspberry Pi 5 (8GB)**: Extra RAM for large in-memory buffers during high-throughput tests.
-*   **Network Upgrade**: **PCIe Network HAT (Pineberry Pi HatNET! or similar)**.
-    *   Option A: 2.5GbE (Intel I225/I226 chipset).
-    *   Option B: 10GbE (Aquantia AQC107 chipset) - *Note: Planned for future releases (Phase 14). Not currently supported in the codebase. Requires external power or careful thermal management.*
+*   **Network Upgrade (Future Proofing)**: **PCIe Network HAT (Pineberry Pi HatNET! or similar)**.
+    *   Option A: 2.5GbE (Intel I225/I226 chipset) - *Note: Full 2.5Gbps throughput planned for Phase 14.*
+    *   Option B: 10GbE (Aquantia AQC107 chipset) - *Note: Planned for Phase 14. Requires external power or careful thermal management.*
 *   **Storage**: High-end NVMe SSD (Samsung PM991a or Sabrent Rocket 2230) 256GB+.
 *   **Cooling**: Active cooler is mandatory. The PCIe NIC + NVMe + CPU load will generate heat.
 *   **Switching**: Must be connected to a Multi-Gig (2.5G/10G) capable provider switch or router port.
 
-**Why this works:** This unlocks the "Phase 6" throughput capabilities, allowing you to validate ISP speeds beyond 1Gbps and analyze bufferbloat at line rate.
+**Why this works:** This unlocks the throughput capabilities to validate ISP speeds up to 1Gbps today, with a hardware path to 2.5Gbps+ in the future.
 
 ---
 

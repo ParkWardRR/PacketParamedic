@@ -10,6 +10,7 @@
     - Added **Dual-radio simultaneous capture** to Phase 13 (Advanced Diagnostics).
     - Added **PoE+ presence detection** and **UPS monitoring** to Phase 2.3 (Hardware Self-Test).
     - Added **UPS graceful shutdown** to Phase 13.
+    - **Strategic Pivot:** Moved 2.5GbE support from Phase 6 to Phase 14 (Future High-Performance) to focus Phase 6 entirely on optimizing 1GbE throughput and reliability. Updated `BUYERS_GUIDE.md` and `README.md` to reflect this "1GbE First" strategy while keeping 2.5GbE/10GbE as future-proofing options.
 - **Code Maintenance:**
     - Updated `src/selftest/mod.rs` to use new Use Case strings for compatibility reporting.
     - Fixed `clippy::manual_flatten` lint in `src/analysis/aggregator.rs`.

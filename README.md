@@ -60,7 +60,7 @@ PacketParamedic is designed for three specific use cases (see [personas.md](pers
 
 1.  **Simple Troubleshooting:** You want a solution, not a second job. You just want to know *why* Netflix is buffering without becoming a full-time network engineer. You want a simple "It's the ISP / It's me" answer.
 2.  **Reliability & Uptime:** You prioritize reliability for work and family streaming. You don't want a dashboard; you want a "credibility box" that proves to the ISP that the issue is on their end, not yours.
-3.  **High Performance:** You want observability, not just vibes. You need raw metrics, API contracts, evidence export, and a dedicated 24/7 hardware probe for your 2.5GbE+ uplink.
+3.  **High Performance:** You want observability, not just vibes. You need raw metrics, API contracts, evidence export, and a dedicated 24/7 hardware probe for your Gigabit+ uplink.
 
 ---
 
