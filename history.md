@@ -1,5 +1,21 @@
 # Project History
 
+## 2026-02-10
+- **Documentation Overhaul Refinement:**
+    - Removed all persona names (Alex, Jamie, Sam) from `README.md`, `BUYERS_GUIDE.md`, `personas.md`, `roadmap.md`, and `src/selftest/mod.rs`.
+    - Replaced personas with strictly functional use cases: **Simple Troubleshooting**, **Reliability & Uptime**, **High Performance**.
+    - Simplified "Simple Troubleshooting" profile in `personas.md` and `README.md` to be more inclusive (removed "Home Server Energy" and "proud of home server" references).
+    - Updated `BUYERS_GUIDE.md` to clarify that 10GbE (Option B) is a future Phase 14 item and not currently supported in the codebase.
+- **Roadmap Updates (`roadmap.md`):**
+    - Added **Dual-radio simultaneous capture** to Phase 13 (Advanced Diagnostics).
+    - Added **PoE+ presence detection** and **UPS monitoring** to Phase 2.3 (Hardware Self-Test).
+    - Added **UPS graceful shutdown** to Phase 13.
+- **Code Maintenance:**
+    - Updated `src/selftest/mod.rs` to use new Use Case strings for compatibility reporting.
+    - Fixed `clippy::manual_flatten` lint in `src/analysis/aggregator.rs`.
+    - Added `# Safety` documentation to `unsafe` functions in `src/accel/vulkan.rs` and `src/accel/gles.rs` to satisfy strict CI requirements.
+    - Ran `cargo clean` and verified clean build state.
+
 ## 2026-02-09
 - Initialized development session.
 - Verified repository structure and initial scaffolding.
