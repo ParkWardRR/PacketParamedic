@@ -14,8 +14,8 @@ This document outlines the primary user personas for **PacketParamedic**. Unders
 
 ## Use Case 1: Simple Troubleshooting
 
-**Profile**: A curious user, proud of running a home server, but still guesses wrong about “Wi‑Fi vs ISP vs website.”  
-**Home setup** (typical): consumer router + unmanaged switch + a small always-on box; willing to add a Pi if it’s “one more little thing”.
+**Profile**: A user who wants better internet but isn't a networking expert.  
+**Home setup** (typical): Standard router + Wi-Fi; willing to plug in one small box (the Pi 5) if it solves the “why is it slow?” mystery.
 
 ### What “pain” triggers adoption
 The trigger is the recurring pattern: “Netflix buffers + Zoom glitches, but speedtest.net sometimes looks fine,” so the household debates whether to reboot the router, call the ISP, or blame the service. PacketParamedic’s pitch lands because it’s explicitly built to answer that question by running multiple probe types over time and producing a blame verdict rather than a single snapshot test.

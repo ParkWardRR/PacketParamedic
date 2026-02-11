@@ -58,7 +58,7 @@ We have specific hardware recommendations for each use case. **[👉 Read the Bu
 
 PacketParamedic is designed for three specific use cases (see [personas.md](personas.md) for details, and [BUYERS_GUIDE.md](BUYERS_GUIDE.md) for hardware advice):
 
-1.  **Simple Troubleshooting:** You have "Home Server Energy." You just want to know *why* Netflix is buffering without becoming a full-time network engineer. You want a simple "It's the ISP / It's me" answer.
+1.  **Simple Troubleshooting:** You want a solution, not a second job. You just want to know *why* Netflix is buffering without becoming a full-time network engineer. You want a simple "It's the ISP / It's me" answer.
 2.  **Reliability & Uptime:** You prioritize reliability for work and family streaming. You don't want a dashboard; you want a "credibility box" that proves to the ISP that the issue is on their end, not yours.
 3.  **High Performance:** You want observability, not just vibes. You need raw metrics, API contracts, evidence export, and a dedicated 24/7 hardware probe for your 2.5GbE+ uplink.
 
