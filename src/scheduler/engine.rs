@@ -93,6 +93,20 @@ pub async fn run_scheduler_loop(scheduler: Scheduler) {
                             "speed" => {
                                 // "speed:wan" or "speed:lan"
                                 let mode = if target == "lan" { "lan" } else { "wan" };
+                                
+                                info!(schedule=%name, "Waiting for bandwidth permit...");
+                                let sem = scheduler.get_bandwidth_permit();
+                                let _permit = match sem.acquire().await {
+                                    Ok(p) => {
+                                        info!(schedule=%name, "Bandwidth permit acquired");
+                                        p
+                                    },
+                                    Err(e) => {
+                                        error!(schedule=%name, "Failed to acquire bandwidth permit: {}", e);
+                                        return;
+                                    }
+                                };
+
                                 // Default params for scheduled test: 10s, 1 stream (lightweight)
                                 match crate::throughput::run_test(mode, None, "10s", 1).await {
                                     Ok(_) => {

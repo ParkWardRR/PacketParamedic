@@ -71,7 +71,7 @@ pub async fn run_test(mode: &str, peer: Option<&str>, duration: &str, streams: u
 fn find_public_server() -> &'static str {
     // List of public iperf3 servers (best effort)
     // In a real pro app, we'd ping them for lowest latency first.
-    let servers = [
+    let _servers = [
         "speedtest.wtnet.de",
         "ping.online.net",
         "iperf.biznetnetworks.com",
@@ -83,11 +83,28 @@ fn find_public_server() -> &'static str {
     "ping.online.net"
 }
 
+fn validate_target(target: &str) -> Result<()> {
+    if target.is_empty() {
+        anyhow::bail!("Target cannot be empty");
+    }
+    if target.starts_with('-') {
+        anyhow::bail!("Target cannot start with hyphen (security)");
+    }
+    // Allow alphanumeric, dot, hyphen, colon (IPv6)
+    if target.chars().any(|c| !c.is_alphanumeric() && c != '.' && c != '-' && c != ':') {
+        anyhow::bail!("Target contains invalid characters");
+    }
+    Ok(())
+}
+
 fn run_iperf_direction(target: &str, duration: u32, streams: u32, reverse: bool) -> Result<()> {
+    validate_target(target)?;
+
     let dir_str = if reverse { "DOWNLOAD" } else { "UPLOAD" };
     println!("Starting {} test...", dir_str);
 
-    let mut args = vec![
+    // Build iperf3 arguments
+    let mut iperf_args = vec![
         "-c".to_string(),
         target.to_string(),
         "-J".to_string(),
@@ -97,12 +114,19 @@ fn run_iperf_direction(target: &str, duration: u32, streams: u32, reverse: bool)
         streams.to_string(),
     ];
     if reverse {
-        args.push("-R".to_string());
+        iperf_args.push("-R".to_string());
     }
 
-    let output = std::process::Command::new("iperf3")
-        .args(&args)
-        .output();
+    // Optimization: Pin to cores 2,3 on Pi 5 (leave 0,1 for OS/API)
+    // Pi 5 guarantees 'taskset' availability (util-linux).
+    // We strictly enforce this isolation strategy.
+    let mut cmd = std::process::Command::new("taskset");
+    cmd.arg("-c");
+    cmd.arg("2,3");
+    cmd.arg("iperf3");
+    cmd.args(&iperf_args);
+
+    let output = cmd.output();
 
     match output {
         Ok(out) => {
@@ -110,14 +134,6 @@ fn run_iperf_direction(target: &str, duration: u32, streams: u32, reverse: bool)
                 let json_str = String::from_utf8_lossy(&out.stdout);
                 match crate::throughput::iperf::parse_output(&json_str) {
                     Ok(res) => {
-                        // For reverse (Download), sum_received (by client) is correct?
-                        // iperf3 JSON:
-                        // Normal: sum_sent (sender=client), sum_received (receiver=server).
-                        // Reverse: sum_sent (sender=server), sum_received (receiver=client).
-                        // So sum_received is always what the "receiver" got.
-                        // But wait, iperf3 structure:
-                        // end.sum_received: always valid?
-                        // Let's use sum_received.bits_per_second.
                         let mbps = res.end.sum_received.bits_per_second / 1_000_000.0;
                          println!("  -> {}: {:.2} Mbps", dir_str, mbps);
                     },

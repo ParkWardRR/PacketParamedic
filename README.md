@@ -48,6 +48,14 @@ Why? Because the Pi 5 is the first board with the PCIe bandwidth (for 10GbE), NE
 ### Which Pi 5 do you need?
 We have specific hardware recommendations for each use case. **[👉 Read the Buyer's Guide](BUYERS_GUIDE.md)** to see exactly what to buy.
 
+### optimized for Silicon
+We don't just "run" on Pi 5. We exploit it.
+*   **CPU Pinning:** Throughput tests are isolated to Cores 2-3 to prevent API starvation.
+*   **NEON Intrinsics:** Statistical analysis uses hand-optimized SIMD assembly (no generic fallbacks).
+*   **Vulkan Compute:** Massive log analysis happens on the VideoCore VII GPU.
+*   **[👉 Read the Hardware Optimization Strategy](docs/HARDWARE_OPTIMIZATION.md)** for deep technical details.
+
+
 - **Simple Troubleshooting**: Can start with just a Pi 5 and SD card.
 - **Reliability & Uptime**: Needs reliability (NVMe SSD) so the "evidence locker" never fails.
 - **High Performance**: Needs raw speed (PCIe 2.5G/10G HAT) to saturate uplink, or dual Wi-Fi radios for concurrent RF analysis.

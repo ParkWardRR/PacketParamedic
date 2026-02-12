@@ -3,20 +3,44 @@ use anyhow::{Context, Result};
 use chrono::Utc;
 use cron::Schedule as CronSchedule;
 use std::str::FromStr;
+use std::sync::Arc;
+use tokio::sync::Semaphore;
 
 /// A scheduler that persists tasks in SQLite and checks for runnable tasks.
 #[derive(Clone)]
 pub struct Scheduler {
     pool: Pool,
+    bandwidth_permit: Arc<Semaphore>,
 }
 
 impl Scheduler {
     pub fn new(pool: Pool) -> Self {
-        Self { pool }
+        Self {
+            pool,
+            bandwidth_permit: Arc::new(Semaphore::new(1)), // Only 1 bandwidth-heavy test at a time
+        }
     }
 
     pub fn get_pool(&self) -> &Pool {
         &self.pool
+    }
+
+    pub fn get_bandwidth_permit(&self) -> Arc<Semaphore> {
+        self.bandwidth_permit.clone()
+    }
+
+    /// Ensure default schedules exist (idempotent).
+    pub async fn ensure_defaults(&self) -> Result<()> {
+        let defaults = crate::scheduler::profiles::defaults();
+        for sched in defaults {
+            // Attempt to add. If it exists (name constraint), we ignore error.
+            // Ideally we check specific error, but for now ignore any error on defaults.
+            match self.add_schedule(&sched.name, &sched.cron_expr, &sched.test_type).await {
+                Ok(_) => tracing::info!("Initialized default schedule: {}", sched.name),
+                Err(e) => tracing::debug!("Default schedule '{}' skipped (exists or invalid): {}", sched.name, e),
+            }
+        }
+        Ok(())
     }
 
     /// Add a new schedule to the database

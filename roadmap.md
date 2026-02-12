@@ -52,6 +52,22 @@
 
 ---
 
+## Hardware Strategy & Limits ⚡️
+
+**PacketParamedic is optimized for the BCM2712 SoC (Pi 5).**
+See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full technical breakdown.
+
+### Solved Optimizations (Now)
+*   **Core Isolation:** Network measurements are pinned to CPU cores 2-3 to avoid interfering with the API/Scheduler on cores 0-1.
+*   **Vectorized Math:** Statistical analysis uses 128-bit NEON intrinsics, processing 4x float32 per cycle.
+*   **GPU Compute:** Vulkan 1.2 compute shaders offload heavy log analysis from the CPU.
+
+### Scaling Limits (Future)
+*   **10GbE Bottleneck:** The Pi 5's PCIe Gen 2.0 x1 lane caps real-world TCP throughput at ~4.0 Gbps. For true 10Gbps support (Phase 14), we will evaluate migration to more capable hardware platforms (e.g., RK3588, x86 N100) rather than relying on experimental Pi overclocks.
+*   **Encryption:** OpenSSL/BoringSSL hardware acceleration is used for SSH/HTTPS to minimize CPU overhead during secure transfers.
+
+---
+
 ## Phase 0: Project Definition (1--3 days)
 
 ### Goals

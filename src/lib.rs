@@ -25,6 +25,7 @@ pub async fn serve(bind: &str, db_path: &str) -> Result<()> {
 
     // 2. Initialize Scheduler
     let scheduler = scheduler::Scheduler::new(pool.clone());
+    scheduler.ensure_defaults().await?;
 
     // 3. Start Scheduler Engine (background task)
     let scheduler_engine = scheduler.clone();

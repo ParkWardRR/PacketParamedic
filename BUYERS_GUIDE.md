@@ -2,6 +2,8 @@
 
 This guide helps you choose the right hardware for your PacketParamedic appliance based on which [persona](personas.md) matches your needs.
 
+> **Why Pi 5 Only?** We rely on specific silicon features (Cortex-A76, VideoCore VII, PCIe). See our [Hardware Optimization Strategy](docs/HARDWARE_OPTIMIZATION.md) for details.
+
 ---
 
 ## Quick Summary Table

@@ -36,10 +36,15 @@
         - Fixed cron expression parsing to support standard 5-field syntax (auto-normalization to Quartz 6-field).
         - Verified CRUD operations and persistence via integration tests.
 - **Quality Assurance:**
-    - Created comprehensive `TESTING.md`.
+    - Created comprehensive `TESTING.md` with Appliance Validation Checklist (Installation, Hardware, Throughput, Security, Data Integrity, Wi-Fi).
     - Implemented and ran `tests/validate_deployment.py` against live appliance.
     - Verified 100% pass rate for Health, Self-Test, Network, Schedule, and CLI smoke tests.
     - Updated `README.md` and `ROADMAP.md` to "Done" status for key phases.
+- **Phase 6 & 6.5 Max Optimization:**
+    - **Security:** Hardened `iperf3` execution with input sanitization (`validate_target`).
+    - **Scalability:** Implemented CPU pinning (`taskset -c 2,3`) for throughput tests to isolate load from API/Scheduler cores (0,1).
+    - **Concurrency Control:** Added `Semaphore`-based bandwidth coordination to prevent overlapping heavy tests.
+    - **Defaults:** Wired up `profiles::defaults()` to ensure standard schedule set on startup.
 
 ## 2026-02-09
 - Initialized development session.

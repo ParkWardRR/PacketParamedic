@@ -41,7 +41,7 @@
 
 6. **Minimal attack surface.** Default to deny. No open ports except the local UI. No default credentials. Explicit opt-in for advanced features (monitor mode, injection testing).
 
-7. **Pi 5 only.** No backward compatibility with Pi 4 or earlier. Target Cortex-A76, VideoCore VII, and PCIe natively. Do not add codepaths, feature flags, or conditional logic for older hardware. If it doesn't run on Pi 5, it's not our problem.
+7. **Pi 5 only.** No backward compatibility with Pi 4 or earlier. Target Cortex-A76, VideoCore VII, and PCIe natively. Do not add codepaths, feature flags, or conditional logic for older hardware. See [Hardware Optimization Strategy](docs/HARDWARE_OPTIMIZATION.md).
 
 8. **Bandwidth-aware coordination.** Only one throughput-heavy test runs at a time. The scheduler enforces mutual exclusion and priority ordering to prevent tests from interfering with each other or with the user's network.
 
