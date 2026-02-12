@@ -364,9 +364,6 @@ cargo nextest run
 2. Build signed release image
 3. Publish to release channel (stable or beta)
 
-### Self-Hosted Runner (Pi 5)
-PacketParamedic uses a dedicated Pi 5 runner for native ARM64 testing.
-See [CI Setup Guide](docs/CI_SETUP.md) for installation instructions.
 
 ---
 
