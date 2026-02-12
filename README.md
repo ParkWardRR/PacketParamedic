@@ -78,7 +78,7 @@ You know when your WiFi starts acting up and you have no idea if it's *your* rou
 
 **PacketParamedic** is a Rust program that turns a Raspberry Pi 5 into a dedicated network detective. It sits on your network, runs tests on a schedule, stores everything in a local database, and when things go wrong it tells you **whose fault it is** — yours, your ISP's, or the service you're trying to reach.
 
-It does this by firing off probes (ping, TCP, DNS, HTTP), running speed tests, tracking anomalies over time, and feeding everything into a blame classifier that says: "yeah, it's your ISP" or "nah, that's on you."
+It does this by firing off probes (ping, TCP, DNS, HTTP), running multi-provider speed tests (Ookla, NDT7, Fast), tracking anomalies over time, and feeding everything into a blame classifier that says: "yeah, it's your ISP" or "nah, that's on you."
 
 The full vision goes beyond diagnostics: a server-rendered web UI (htmx), BLE nearby admin from your phone, an iOS companion app (Core Bluetooth + Swift), optional Tailscale for secure remote access, path tracing, and advanced RF diagnostics — all running on a single Pi 5 appliance with no cloud dependency.
 
@@ -302,8 +302,15 @@ packetparamedic selftest
 # who broke my internet?
 packetparamedic blame-check
 
-# run a speed test
+# run a speed test (defaults to iperf3 / wan)
 packetparamedic speed-test --mode wan --duration 30s --streams 1
+
+# run a provider benchmark (Ookla, NDT7, Fast)
+packetparamedic speed-test --provider ookla
+packetparamedic speed-test --provider ndt7
+
+# trace network path
+packetparamedic trace --target 8.8.8.8
 
 # manage scheduled tests
 packetparamedic schedule list

@@ -39,10 +39,10 @@
 | 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | Done | High Performance (Performance) |
 | 4 | Data Layer & Evidence (schema, migrations, blame trainer) | Done | All (Foundation) |
 | 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | Done | Simple Troubleshooting (Diagnostics) |
-| 6 | Performance & Throughput (iperf3, native Rust, 1GbE) | Done | Reliability (Streaming), High Performance |
+| 6 | Performance & Throughput (iperf3, native Rust, 1GbE) | Done (Ookla/NDT7/Fast/iperf3) | Reliability (Streaming), High Performance |
 | 6.5 | Scheduling Engine (cron, bandwidth coordination) | Done | High Performance (Control), Reliability (Quiet) |
-| 7 | Path Tracing & Change Detection (traceroute/MTR) | Not started | High Performance, Simple Troubleshooting |
-| 8 | Incidents & Anomaly Detection | Not started | Simple Troubleshooting, Reliability (Answers) |
+| 7 | Path Tracing & Change Detection (traceroute/MTR) | Done | High Performance, Simple Troubleshooting |
+| 8 | Incidents & Anomaly Detection | In progress (Foundation) | Simple Troubleshooting, Reliability (Answers) |
 | 9 | Test Phase (unit, integration, soak, security) | Not started | Reliability (Reliability) |
 | 10 | UX/UI (htmx web dashboard, onboarding, schedule mgmt) | Not started | Simple Troubleshooting, Reliability (Usability) |
 | 11 | Secure Remote Access (Tailscale) | Not started | High Performance, Reliability (Support) |
@@ -228,11 +228,11 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 ## Phase 6: Performance, Throughput & Quality (Week 9--12)
 
 ### 6.1 Extensible Provider Framework
-- [ ] Implement `SpeedTestProvider` trait (meta, run, is_available)
-- [ ] **Ookla Speedtest CLI:** Official binary wrapper (license: personal use only) - Best for familiar benchmarks.
-- [ ] **NDT7 (M-Lab):** Open-source `ndt7-client` wrapper - Best for open measurement & identifying congestion.
-- [ ] **Fast.com:** Optional plugin via third-party CLI - Best for "Netflix experience".
-- [ ] Unified result schema: normalize all providers into `download`/`upload`/`latency`/`jitter` fields.
+- [x] Implement `SpeedTestProvider` trait (meta, run, is_available)
+- [x] **Ookla Speedtest CLI:** Official binary wrapper (license: personal use only) - Best for familiar benchmarks.
+- [x] **NDT7 (M-Lab):** Open-source `ndt7-client` wrapper - Best for open measurement & identifying congestion.
+- [x] **Fast.com:** Optional plugin via third-party CLI - Best for "Netflix experience".
+- [x] Unified result schema: normalize all providers into `download`/`upload`/`latency`/`jitter` fields.
 
 ### 6.2 Self-Hosted Endpoints (Roadmap Item)
 > *Structure now, self-host later.* Users can eventually host their own test targets to isolate LAN vs WAN issues.
@@ -304,9 +304,9 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 
 ## Phase 7: Path Tracing & Change Detection (Week 14--16)
 
-- [ ] Traceroute/MTR sampling with safe rate limits
-- [ ] Path diffing and correlation to incidents
-- [ ] Local hop tracing (AP/mesh/router/VLAN traversal where visible)
+- [x] Traceroute/MTR sampling with safe rate limits
+- [x] Path diffing and correlation to incidents
+- [x] Local hop tracing (AP/mesh/router/VLAN traversal where visible)
 
 ### Acceptance
 - [ ] Timeline data shows "path changed at X" and correlates with user impact

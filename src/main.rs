@@ -34,9 +34,13 @@ enum Commands {
 
     /// Run a throughput / speed test
     SpeedTest {
-        /// Test mode: lan or wan
+        /// Test mode: lan or wan (deprecated if provider set)
         #[arg(long, default_value = "wan")]
         mode: String,
+
+        /// Provider to use: ookla, ndt7, fast (overrides mode/peer)
+        #[arg(long)]
+        provider: Option<String>,
 
         /// Peer address for LAN tests
         #[arg(long)]
@@ -49,6 +53,13 @@ enum Commands {
         /// Number of parallel TCP streams
         #[arg(long, default_value = "1")]
         streams: u32,
+    },
+
+    /// Run a trace (MTR) to a target
+    Trace {
+        /// Target IP or hostname
+        #[arg(long, default_value = "8.8.8.8")]
+        target: String,
     },
 
     /// Manage scheduled tests
@@ -171,13 +182,71 @@ async fn main() -> Result<()> {
         }
         Commands::SpeedTest {
             mode,
+            provider,
             peer,
             duration,
             streams,
         } => {
-            tracing::info!(%mode, ?peer, %duration, %streams, "Running speed test");
-            packetparamedic::throughput::run_test(&mode, peer.as_deref(), &duration, streams)
-                .await?;
+            if let Some(prov_id) = provider {
+                tracing::info!(%prov_id, "Running provider speed test");
+                // Dispatch to provider framework
+                // Note: Real implementation would map strings to providers dynamically.
+                // For MVP CLI, we just hardcode the dispatch here or print support.
+                match prov_id.as_str() {
+                    "ookla" | "ookla-cli" => {
+                        let p = packetparamedic::throughput::provider::ookla::OoklaProvider;
+                        use packetparamedic::throughput::provider::SpeedTestProvider;
+                        if p.is_available() {
+                            let res = p.run(packetparamedic::throughput::provider::SpeedTestRequest {
+                                timeout: std::time::Duration::from_secs(30),
+                                prefer_ipv6: false,
+                                server_hint: None,
+                            })?;
+                            println!("{}", serde_json::to_string_pretty(&res)?);
+                        } else {
+                            anyhow::bail!("Ookla CLI not found. {}", p.meta().install_hint);
+                        }
+                    },
+                    "ndt7" => {
+                         let p = packetparamedic::throughput::provider::ndt7::Ndt7Provider;
+                         use packetparamedic::throughput::provider::SpeedTestProvider;
+                         if p.is_available() {
+                            let res = p.run(packetparamedic::throughput::provider::SpeedTestRequest {
+                                timeout: std::time::Duration::from_secs(30),
+                                prefer_ipv6: false,
+                                server_hint: None,
+                            })?;
+                            println!("{}", serde_json::to_string_pretty(&res)?);
+                         } else {
+                            anyhow::bail!("NDT7 Client not found. {}", p.meta().install_hint);
+                         }
+                    },
+                     "fast" | "fast-cli" => {
+                         let p = packetparamedic::throughput::provider::fast::FastProvider;
+                         use packetparamedic::throughput::provider::SpeedTestProvider;
+                         if p.is_available() {
+                            let res = p.run(packetparamedic::throughput::provider::SpeedTestRequest {
+                                timeout: std::time::Duration::from_secs(30),
+                                prefer_ipv6: false,
+                                server_hint: None,
+                            })?;
+                            println!("{}", serde_json::to_string_pretty(&res)?);
+                         } else {
+                            anyhow::bail!("Fast CLI not found. {}", p.meta().install_hint);
+                         }
+                    },
+                    _ => anyhow::bail!("Unknown provider: {}", prov_id),
+                }
+            } else {
+                tracing::info!(%mode, ?peer, %duration, %streams, "Running iperf3 speed test");
+                packetparamedic::throughput::run_test(&mode, peer.as_deref(), &duration, streams)
+                    .await?;
+            }
+        }
+        Commands::Trace { target } => {
+            tracing::info!(%target, "Running MTR trace");
+            let report = packetparamedic::probes::trace::run_trace(&target)?;
+            println!("{}", serde_json::to_string_pretty(&report)?);
         }
         Commands::Schedule { action } => {
             let pool = packetparamedic::storage::open_pool("data/packetparamedic.db")?;

@@ -46,6 +46,17 @@
     - **Scalability:** Implemented CPU pinning (`taskset -c 2,3`) for throughput tests to isolate load from API/Scheduler cores (0,1).
     - **Concurrency Control:** Added `Semaphore`-based bandwidth coordination to prevent overlapping heavy tests.
     - **Defaults:** Wired up `profiles::defaults()` to ensure standard schedule set on startup.
+- **Backend Feature Completion (Provider Framework & Trace):**
+    - **Throughput Providers (Phase 6):**
+        - Implemented `SpeedTestProvider` trait framework.
+        - Supported **Ookla Speedtest** (Recommended, strict EULA note), **NDT7** (Open/Diagnostic), **Fast.com** (Streaming).
+    - **Path Analysis (Phase 7):**
+        - Implemented `mtr` wrapper (`src/probes/trace.rs`) for hop-by-hop latency and loss analysis.
+        - Added `trace_results` table to persistent schema.
+    - **Verification & Simulation:**
+        - Created `tests/persona_simulation.rs` validating 3 personas: **Simple Troubleshooting**, **Reliability Soak**, **High Performance**.
+        - Simulated hardware utilization (CPU isolation/Thermal) on Pi 5 target (`docs/SIMULATION_REPORT.md` delivered).
+        - Successfully executed live `mtr` trace against public DNS.
 
 ## 2026-02-09
 - Initialized development session.
