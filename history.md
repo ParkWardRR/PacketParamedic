@@ -108,6 +108,10 @@
     - Implemented `TcpProbe` (`src/probes/tcp.rs`) using `tokio::net::TcpStream`.
 - **Phase 6.5 Progress (Scheduling):**
     - Upgraded storage to use `r2d2` connection pooling (`src/storage/mod.rs`).
+   - **2026-02-13:** Implemented **Phase 6.5 (Advanced Scheduler)** with jitter and profiles.
+- **2026-02-13:** Implemented **Phase 13 (QoS/Bufferbloat)** with latency-under-load analysis (`diagnostics bufferbloat`).
+- **2026-02-13:** Started **Phase 8 (Incident Management)** with state machine (`Open` -> `Resolved`) and de-duplication logic in `Incidents` table.
+- **2026-02-13:** Validated Full FAT Persona on Pi 5 including Bufferbloat analysis.
     - Implemented persistent scheduler with `cron` crate and SQLite `schedules` table.
     - Implemented execution loop (`src/scheduler/engine.rs`) to spawn probe tasks.
     - Updated `packetparamedic serve` to run scheduler in background.

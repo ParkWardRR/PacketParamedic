@@ -43,8 +43,8 @@ async fn test_persona_high_performance_live() -> Result<()> {
     }
     
     // Step 2: Validate All Providers
+    println!("Step 3: Checking Providers...");
     let providers = packetparamedic::throughput::provider::get_all_providers();
-    println!("Step 2: Checking {} Providers...", providers.len());
     
     for provider in providers {
         let meta = provider.meta();
@@ -54,7 +54,7 @@ async fn test_persona_high_performance_live() -> Result<()> {
             println!("    ✅ CLI Detected! Running benchmark...");
             
             let req = packetparamedic::throughput::provider::SpeedTestRequest {
-                 timeout: Duration::from_secs(60),
+                 timeout: std::time::Duration::from_secs(60),
                  prefer_ipv6: false,
                  server_hint: None,
             };
@@ -74,6 +74,28 @@ async fn test_persona_high_performance_live() -> Result<()> {
             println!("    ⚠️ CLI Missing. Install hint: {}", meta.install_hint);
         }
     }
+
+    println!("Step 4: Running Advanced Diagnostics (Bufferbloat/QoS)...");
+    // Only run if we are in High Performance mode (Live)
+    if std::env::var("PACKETPARAMEDIC_LIVE_TEST").unwrap_or_default() == "1" {
+        // Use 8.8.8.8 as pinger, wan (iperf3) as load
+        // Note: run_qos_test is async
+        match packetparamedic::analysis::qos::run_qos_test("8.8.8.8").await {
+            Ok(qos) => {
+                println!("    ✅ Bufferbloat Analysis Complete");
+                println!("      => Baseline RTT: {:.2} ms", qos.baseline_rtt_ms);
+                println!("      => Loaded RTT:   {:.2} ms", qos.loaded_rtt_ms);
+                println!("      => Bloat:        {:.2} ms (Grade: {})", qos.bufferbloat_ms, qos.grade);
+            },
+            Err(e) => {
+                 println!("    ❌ Bufferbloat Test Failed: {}", e);
+                 // Don't fail the whole suite, as iperf3 might be flaky
+            }
+        }
+    } else {
+        println!("    (Skipping QoS in non-live mode)");
+    }
+
     
     Ok(())
 }

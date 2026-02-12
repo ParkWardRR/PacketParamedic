@@ -15,17 +15,37 @@ impl IncidentManager {
 
     pub fn record_incident(&self, verdict: &str, severity: Severity, evidence: serde_json::Value) -> Result<Uuid> {
         let conn = self.pool.get()?;
+        
+        // Anti-spam: Check for existing OPEN incident with same verdict within last 30m
+        let mut stmt = conn.prepare("SELECT id FROM incidents WHERE verdict = ?1 AND status = 'Open' AND updated_at > datetime('now', '-30 minutes')")?;
+        let existing: Result<String, _> = stmt.query_row([verdict], |row| row.get(0));
+        
+        if let Ok(existing_id) = existing {
+             // Update existing incident
+             // We update 'updated_at' to keep it alive
+             let uuid = Uuid::parse_str(&existing_id).unwrap_or_default();
+             conn.execute("UPDATE incidents SET updated_at = datetime('now') WHERE id = ?1", params![existing_id])?;
+             return Ok(uuid);
+        }
+
         let id = Uuid::new_v4();
         let severity_str = format!("{:?}", severity); // Info, Warning, Critical
         let evidence_json = serde_json::to_string(&evidence)?;
 
         conn.execute(
-            "INSERT INTO incidents (id, severity, verdict, evidence_json, created_at) VALUES (?1, ?2, ?3, ?4, datetime('now'))",
+            "INSERT INTO incidents (id, severity, verdict, evidence_json, status, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, 'Open', datetime('now'), datetime('now'))",
             params![id.to_string(), severity_str, verdict, evidence_json],
         )?;
 
         Ok(id)
     }
+
+    pub fn resolve_incident(&self, incident_id: Uuid) -> Result<()> {
+        let conn = self.pool.get()?;
+        conn.execute("UPDATE incidents SET status = 'Resolved', updated_at = datetime('now') WHERE id = ?1", params![incident_id.to_string()])?;
+        Ok(())
+    }
+
 
     pub fn list_recent(&self, limit: usize) -> Result<Vec<Incident>> {
         let conn = self.pool.get()?;

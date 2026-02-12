@@ -112,6 +112,18 @@ pub fn migrate(conn: &Connection) -> Result<()> {
         );
         CREATE INDEX IF NOT EXISTS idx_trace_results_created ON trace_results(created_at);",
     )?;
+
+    // Migration: Add 'status' to incidents if missing
+    let has_status: i32 = conn.query_row(
+        "SELECT count(*) FROM pragma_table_info('incidents') WHERE name='status'",
+        [],
+        |row| row.get(0)
+    ).unwrap_or(0);
+    
+    if has_status == 0 {
+         conn.execute("ALTER TABLE incidents ADD COLUMN status TEXT NOT NULL DEFAULT 'Open'", [])?;
+    }
+    
     Ok(())
 }
 

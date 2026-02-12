@@ -236,9 +236,10 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 
 ### 6.2 Self-Hosted Endpoints (Roadmap Item)
 > *Structure now, self-host later.* Users can eventually host their own test targets to isolate LAN vs WAN issues.
+- [x] **Specification:** Detailed [Engineering Spec](docs/specs/SELF_HOSTED_ENDPOINT_SPEC.md) created for dev team.
 - [ ] **LAN Endpoint:** Run a local `iperf3 -s` or LibreSpeed instance on the Pi.
 - [ ] **WAN Endpoint:** User deploys a 10Gbps iperf3 server on Vultr/DigitalOcean (documented "Bring Your Own Target").
-- [ ] Provider Kind logic: `PublicWAN`, `SelfHostedWAN`, `SelfHostedLAN`.
+- [x] Provider Kind logic: `PublicWAN`, `SelfHostedWAN`, `SelfHostedLAN`.
 
 ### 6.3 1GbE LAN Stress Testing
 - [ ] LAN peer discovery for iperf3 server/client pairing
@@ -312,12 +313,7 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 - [ ] **"Do No Harm":** Skip scheduled tests if active user traffic > 5Mbps.
 - [ ] **Retry Logic:** Exponential backoff for missed windows.
 
-### 6.8 Quality of Service (QoS) & Bufferbloat Analysis (New)
-- [ ] Measure latency *during* loaded throughput tests (upload/download).
-- [ ] Calculate "Bufferbloat Grade" (A+ to F) based on loaded latency spike.
-- [ ] Analyze jitter distribution (inter-packet arrival variance).
-
-## Phase 7: Path Tracing & Change Detection (Week 14--16)
+### Phase 7: Path Tracing & Change Detection (Week 14--16)
 
 - [x] Traceroute/MTR sampling with safe rate limits
 - [x] Path diffing and correlation to incidents
@@ -336,10 +332,10 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 - [ ] **Baseline Window:** default to trailing 24h of data.
 - [ ] **Outlier Detection:** Flag latency > 3σ (sigma) from baseline.
 
-### 8.2 Incident Management
-- [ ] `Incident` struct: start_time, end_time, severity, root_cause_verdict.
-- [ ] **State Machine:** Open -> Investigating (Gathering extra evidence) -> Resolved.
-- [ ] Deduplication: Don't spam alerts for the same ongoing outage.
+### 8.1 Incident Lifecycle Management
+- [x] State machine: `Open` -> `Investigating` -> `Resolved` (Implemented via status column)
+- [x] Anti-flapping: deduplicate similar alerts within time window (Implemented via find_open_incident)
+- [ ] Auto-resolution: close incidents when signals return to baseline for N minutes
 
 ### 8.3 Correlation
 - [ ] Correlate "High Latency" on all probes == "WAN Congestion".

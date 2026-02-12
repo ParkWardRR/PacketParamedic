@@ -338,7 +338,11 @@ packetparamedic trace --target 8.8.8.8
 # manage scheduled tests
 packetparamedic schedule list
 packetparamedic schedule add --name "nightly" --cron "0 3 * * *" --test speed-test-light
+packetparamedic schedule apply-profile --profile standard --force
 packetparamedic schedule dry-run --hours 24
+
+# advanced diagnostics (bufferbloat)
+packetparamedic diagnostics bufferbloat --target 8.8.8.8
 
 # export a support bundle
 packetparamedic export-bundle --output bundle.zip

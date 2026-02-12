@@ -62,6 +62,35 @@ enum Commands {
         target: String,
     },
 
+    /// Advanced Diagnostics (Phase 13)
+    Diagnostics {
+        #[command(subcommand)]
+        cmd: DiagnosticCommand,
+    },
+
+    /// Manage scheduled tests
+    Schedule {
+        #[command(subcommand)]
+        action: ScheduleAction,
+    },
+
+    /// Export a support/evidence bundle
+    ExportBundle {
+        /// Output file path
+        #[arg(long, default_value = "bundle.zip")]
+        output: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum DiagnosticCommand {
+    /// Measure Bufferbloat (Latency Under Load)
+    Bufferbloat {
+        /// Target to ping for latency measurement
+        #[arg(long, default_value = "8.8.8.8")]
+        target: String,
+    },
+
     /// Manage scheduled tests
     Schedule {
         #[command(subcommand)]
@@ -258,6 +287,21 @@ async fn main() -> Result<()> {
             tracing::info!(%target, "Running MTR trace");
             let report = packetparamedic::probes::trace::run_trace(&target)?;
             println!("{}", serde_json::to_string_pretty(&report)?);
+        }
+        Commands::Diagnostics { cmd } => {
+            match cmd {
+                DiagnosticCommand::Bufferbloat { target } => {
+                    println!("Running Bufferbloat Analysis (Target: {})...", target);
+                    let result = packetparamedic::analysis::qos::run_qos_test(&target).await?;
+                    println!("\n--- Bufferbloat Grade: {} ---", result.grade);
+                    println!("Baseline RTT: {:.2} ms", result.baseline_rtt_ms);
+                    println!("Loaded RTT:   {:.2} ms (+{:.2} ms)", result.loaded_rtt_ms, result.bufferbloat_ms);
+                    
+                    if result.grade == 'D' || result.grade == 'F' {
+                        println!("⚠️  High Bufferbloat detected! Your router may need AQM/SQM enabled.");
+                    }
+                }
+            }
         }
         Commands::Schedule { action } => {
             let pool = packetparamedic::storage::open_pool("data/packetparamedic.db")?;
