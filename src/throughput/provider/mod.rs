@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use anyhow::Result;
 
 pub mod ookla;
+pub mod ndt7;
+pub mod fast;
 
 /// Metadata describing a speed test provider.
 #[derive(Debug, Clone, Serialize, Deserialize)]
