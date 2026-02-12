@@ -177,3 +177,34 @@ If you need CLI snippets, put them here (do not paste secrets):
 # packetparamedic blame-check
 # packetparamedic trace --target 8.8.8.8
 # packetparamedic speed-test --provider ndt7
+```
+
+---
+
+## 11) LAN vs WAN Isolation (Self-Hosted Model)
+
+### 11.1 LAN Benchmarking (Reflector on LAN)
+*Scenario: Verifying local Wi-Fi/Ethernet health using a self-hosted endpoint on the LAN.*
+| Metric | Target (Reflector) | Result | Pass/Fail Criteria |
+|---|---|---|---|
+| Throughput (Download) | `<Internal IP>` | `<Mbps>` | Should match link speed (e.g. >900Mbps on 1G) |
+| Throughput (Upload) | `<Internal IP>` | `<Mbps>` | Should match link speed |
+| Jitter (UDP Echo) | `<Internal IP>` | `<ms>` | Should be < 2ms on LAN |
+| Loss (UDP Echo) | `<Internal IP>` | `<%>` | Should be 0% |
+
+### 11.2 WAN Benchmarking (Reflector on WAN/VPS)
+*Scenario: Precision WAN testing using a self-hosted endpoint on a VPS (controlled path).*
+| Metric | Target (Reflector) | Result | Notes |
+|---|---|---|---|
+| Throughput (Download) | `<VPS IP>` | `<Mbps>` | ISP limit check (single stream) |
+| Throughput (Upload) | `<VPS IP>` | `<Mbps>` | ISP limit check (single stream) |
+| Latency (UDP Echo) | `<VPS IP>` | `<ms>` | True application RTT (no ICMP de-prioritization) |
+| Bufferbloat | `<VPS IP>` | `<Grade>` | Latency delta under load |
+
+### 11.3 WAN Benchmarking (Public / No-Reflector)
+*Scenario: Fallback to public infrastructure when no self-hosted endpoint is available.*
+| Method | Provider | Download | Upload | Ping | Notes |
+|---|---|---|---|---|---|
+| HTTP/TCP Speed Test | Ookla/NDT7 | `<Mbps>` | `<Mbps>` | `<ms>` | Variable server distance/congestion |
+| Latency (ICMP) | 8.8.8.8 | N/A | N/A | `<ms>` | ICMP may be rate-limited |
+| Trace | Google/Cloudflare | Path | N/A | `<ms>` | Identifying bad hops via MTR |

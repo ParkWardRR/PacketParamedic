@@ -90,19 +90,6 @@ enum DiagnosticCommand {
         #[arg(long, default_value = "8.8.8.8")]
         target: String,
     },
-
-    /// Manage scheduled tests
-    Schedule {
-        #[command(subcommand)]
-        action: ScheduleAction,
-    },
-
-    /// Export a support/evidence bundle
-    ExportBundle {
-        /// Output file path
-        #[arg(long, default_value = "bundle.zip")]
-        output: String,
-    },
 }
 
 #[derive(Subcommand)]
