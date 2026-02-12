@@ -1,5 +1,8 @@
 //! Anomaly detection and incident grouping.
 
+pub mod anomaly;
+pub mod incident;
+
 use thiserror::Error;
 
 #[derive(Debug, Error)]

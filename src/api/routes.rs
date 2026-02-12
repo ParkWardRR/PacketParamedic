@@ -19,6 +19,7 @@ pub fn api_routes() -> Router<AppState> {
         .route("/schedules", get(list_schedules).post(create_schedule))
         .route("/schedules/{name}", delete(delete_schedule))
         .route("/schedules/dry-run", get(schedule_dry_run))
+        .route("/trace", get(list_traces).post(run_trace))
         .route("/network/interfaces", get(network_interfaces))
 }
 
@@ -152,4 +153,86 @@ async fn schedule_dry_run(
 
 async fn network_interfaces() -> Json<Value> {
     Json(json!({ "data": { "interfaces": [] } }))
+}
+
+use crate::probes::trace::{self, MtrReport};
+use rusqlite::params;
+
+#[derive(Deserialize)]
+struct TraceRequest {
+    target: String,
+}
+
+async fn run_trace(
+    State(state): State<AppState>,
+    Json(payload): Json<TraceRequest>,
+) -> (StatusCode, Json<Value>) {
+    // 1. Run trace (blocking operation)
+    let target = payload.target.clone();
+    let result = tokio::task::spawn_blocking(move || trace::run_trace(&target)).await;
+
+    match result {
+        Ok(Ok(report)) => {
+            // 2. Persist to DB
+            let conn = match state.pool.get() {
+                Ok(c) => c,
+                Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({ "error": "DB pool error" }))),
+            };
+
+            let json_str = serde_json::to_string(&report).unwrap_or_default();
+            
+            // Calculate summary stats
+            let hubs = &report.report.mtr.hubs;
+            let hop_count = hubs.len();
+            let max_lat = hubs.iter().map(|h| h.worst).fold(0.0, f32::max);
+            let avg_loss = if hop_count > 0 {
+                hubs.iter().map(|h| h.loss_percent).sum::<f32>() / hop_count as f32
+            } else { 0.0 };
+
+            if let Err(e) = conn.execute(
+                "INSERT INTO trace_results (target, hop_count, max_latency_ms, avg_loss_percent, result_json) 
+                 VALUES (?1, ?2, ?3, ?4, ?5)",
+                params![report.report.mtr.dst, hop_count, max_lat, avg_loss, json_str],
+            ) {
+                return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({ "error": e.to_string() })));
+            }
+
+            (StatusCode::OK, Json(json!({ "data": report })))
+        }
+        Ok(Err(e)) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({ "error": e.to_string() }))),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({ "error": format!("Task join error: {}", e) }))),
+    }
+}
+
+async fn list_traces(State(state): State<AppState>) -> Json<Value> {
+    let conn = match state.pool.get() {
+        Ok(c) => c,
+        Err(e) => return Json(json!({ "error": "DB pool error" })),
+    };
+
+    let mut stmt = match conn.prepare(
+        "SELECT id, target, hop_count, max_latency_ms, avg_loss_percent, created_at FROM trace_results ORDER BY created_at DESC LIMIT 50"
+    ) {
+        Ok(s) => s,
+        Err(e) => return Json(json!({ "error": e.to_string() })),
+    };
+
+    let rows = stmt.query_map([], |row| {
+        Ok(json!({
+            "id": row.get::<_, i64>(0)?,
+            "target": row.get::<_, String>(1)?,
+            "hop_count": row.get::<_, i32>(2)?,
+            "max_latency": row.get::<_, f64>(3)?,
+            "avg_loss": row.get::<_, f64>(4)?,
+            "created_at": row.get::<_, String>(5)?,
+        }))
+    });
+
+    match rows {
+        Ok(iter) => {
+            let data: Vec<Value> = iter.filter_map(|r| r.ok()).collect();
+            Json(json!({ "data": data, "meta": { "total": data.len() } }))
+        }
+        Err(e) => Json(json!({ "error": e.to_string() })),
+    }
 }

@@ -99,7 +99,18 @@ pub fn migrate(conn: &Connection) -> Result<()> {
             analysis_window_end TEXT,
             created_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
-        CREATE INDEX IF NOT EXISTS idx_blame_created ON blame_predictions(created_at);",
+        CREATE INDEX IF NOT EXISTS idx_blame_created ON blame_predictions(created_at);
+
+        CREATE TABLE IF NOT EXISTS trace_results (
+            id INTEGER PRIMARY KEY,
+            target TEXT NOT NULL,
+            hop_count INTEGER,
+            max_latency_ms REAL,
+            avg_loss_percent REAL,
+            result_json TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_trace_results_created ON trace_results(created_at);",
     )?;
     Ok(())
 }

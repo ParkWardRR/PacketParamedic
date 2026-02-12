@@ -1,3 +1,4 @@
+pub mod trace;
 use anyhow::Result;
 use std::time::Duration;
 
