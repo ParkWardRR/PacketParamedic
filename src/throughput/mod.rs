@@ -1,5 +1,6 @@
 //! Throughput testing engine: iperf3 wrapper + native Rust fallback.
 
+pub mod provider;
 pub mod iperf;
 pub mod lan;
 pub mod native;

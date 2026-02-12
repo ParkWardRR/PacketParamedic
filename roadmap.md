@@ -227,33 +227,39 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 
 ## Phase 6: Performance, Throughput & Quality (Week 9--12)
 
-### 6.1 Speed Testing Framework
-- [ ] Multi-provider speed testing (scheduled + on-demand)
-- [ ] iperf3 wrapper for high-throughput testing
-- [ ] Native Rust throughput engine as fallback
-- [ ] Support specific speed limits: 250Mbps, 500Mbps, 750Mbps, 1Gbps
-- [ ] Auto-scale TCP window sizes for 1Gbps targets
+### 6.1 Extensible Provider Framework
+- [ ] Implement `SpeedTestProvider` trait (meta, run, is_available)
+- [ ] **Ookla Speedtest CLI:** Official binary wrapper (license: personal use only) - Best for familiar benchmarks.
+- [ ] **NDT7 (M-Lab):** Open-source `ndt7-client` wrapper - Best for open measurement & identifying congestion.
+- [ ] **Fast.com:** Optional plugin via third-party CLI - Best for "Netflix experience".
+- [ ] Unified result schema: normalize all providers into `download`/`upload`/`latency`/`jitter` fields.
 
-### 6.2 1GbE LAN Stress Testing
+### 6.2 Self-Hosted Endpoints (Roadmap Item)
+> *Structure now, self-host later.* Users can eventually host their own test targets to isolate LAN vs WAN issues.
+- [ ] **LAN Endpoint:** Run a local `iperf3 -s` or LibreSpeed instance on the Pi.
+- [ ] **WAN Endpoint:** User deploys a 10Gbps iperf3 server on Vultr/DigitalOcean (documented "Bring Your Own Target").
+- [ ] Provider Kind logic: `PublicWAN`, `SelfHostedWAN`, `SelfHostedLAN`.
+
+### 6.3 1GbE LAN Stress Testing
 - [ ] LAN peer discovery for iperf3 server/client pairing
 - [ ] Sustained throughput test (TCP: 30s, 60s, 300s)
 - [ ] UDP flood test with configurable bandwidth targets
 - [ ] Verify hardware can saturate 1Gbps line rate
 
-### 6.3 WAN Bandwidth Testing (up to 1Gbps)
+### 6.4 WAN Bandwidth Testing (up to 1Gbps)
 - [ ] WAN throughput measurement to configurable remote endpoints
 - [ ] Tier validation: "Am I getting my 250/500/1000 Mbps?"
 - [ ] Link saturation tests for 1Gbps connections
 
-### 6.4 Quality Metrics
-- [ ] Jitter + loss tracking
+### 6.5 Quality Metrics
+- [ ] Jitter + loss tracking via provider JSON
 - [ ] Bufferbloat / latency-under-load grading
 - [ ] "Consistent testing" mode (daily/weekly baselines)
 
 ### Acceptance
-- [ ] Can distinguish: "bandwidth OK, latency/jitter bad" vs "true throughput issue"
+- [ ] Framework supports Ookla and NDT7 out of the box
+- [ ] "Use Ookla for benchmarks, NDT for diagnostics" UI logic implemented
 - [ ] LAN stress test consistently hits ~940Mbps on 1GbE hardware
-- [ ] WAN bandwidth test validates ISP tiers 250Mbps through 1Gbps
 
 ---
 
