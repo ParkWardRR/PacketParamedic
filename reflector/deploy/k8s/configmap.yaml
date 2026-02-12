@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reflector-config
+  labels:
+    app.kubernetes.io/name: reflector
+    app.kubernetes.io/part-of: packetparamedic
+data:
+  reflector.toml: |
+    # PacketParamedic Reflector configuration
+    # See: docs/specs/SELF_HOSTED_ENDPOINT_SPEC.md Section 12
+
+    [identity]
+    private_key_path = "/var/lib/reflector/identity.ed25519"
+
+    [network]
+    listen_address = "0.0.0.0:4000"
+    alpn = "pp-link/1"
+    mode = "tunneled"
+    data_port_range_start = 5201
+    data_port_range_end = 5299
+
+    [access]
+    pairing_enabled = false
+    authorized_peers = []
+
+    [quotas]
+    max_test_duration_sec = 60
+    max_concurrent_tests = 1
+    max_tests_per_hour_per_peer = 10
+    max_bytes_per_day_per_peer = 5000000000
+    cooldown_sec = 5
+    allow_udp_echo = true
+    allow_throughput = true
+
+    [iperf3]
+    path = "iperf3"
+    default_streams = 4
+    max_streams = 8
+
+    [logging]
+    level = "info"
+    audit_log_path = "/var/lib/reflector/audit.jsonl"

@@ -1,0 +1,23 @@
+[Unit]
+Description=PacketParamedic Reflector - Self-hosted Network Test Endpoint
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=localhost/reflector:latest
+PublishPort=4000:4000
+PublishPort=5201-5210:5201-5210
+Volume=reflector.volume:/var/lib/reflector
+Volume=%h/.config/reflector/reflector.toml:/etc/reflector/reflector.toml:ro,Z
+AutoUpdate=local
+NoNewPrivileges=true
+ReadOnly=true
+DropCapability=ALL
+
+[Service]
+Restart=always
+RestartSec=5
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

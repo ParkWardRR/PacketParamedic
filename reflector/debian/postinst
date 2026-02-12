@@ -1,0 +1,50 @@
+#!/bin/sh
+# postinst - Post-installation script for the PacketParamedic Reflector
+set -e
+
+case "$1" in
+    configure)
+        # Reload systemd to pick up the new unit file
+        systemctl daemon-reload
+
+        # Enable the service so it starts on boot
+        systemctl enable reflector.service
+
+        # Start the service
+        systemctl start reflector.service
+
+        # Print endpoint ID instructions
+        echo ""
+        echo "  ================================================================"
+        echo "  PacketParamedic Reflector installed successfully!"
+        echo "  ================================================================"
+        echo ""
+        echo "  The reflector service has been started."
+        echo ""
+        echo "  To view your Endpoint ID (needed to pair with your appliance):"
+        echo "    reflector show-id"
+        echo ""
+        echo "  To enable pairing mode for a new peer:"
+        echo "    reflector pair --ttl 10m"
+        echo ""
+        echo "  Configuration file:"
+        echo "    /etc/reflector/reflector.toml"
+        echo ""
+        echo "  Service status:"
+        echo "    systemctl status reflector"
+        echo ""
+        echo "  Firewall: ensure TCP port 4000 is open for inbound connections."
+        echo "  ================================================================"
+        echo ""
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+
+    *)
+        echo "postinst called with unknown argument: $1" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

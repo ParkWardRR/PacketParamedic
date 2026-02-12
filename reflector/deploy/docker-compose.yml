@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  reflector:
+    image: packetparamedic/reflector:latest
+    build:
+      context: ..
+      dockerfile: reflector/Containerfile
+    ports:
+      - "4000:4000"
+      - "5201-5210:5201-5210"
+    volumes:
+      - reflector-data:/var/lib/reflector
+      - ./reflector.toml.example:/etc/reflector/reflector.toml:ro
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["/usr/local/bin/reflector", "status"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+
+volumes:
+  reflector-data:
+    driver: local
