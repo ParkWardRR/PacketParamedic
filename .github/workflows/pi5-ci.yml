@@ -1,0 +1,58 @@
+name: Pi 5 Native CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  test-on-pi5:
+    name: Test & Build on Pi 5 (Self-Hosted)
+    runs-on: [self-hosted, linux, arm64, pi5]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Verify Rust Toolchain
+      run: |
+        rustc --version
+        cargo --version
+
+    - name: Cache Cargo Registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
+    - name: Format Check
+      run: cargo fmt --all -- --check
+
+    - name: Clippy Lint
+      run: cargo clippy -- -D warnings
+
+    - name: Run Tests (Native Hardware)
+      run: cargo test --workspace --verbose
+
+    - name: Build Release Binary
+      run: cargo build --release --verbose
+      
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: packetparamedic-pi5-release
+        path: target/release/packetparamedic
+        if-no-files-found: error
