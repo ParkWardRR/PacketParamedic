@@ -39,7 +39,8 @@
     - Created comprehensive `TESTING.md` with Appliance Validation Checklist (Installation, Hardware, Throughput, Security, Data Integrity, Wi-Fi).
     - Implemented and ran `tests/validate_deployment.py` against live appliance.
     - Verified 100% pass rate for Health, Self-Test, Network, Schedule, and CLI smoke tests.
-    - Updated `README.md` and `ROADMAP.md` to "Done" status for key phases.
+    - Updated `README.md` and `ROADMAP.md` to prominently feature hardware strategy and limits.
+    - Updated `BUYERS_GUIDE.md` to mandate Active Cooling for all Pi 5 use cases (no passive options).
 - **Phase 6 & 6.5 Max Optimization:**
     - **Security:** Hardened `iperf3` execution with input sanitization (`validate_target`).
     - **Scalability:** Implemented CPU pinning (`taskset -c 2,3`) for throughput tests to isolate load from API/Scheduler cores (0,1).

@@ -13,7 +13,7 @@ This guide helps you choose the right hardware for your PacketParamedic applianc
 | **Compute** | Pi 5 (4GB) | Pi 5 (4GB/8GB) | Pi 5 (8GB) |
 | **Storage** | 32GB SD (A1/A2) | 128GB NVMe (Reliability) | 256GB+ NVMe (Permormance) |
 | **Network** | Built-in 1GbE | Built-in 1GbE | PCIe 2.5G/10G HAT |
-| **Cooling** | Active Fan | Silent/Passive | Active + PCIe Cooling |
+| **Cooling** | Active Fan | Active Fan | Active + PCIe Cooling |
 | **Cost** | Entry Level | Mid Range | High End |
 
 ---
@@ -26,6 +26,7 @@ This use case needs the minimum viable setup to get the software running and per
 **Recommended Bill of Materials:**
 *   **Raspberry Pi 5 (4GB)**: Sufficient for the daemon, web UI, and basic probes.
 *   **Power Supply**: Official 27W USB-C Power Supply.
+*   **Active Cooler**: Mandatory. The Pi 5 runs hot under database load.
 *   **Storage**: 32GB SanDisk Extreme microSD card (A2 app performance class).
 *   **Case**: Official Raspberry Pi 5 Case (includes fan).
 *   **Network Cable**: Cat5e or Cat6 patch cable (connect directly to router LAN port).
@@ -42,9 +43,10 @@ This use case needs the minimum viable setup to get the software running and per
 **Recommended Bill of Materials:**
 *   **Raspberry Pi 5 (4GB or 8GB)**.
 *   **Power Supply**: Official 27W USB-C Power Supply.
+*   **Active Cooler**: **Mandatory**. Passive cooling is insufficient for 24/7 database operations.
 *   **Storage**: **NVMe SSD Base (e.g., Pimoroni or Pineberry)** + **128GB M.2 2230/2242 NVMe SSD**.
     *   *Reason*: Much higher reliability than SD cards; faster database queries for historical/blame reports.
-*   **Case**: Look for a case that accommodates the NVMe base.
+*   **Case**: Look for a case that accommodates the NVMe base and allows airflow for the active cooler.
 *   **Network Cable**: Cat6 patch cable.
 
 **Why this works:** The NVMe drive ensures the database (the "evidence locker") doesn't get corrupted or slow down over months of logging.
