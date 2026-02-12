@@ -21,14 +21,22 @@ impl Scheduler {
 
     /// Add a new schedule to the database
     pub async fn add_schedule(&self, name: &str, cron_expr: &str, test_type: &str) -> Result<()> {
+        // Normalize Cron: parse 5-field (standard) as 6-field (quartz with 0 seconds)
+        let parts: Vec<&str> = cron_expr.split_whitespace().collect();
+        let effective_cron = if parts.len() == 5 {
+            format!("0 {}", cron_expr)
+        } else {
+            cron_expr.to_string()
+        };
+
         // Validate Cron
-        let _ = CronSchedule::from_str(cron_expr)
-            .map_err(|e| anyhow::anyhow!("Invalid cron expression '{}': {}", cron_expr, e))?;
+        let _ = CronSchedule::from_str(&effective_cron)
+            .map_err(|e| anyhow::anyhow!("Invalid cron expression '{}': {}", effective_cron, e))?;
 
         let conn = self.pool.get()?;
         conn.execute(
             "INSERT INTO schedules (name, cron_expr, test_type, enabled) VALUES (?1, ?2, ?3, 1)",
-            rusqlite::params![name, cron_expr, test_type],
+            rusqlite::params![name, effective_cron, test_type],
         )
         .context("Failed to insert schedule")?;
 

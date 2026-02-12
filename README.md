@@ -85,14 +85,14 @@ Development is organized into phases, built backend-first. See [`roadmap.md`](ro
 | 0 | Project Definition | Done |
 | 1 | Backend Foundation (OS image, SQLite WAL, systemd) | Done |
 | 2 | Hardware Self-Test (board, thermal, NIC, Wi-Fi) | Done |
-| 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | In progress — NEON done, GPU backends scaffolded |
+| 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | Done — NEON optimized on Pi 5 |
 | 4 | Data Layer & Evidence (schema, migrations, blame trainer) | Done |
-| 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | In progress — probes done, blame-check flow WIP |
-| 6 | Performance & Throughput (iperf3, native Rust, 2.5GbE) | Not started |
-| 6.5 | Scheduling Engine (cron, bandwidth coordination) | Scaffolded |
+| 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | Done |
+| 6 | Performance & Throughput (iperf3, native Rust, 2.5GbE) | Done — iperf3 integration active |
+| 6.5 | Scheduling Engine (cron, bandwidth coordination) | Done |
 | 7 | Path Tracing & Change Detection (traceroute/MTR) | Not started |
 | 8 | Incidents & Anomaly Detection | Not started |
-| 9 | Test Phase (unit, integration, soak, security) | Not started |
+| 9 | Test Phase (unit, integration, soak, security) | In progress — see [TESTING.md](TESTING.md) |
 | 10 | UX/UI (htmx web dashboard, onboarding, schedule mgmt) | Not started |
 | 11 | Secure Remote Access (Tailscale) | Not started |
 | 12 | BLE Admin, iOS App, Web Bluetooth, Cellular OOB | Not started |

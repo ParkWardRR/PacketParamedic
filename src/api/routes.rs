@@ -17,7 +17,7 @@ pub fn api_routes() -> Router<AppState> {
         .route("/speed-test/latest", get(speed_test_latest))
         .route("/speed-test/history", get(speed_test_history))
         .route("/schedules", get(list_schedules).post(create_schedule))
-        .route("/schedules/:name", delete(delete_schedule))
+        .route("/schedules/{name}", delete(delete_schedule))
         .route("/schedules/dry-run", get(schedule_dry_run))
         .route("/network/interfaces", get(network_interfaces))
 }

@@ -1,5 +1,7 @@
 use anyhow::Result;
-use tracing::{debug, info, warn};
+use tracing::{info, warn};
+#[cfg(debug_assertions)]
+use tracing::debug;
 
 /// Backend types for acceleration
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]

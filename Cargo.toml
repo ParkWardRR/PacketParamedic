@@ -1,6 +1,6 @@
 [package]
 name = "packetparamedic"
-version = "0.1.0-alpha.1"
+version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
 description = "Appliance-grade network diagnostics for Raspberry Pi 5"
@@ -83,6 +83,3 @@ panic = "abort"
 # Enable NEON auto-vectorization on Cortex-A76
 [profile.release.build-override]
 opt-level = 3
-
-[target.aarch64-unknown-linux-gnu]
-rustflags = ["-C", "target-cpu=cortex-a76"]

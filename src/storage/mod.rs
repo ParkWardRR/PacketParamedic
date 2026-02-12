@@ -14,6 +14,9 @@ pub fn open_pool(path: &str) -> Result<Pool> {
     let manager = SqliteConnectionManager::file(path).with_init(|c| {
         c.execute_batch(
             "PRAGMA journal_mode = WAL;
+                 PRAGMA synchronous = NORMAL;
+                 PRAGMA temp_store = MEMORY;
+                 PRAGMA mmap_size = 30000000000;
                  PRAGMA foreign_keys = ON;
                  PRAGMA busy_timeout = 5000;",
         )

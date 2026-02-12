@@ -1,0 +1,16 @@
+[Unit]
+Description=PacketParamedic Network Diagnostics
+After=network.target
+
+[Service]
+Type=simple
+User=alfa
+WorkingDirectory=/home/alfa/PacketParamedic
+ExecStart=/home/alfa/PacketParamedic/target/release/packetparamedic serve --bind 0.0.0.0:8080
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

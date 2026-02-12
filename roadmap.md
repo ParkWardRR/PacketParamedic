@@ -36,11 +36,11 @@
 | 0 | Project Definition | Done | All |
 | 1 | Backend Foundation (OS image, SQLite WAL, systemd) | Done | High Performance (Architecture) |
 | 2 | Hardware Self-Test (board, thermal, NIC, Wi-Fi) | Done | High Performance (Verification) |
-| 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | In progress | High Performance (Performance) |
+| 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | Done | High Performance (Performance) |
 | 4 | Data Layer & Evidence (schema, migrations, blame trainer) | Done | All (Foundation) |
-| 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | In progress | Simple Troubleshooting (Diagnostics) |
-| 6 | Performance & Throughput (iperf3, native Rust, 1GbE) | Not started | Reliability (Streaming), High Performance |
-| 6.5 | Scheduling Engine (cron, bandwidth coordination) | Scaffolded | High Performance (Control), Reliability (Quiet) |
+| 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | Done | Simple Troubleshooting (Diagnostics) |
+| 6 | Performance & Throughput (iperf3, native Rust, 1GbE) | Done | Reliability (Streaming), High Performance |
+| 6.5 | Scheduling Engine (cron, bandwidth coordination) | Done | High Performance (Control), Reliability (Quiet) |
 | 7 | Path Tracing & Change Detection (traceroute/MTR) | Not started | High Performance, Simple Troubleshooting |
 | 8 | Incidents & Anomaly Detection | Not started | Simple Troubleshooting, Reliability (Answers) |
 | 9 | Test Phase (unit, integration, soak, security) | Not started | Reliability (Reliability) |

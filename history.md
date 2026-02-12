@@ -1,6 +1,10 @@
 # Project History
 
-## 2026-02-10
+- **Release Preparation (v0.1.0):**
+    - Codebase fully scanned and linted: `cargo clippy` clean.
+    - Test suite validated: `cargo test` passing (including smoke tests).
+    - Version bumped to `0.1.0` (removed -alpha suffix).
+    - Fixed `[target]` configuration warning in `Cargo.toml`.
 - **Documentation Overhaul Refinement:**
     - Removed all persona names (Alex, Jamie, Sam) from `README.md`, `BUYERS_GUIDE.md`, `personas.md`, `roadmap.md`, and `src/selftest/mod.rs`.
     - Replaced personas with strictly functional use cases: **Simple Troubleshooting**, **Reliability & Uptime**, **High Performance**.
@@ -16,6 +20,26 @@
     - Fixed `clippy::manual_flatten` lint in `src/analysis/aggregator.rs`.
     - Added `# Safety` documentation to `unsafe` functions in `src/accel/vulkan.rs` and `src/accel/gles.rs` to satisfy strict CI requirements.
     - Ran `cargo clean` and verified clean build state.
+
+## 2026-02-12 (v0.1.0 Pro Release)
+- **Deployment & Pi 5 Optimization:**
+    - Deployed to specific Pi 5 target (`alfa@PacketParamedic.alpina`).
+    - Enabled `cortex-a76` specific compiler optimizations in `.cargo/config.toml`.
+    - Tuned SQLite for SD/NVMe usage (WAL, mmap, memory temp store).
+    - Verified NEON SIMD backend active and optimized.
+- **Features Completed:**
+    - **Throughput High-Performance Phase (Phase 6):**
+        - Implemented `iperf3` wrapper in `src/throughput/mod.rs` replacing stub.
+        - Supported both LAN (peer-to-peer) and WAN (public server fallback) modes.
+        - Integrated JSON parsing for structured results.
+    - **Scheduling Engine (Phase 6.5):**
+        - Fixed cron expression parsing to support standard 5-field syntax (auto-normalization to Quartz 6-field).
+        - Verified CRUD operations and persistence via integration tests.
+- **Quality Assurance:**
+    - Created comprehensive `TESTING.md`.
+    - Implemented and ran `tests/validate_deployment.py` against live appliance.
+    - Verified 100% pass rate for Health, Self-Test, Network, Schedule, and CLI smoke tests.
+    - Updated `README.md` and `ROADMAP.md` to "Done" status for key phases.
 
 ## 2026-02-09
 - Initialized development session.
