@@ -1,0 +1,118 @@
+# PacketParamedic Reflector Configuration
+# =========================================
+# Reference: docs/specs/SELF_HOSTED_ENDPOINT_SPEC.md Section 12
+#
+# Configuration is loaded from (in order of precedence):
+#   1. Path specified by --config CLI flag or REFLECTOR_CONFIG env var
+#   2. /etc/reflector/reflector.toml
+#   3. ~/.config/reflector/reflector.toml
+#   4. Compiled-in defaults (shown below)
+#
+# All values below are the defaults. Uncomment and change as needed.
+
+# ---------------------------------------------------------------------------
+# [identity] -- Ed25519 keypair for cryptographic endpoint identity
+# ---------------------------------------------------------------------------
+[identity]
+# Path to the Ed25519 private key file (raw 32-byte secret).
+# Generated automatically on first run if it does not exist.
+# The Endpoint ID (e.g. PP5R-6Q2M-...) is derived from this key.
+private_key_path = "/var/lib/reflector/identity.ed25519"
+
+# ---------------------------------------------------------------------------
+# [network] -- Listener and data-plane transport settings
+# ---------------------------------------------------------------------------
+[network]
+# Address and port for the mTLS control-plane listener.
+# Use 0.0.0.0 to listen on all interfaces, or bind to a specific IP.
+listen_address = "0.0.0.0:4000"
+
+# ALPN protocol identifier negotiated during the TLS handshake.
+# Both sides must agree on this value. Do not change unless you know
+# your appliance uses a different protocol version string.
+alpn = "pp-link/1"
+
+# Data-plane transport mode:
+#   "tunneled"          - All data flows inside the mTLS tunnel (default).
+#                         Only port 4000 needs to be open. Firewall-friendly.
+#   "direct_ephemeral"  - iperf3 opens ephemeral ports directly for tests.
+#                         Lower overhead, but requires firewall rules for the
+#                         data port range below.
+mode = "tunneled"
+
+# Port range reserved for iperf3 / data-plane sockets when using
+# direct_ephemeral mode. Ignored in tunneled mode but defined here
+# so the range is consistent if you switch modes later.
+data_port_range_start = 5201
+data_port_range_end = 5299
+
+# ---------------------------------------------------------------------------
+# [access] -- Peer authorization and pairing
+# ---------------------------------------------------------------------------
+[access]
+# Whether the pairing endpoint is enabled. When true, new peers can enroll
+# using a time-limited pairing token (see `reflector pair --ttl 10m`).
+# Set to false in production after all peers are authorized.
+pairing_enabled = false
+
+# Pre-authorized peer Endpoint IDs. Peers listed here are allowed to
+# connect without going through the pairing flow.
+# Example: authorized_peers = ["PP5R-6Q2M-1K9D-ABCD-C3"]
+authorized_peers = []
+
+# ---------------------------------------------------------------------------
+# [quotas] -- Resource limits and rate controls (per-peer)
+# ---------------------------------------------------------------------------
+[quotas]
+# Maximum duration for a single test session in seconds.
+# Tests exceeding this limit are forcibly terminated.
+max_test_duration_sec = 60
+
+# Maximum number of tests running concurrently on this reflector
+# across all peers. Set higher on dedicated hardware.
+max_concurrent_tests = 1
+
+# Per-peer rate limit: maximum tests allowed per rolling hour.
+max_tests_per_hour_per_peer = 10
+
+# Per-peer daily transfer cap in bytes. Default: 5 GB (5000000000).
+# Prevents a single peer from consuming excessive bandwidth.
+max_bytes_per_day_per_peer = 5000000000
+
+# Minimum cooldown between consecutive tests from the same peer (seconds).
+# Prevents rapid-fire test abuse.
+cooldown_sec = 5
+
+# Whether UDP echo (latency / jitter) tests are permitted.
+allow_udp_echo = true
+
+# Whether throughput (iperf3) tests are permitted.
+allow_throughput = true
+
+# ---------------------------------------------------------------------------
+# [iperf3] -- iperf3 subprocess configuration for throughput tests
+# ---------------------------------------------------------------------------
+[iperf3]
+# Path (or bare command name resolved via $PATH) to the iperf3 binary.
+# Override if iperf3 is installed in a non-standard location.
+path = "iperf3"
+
+# Default number of parallel TCP streams per throughput test.
+default_streams = 4
+
+# Hard upper bound on parallel streams a peer may request.
+# Higher values consume more CPU and memory per test.
+max_streams = 8
+
+# ---------------------------------------------------------------------------
+# [logging] -- Tracing and audit trail
+# ---------------------------------------------------------------------------
+[logging]
+# Minimum tracing level. Valid values: trace, debug, info, warn, error.
+# Can also be overridden at runtime via the RUST_LOG environment variable.
+level = "info"
+
+# Path to the append-only JSON-lines audit log.
+# Every session creation, peer authorization event, and test result
+# is recorded here for forensic / support purposes.
+audit_log_path = "/var/lib/reflector/audit.jsonl"

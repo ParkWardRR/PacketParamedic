@@ -1,0 +1,79 @@
+[Unit]
+Description=PacketParamedic Reflector - Self-hosted Network Test Endpoint
+Documentation=https://github.com/packetparamedic/packetparamedic
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+ExecStart=/usr/local/bin/reflector serve
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=30
+TimeoutStopSec=10
+WatchdogSec=120
+
+# --- Identity ---
+# DynamicUser allocates a transient UID/GID with no login shell.
+DynamicUser=yes
+
+# State persists across restarts in /var/lib/reflector (identity key, audit log).
+StateDirectory=reflector
+StateDirectoryMode=0700
+
+# Configuration lives in /etc/reflector/reflector.toml.
+ConfigurationDirectory=reflector
+ConfigurationDirectoryMode=0755
+
+# Logs directory for optional structured log output.
+LogsDirectory=reflector
+LogsDirectoryMode=0750
+
+# --- Filesystem hardening ---
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+ProcSubset=pid
+
+ReadWritePaths=/var/lib/reflector
+
+# --- Network hardening ---
+# Restrict address families to IPv4, IPv6, and Unix sockets only.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+# --- Capability hardening ---
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+# --- Syscall filtering ---
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources @mount @clock @debug @module @reboot @swap @raw-io
+SystemCallArchitectures=native
+SystemCallErrorNumber=EPERM
+
+# --- Memory and namespace ---
+MemoryDenyWriteExecute=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+
+# --- Misc ---
+UMask=0077
+KeyringMode=private
+
+# Allow iperf3 child processes.
+LimitNPROC=64
+
+[Install]
+WantedBy=multi-user.target

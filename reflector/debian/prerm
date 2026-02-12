@@ -1,0 +1,27 @@
+#!/bin/sh
+# prerm - Pre-removal script for the PacketParamedic Reflector
+set -e
+
+case "$1" in
+    remove|purge)
+        # Stop the service before removing files
+        if systemctl is-active --quiet reflector.service 2>/dev/null; then
+            systemctl stop reflector.service
+        fi
+
+        # Disable the service so it does not start on boot
+        if systemctl is-enabled --quiet reflector.service 2>/dev/null; then
+            systemctl disable reflector.service
+        fi
+        ;;
+
+    upgrade|deconfigure|failed-upgrade)
+        ;;
+
+    *)
+        echo "prerm called with unknown argument: $1" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

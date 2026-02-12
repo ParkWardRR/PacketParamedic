@@ -1,0 +1,44 @@
+# PacketParamedic Reflector - Multi-stage container build
+# Podman/Docker compatible. Build from repo root:
+#   podman build -f reflector/Containerfile -t reflector:latest .
+#   docker build -f reflector/Containerfile -t reflector:latest .
+
+# ---------------------------------------------------------------------------
+# Stage 1: Builder
+# ---------------------------------------------------------------------------
+FROM rust:1.82-bookworm AS builder
+WORKDIR /build
+COPY . .
+
+# Build with AVX2 optimization for Intel N100 (x86-64-v3 microarchitecture)
+ENV RUSTFLAGS="-C target-cpu=x86-64-v3"
+RUN cargo build --release --manifest-path reflector/Cargo.toml
+RUN strip target/release/reflector
+
+# ---------------------------------------------------------------------------
+# Stage 2: Runtime
+# ---------------------------------------------------------------------------
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        iperf3 ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --system --no-create-home --shell /usr/sbin/nologin reflector \
+    && mkdir -p /var/lib/reflector /etc/reflector \
+    && chown reflector:reflector /var/lib/reflector
+
+COPY --from=builder /build/target/release/reflector /usr/local/bin/reflector
+COPY reflector/deploy/reflector.toml.example /etc/reflector/reflector.toml
+
+USER reflector
+
+EXPOSE 4000/tcp
+EXPOSE 5201-5299/tcp
+
+VOLUME ["/var/lib/reflector"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+    CMD ["/usr/local/bin/reflector", "status"]
+
+ENTRYPOINT ["/usr/local/bin/reflector"]
+CMD ["serve"]
