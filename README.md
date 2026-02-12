@@ -48,6 +48,29 @@ Why? Because the Pi 5 is the first board with the PCIe bandwidth (for 10GbE), NE
 ### Which Pi 5 do you need?
 We have specific hardware recommendations for each use case. **[👉 Read the Buyer's Guide](BUYERS_GUIDE.md)** to see exactly what to buy.
 
+### Installing Speed Test Providers
+To unlock the full potential of PacketParamedic (Phase 6), you must install the official backend CLIs:
+
+**1. Ookla Speedtest (Recommended)**
+```bash
+sudo apt-get install -y curl
+curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
+sudo apt-get install -y speedtest
+```
+
+**2. NDT7 (Optional - Recommended for Diagnostics)**
+```bash
+sudo apt-get install -y golang-go
+go install github.com/m-lab/ndt7-client-go/cmd/ndt7-client@latest
+# Add Go bin to PATH if not already: export PATH=$PATH:~/go/bin
+```
+
+**3. Fast.com (Optional - Netflix Testing)**
+```bash
+sudo apt-get install -y nodejs npm
+sudo npm install --global fast-cli
+```
+
 ### optimized for Silicon
 We don't just "run" on Pi 5. We exploit it.
 *   **CPU Pinning:** Throughput tests are isolated to Cores 2-3 to prevent API starvation.

@@ -2,6 +2,7 @@
 
 pub mod anomaly;
 pub mod incident;
+pub mod engine;
 
 use thiserror::Error;
 

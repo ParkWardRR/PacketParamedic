@@ -61,6 +61,7 @@ uuid = { version = "1", features = ["v4", "serde"] }
 
 # Template rendering
 askama = "0.12"
+rand = "0.8"
 glutin = { version = "0.32.3", features = ["egl"] }
 glow = "0.16.0"
 ash = "0.38.0"

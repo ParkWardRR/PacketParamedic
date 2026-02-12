@@ -89,3 +89,12 @@ pub trait SpeedTestProvider: Send + Sync {
     /// Run the speed test.
     fn run(&self, req: SpeedTestRequest) -> Result<SpeedTestResult>;
 }
+
+/// Dynamic registry of all supported providers.
+pub fn get_all_providers() -> Vec<Box<dyn SpeedTestProvider>> {
+    vec![
+        Box::new(ookla::OoklaProvider),
+        Box::new(ndt7::Ndt7Provider),
+        Box::new(fast::FastProvider),
+    ]
+}

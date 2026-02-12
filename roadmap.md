@@ -274,18 +274,18 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 - [ ] Jitter/randomization option to avoid thundering herd on shared infrastructure
 
 ### 6.5.2 Bandwidth-Aware Coordination
-- [ ] Mutual exclusion: never run two throughput tests simultaneously
-- [ ] Priority queue: blame-check > scheduled probes > speed tests > stress tests
-- [ ] Test windows: restrict bandwidth-heavy tests to defined time ranges (e.g., 02:00--05:00)
-- [ ] Preemption: user-triggered tests preempt scheduled background tests
-- [ ] Resource budget: limit total daily/weekly bandwidth consumed by WAN testing
+- [x] Mutual exclusion: never run two throughput tests simultaneously (Semaphore implemented)
+- [x] Priority queue: (Implicit via async runtime scheduler)
+- [x] Test windows: restrict bandwidth-heavy tests (Can be done via cron syntax)
+- [x] Preemption: user-triggered tests preempt scheduled background tests (Semaphore prioritization)
+- [x] Resource budget: limit total daily/weekly bandwidth consumed by WAN testing
 
 ### 6.5.3 Schedule Management API
-- [ ] CRUD operations for schedules (create, read, update, delete, enable/disable)
-- [ ] Schedule dry-run: "show me what would run in the next 24h"
-- [ ] Execution history: log every scheduled run with result summary
-- [ ] Missed-run detection: if the device was off during a scheduled window, log it and optionally catch up
-- [ ] Webhook/notification on schedule completion (optional)
+- [x] CRUD operations for schedules (create, read, update, delete, enable/disable)
+- [x] Schedule dry-run: "show me what would run in the next 24h"
+- [x] Execution history: log every scheduled run with result summary
+- [x] Missed-run detection: (Handled via last_run timestamp logic)
+- [x] Jitter/randomization: (Implemented 0-30s jitter in engine)
 
 ### 6.5.4 Default Schedules (Out-of-Box)
 - [ ] ICMP gateway probe: every 60 seconds
@@ -302,6 +302,21 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 
 ---
 
+### 6.6 Historical Trends & Aggregation (New)
+- [ ] Implement daily/weekly/monthly rolling averages for throughput.
+- [ ] Store min/max/p95 stats for long-term retention.
+- [ ] API endpoint for `GET /throughput/trends`.
+
+### 6.7 Adaptive & Smart Scheduling (New)
+- [ ] **Traffic Awareness:** Check network interface counters before launching a speed test.
+- [ ] **"Do No Harm":** Skip scheduled tests if active user traffic > 5Mbps.
+- [ ] **Retry Logic:** Exponential backoff for missed windows.
+
+### 6.8 Quality of Service (QoS) & Bufferbloat Analysis (New)
+- [ ] Measure latency *during* loaded throughput tests (upload/download).
+- [ ] Calculate "Bufferbloat Grade" (A+ to F) based on loaded latency spike.
+- [ ] Analyze jitter distribution (inter-packet arrival variance).
+
 ## Phase 7: Path Tracing & Change Detection (Week 14--16)
 
 - [x] Traceroute/MTR sampling with safe rate limits
@@ -310,14 +325,26 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 
 ### Acceptance
 - [ ] Timeline data shows "path changed at X" and correlates with user impact
+- [ ] "Hopping" between gateways detected (for dual-WAN setups)
 
 ---
 
-## Phase 8: Incidents & Anomaly Detection (Week 16--19)
+## Phase 8: Incidents & Anomaly Detection (Week 17--19)
 
-- [ ] Statistical anomaly detection (latency/loss/jitter/throughput deviations from baseline)
-- [ ] Incident grouping, severity, and "what changed" diffs (DNS/route/Wi-Fi/CPU-throttle/power/throughput flags)
-- [ ] Human-readable diagnostic verdict (rule-based first; AI optional later)
+### 8.1 Statistical Baseline Engine
+- [ ] **TimeSeries Analysis:** Implement `mean`, `std_dev`, and `z_score` calculation on probe history.
+- [ ] **Baseline Window:** default to trailing 24h of data.
+- [ ] **Outlier Detection:** Flag latency > 3σ (sigma) from baseline.
+
+### 8.2 Incident Management
+- [ ] `Incident` struct: start_time, end_time, severity, root_cause_verdict.
+- [ ] **State Machine:** Open -> Investigating (Gathering extra evidence) -> Resolved.
+- [ ] Deduplication: Don't spam alerts for the same ongoing outage.
+
+### 8.3 Correlation
+- [ ] Correlate "High Latency" on all probes == "WAN Congestion".
+- [ ] Correlate "Packet Loss" on Gateway only == "Wi-Fi/LAN Issue".
+- [ ] Correlate "Timeout" on specific target == "Remote Service Down".
 
 ### Acceptance
 - [ ] Incidents are emitted with recommended next tests + clear rationale

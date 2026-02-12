@@ -33,6 +33,19 @@ pub async fn serve(bind: &str, db_path: &str) -> Result<()> {
         scheduler::run_scheduler_loop(scheduler_engine).await;
     });
 
+    // 4. Start Anomaly Detection Engine (background task)
+    let detect_pool = pool.clone();
+    tokio::spawn(async move {
+        let engine = detect::engine::AnomalyEngine::new(detect_pool);
+        loop {
+            // Run every 5 minutes
+            tokio::time::sleep(std::time::Duration::from_secs(300)).await;
+            if let Err(e) = engine.run_scan().await {
+                tracing::error!("Anomaly scan failed: {}", e);
+            }
+        }
+    });
+
     // 4. Start API Server
     let addr: std::net::SocketAddr = bind.parse()?;
 

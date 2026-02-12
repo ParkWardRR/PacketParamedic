@@ -26,7 +26,16 @@ pub async fn run_scheduler_loop(scheduler: Scheduler) {
                     let full_test_string = full_test_string.clone();
 
                     tokio::spawn(async move {
-                        // Mark as run BEFORE execution to prevent double-scheduling
+                        // Apply random jitter (0-30s) to spread load and avoid thundering herds
+                        {
+                            let jitter_secs = rand::random::<u64>() % 30;
+                            if jitter_secs > 0 {
+                                info!(schedule=%name, jitter=%jitter_secs, "Applying schedule jitter");
+                                tokio::time::sleep(Duration::from_secs(jitter_secs)).await;
+                            }
+                        }
+
+                        // Mark as run BEFORE execution to prevent double-scheduling (best effort)
                         if let Err(e) = scheduler.update_last_run(&name).await {
                             error!(schedule=%name, "Failed to update last_run: {}", e);
                             return;

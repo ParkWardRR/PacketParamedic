@@ -57,6 +57,7 @@
         - Created `tests/persona_simulation.rs` validating 3 personas: **Simple Troubleshooting**, **Reliability Soak**, **High Performance**.
         - Simulated hardware utilization (CPU isolation/Thermal) on Pi 5 target (`docs/SIMULATION_REPORT.md` delivered).
         - Successfully executed live `mtr` trace against public DNS.
+        - **Refactoring:** Upgraded persona tests to "Full FAT" dynamic discovery (`get_all_providers`) to automatically detect and test Ookla, NDT7, and Fast.com installations.
 
 ## 2026-02-09
 - Initialized development session.

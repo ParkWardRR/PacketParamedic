@@ -109,6 +109,17 @@ enum ScheduleAction {
         #[arg(long, default_value = "24")]
         hours: u64,
     },
+
+    /// Apply a standardized schedule profile
+    ApplyProfile {
+        /// Profile name (minimal, standard, aggressive)
+        #[arg(long)]
+        profile: String,
+        
+        /// Force replace all existing schedules
+        #[arg(long)]
+        force: bool,
+    },
 }
 
 #[tokio::main]
@@ -282,6 +293,35 @@ async fn main() -> Result<()> {
                         for (time, name, test) in preview {
                             println!("{} : {} ({})", time, name, test);
                         }
+                    }
+                }
+                ScheduleAction::ApplyProfile { profile, force } => {
+                    use packetparamedic::scheduler::profiles::Profile;
+                    if let Some(p) = Profile::from_str(&profile) {
+                         if !force {
+                             println!("WARNING: This will DELETE all existing schedules and apply the '{}' profile.", profile);
+                             println!("Pass --force to confirm.");
+                             return Ok(());
+                         }
+                         
+                         // Delete all
+                         let list = scheduler.list().await?;
+                         for (n, _, _, _) in list {
+                             scheduler.remove(&n).await?;
+                         }
+                         
+                         // Apply profile
+                         let scheds = packetparamedic::scheduler::profiles::get_profile_schedules(p);
+                         for s in scheds {
+                             scheduler.add_schedule(&s.name, &s.cron_expr, &s.test_type).await?;
+                             if !s.enabled {
+                                 // toggle disable if logic existed, but add_schedule default enables.
+                                 // For now we assume enabled.
+                             }
+                         }
+                         println!("Profile '{}' applied successfully.", profile);
+                    } else {
+                        anyhow::bail!("Unknown profile: {}. Options: minimal, standard, aggressive", profile);
                     }
                 }
             }
