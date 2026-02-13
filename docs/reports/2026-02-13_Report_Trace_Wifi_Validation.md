@@ -75,7 +75,19 @@ Objective: Validate `trace` command and MTR JSON/Text parsing.
 
 ---
 
-## 4) Summary & Next Steps
+## 4) Hardware Self-Test
+**Command:** `packetparamedic self-test`
+
+| Component | Status | Observation | Note |
+|---|---|---|---|
+| **GPU/V3D** | **PASS** | Driver Loaded | - |
+| **Storage** | **WARN** | microSD | **Reliability Risk:** microSD cards wear out quickly with heavy logging. Use an NVMe SSD for better reliability and speed. |
+| **Ethernet** | **WARN** | 1GbE Detected | **Speed Limit:** This port is limited to ~940 Mbps. It cannot measure speeds faster than 1 Gigabit (e.g. 2Gbps Fiber). |
+| **Wi-Fi Check** | **WARN** | `Failed to run 'iw list'` | Legacy check (needs update). Use `wifi-status` instead. |
+
+---
+
+## 5) Summary & Next Steps
 1.  **Phase 7.5 Successful:** Wi-Fi module correctly identifies status, signal, and connection details.
 2.  **Connectivity Verified:** Device can connect to WPA2 networks (`Scuderia Ferrari`) and pass traffic.
 3.  **Trace Verified:** MTR integration is robust.
