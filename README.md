@@ -170,12 +170,9 @@ graph TB
     PHONE["iOS App<br/>(Core Bluetooth)"]
     BROWSER["Web Bluetooth<br/>(Android / Desktop)"]
     
-    subgraph TARGETS["Test Targets"]
-        direction TB
-        REFLECTOR_LAN["Reflector<br/>(LAN Target)"]
-        REFLECTOR_WAN["Reflector<br/>(Cloud Target)"]
-        TAILSCALE["Tailscale<br/>(Path Validator)"]
-    end
+    REFLECTOR_LAN["Reflector<br/>(LAN Target)"]
+    REFLECTOR_WAN["Reflector<br/>(Cloud Target)"]
+    TAILSCALE["Tailscale<br/>(Path Validator)"]
 
     SCHED -->|triggers| PROBES
     SCHED -->|triggers| THROUGHPUT
@@ -202,7 +199,6 @@ graph TB
     style PROBES fill:#1a1a2e,stroke:#e94560,color:#fff
     style THROUGHPUT fill:#1a1a2e,stroke:#0f3460,color:#fff
     style BRAIN fill:#1a1a2e,stroke:#00b4d8,color:#fff
-    style TARGETS fill:#1a1a2e,stroke:#fca311,stroke-dasharray: 5 5,color:#fff
     style REFLECTOR_LAN fill:#fca311,stroke:#000,color:#000
     style REFLECTOR_WAN fill:#fca311,stroke:#000,color:#000
     style TAILSCALE fill:#1a1a2e,stroke:#fca311,stroke-dasharray: 5 5,color:#fff
