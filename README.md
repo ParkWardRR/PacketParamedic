@@ -198,6 +198,17 @@ graph TB
     style REFLECTOR fill:#1a1a2e,stroke:#fca311,color:#fff
 ```
 
+## Reflector (Self-Hosted Target)
+
+> **Advanced Feature:** Most users do not need this. Only deploy Reflector if you need to isolate LAN vs WAN issues strictly.
+
+**PacketParamedic Reflector** is a standalone server binary that acts as a test target. You run it on a second machine (e.g., a VPS, a Mac on LAN, or another Pi) to enable:
+1.  **LAN Speed Tests:** Verify your Wi-Fi/Ethernet without touching the internet.
+2.  **Private WAN Tests:** Test throughput to a controlled VPS, bypassing public speed test congestion.
+3.  **NAT Traversal:** Test through heavy NAT/CGNAT using mTLS-secured tunnels.
+
+[👉 **Read the Reflector Documentation**](reflector/README.md) for deployment guides (Docker, Podman, Systemd).
+
 ---
 
 ## The probe lifecycle
