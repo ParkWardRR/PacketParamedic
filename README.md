@@ -170,6 +170,7 @@ graph TB
     PHONE["iOS App<br/>(Core Bluetooth)"]
     BROWSER["Web Bluetooth<br/>(Android / Desktop)"]
     TAILSCALE["Tailscale<br/>(optional remote)"]
+    REFLECTOR["Reflector<br/>(Self-Hosted Target)"]
 
     SCHED -->|triggers| PROBES
     SCHED -->|triggers| THROUGHPUT
@@ -188,11 +189,13 @@ graph TB
     BROWSER -->|BLE| BLE
     BLE --> API
     TAILSCALE -.->|tunnel| API
+    THROUGHPUT <-->|speed test| REFLECTOR
 
     style PI fill:#0d1117,stroke:#00b4d8,color:#fff
     style PROBES fill:#1a1a2e,stroke:#e94560,color:#fff
     style THROUGHPUT fill:#1a1a2e,stroke:#0f3460,color:#fff
     style BRAIN fill:#1a1a2e,stroke:#00b4d8,color:#fff
+    style REFLECTOR fill:#1a1a2e,stroke:#fca311,color:#fff
 ```
 
 ---
