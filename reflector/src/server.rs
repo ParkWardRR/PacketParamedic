@@ -20,6 +20,7 @@ use crate::auth::{AuthDecision, AuthGate};
 use crate::cert::generate_self_signed_cert;
 use crate::config::ReflectorConfig;
 use crate::engine::path_meta::collect_path_meta;
+use crate::engine::throughput::ThroughputEngine;
 use crate::governance::GovernanceEngine;
 use crate::identity::Identity;
 use crate::peer::PeerId;
@@ -55,6 +56,7 @@ pub struct ReflectorServer {
     auth_gate: Arc<AuthGate>,
     session_manager: Arc<SessionManager>,
     governance: Arc<GovernanceEngine>,
+    throughput: Arc<ThroughputEngine>,
     audit_log: Arc<AuditLog>,
     start_time: Instant,
 }
@@ -99,6 +101,10 @@ impl ReflectorServer {
             governance.clone(),
             endpoint_id,
         ));
+        let throughput = Arc::new(ThroughputEngine::new(
+            &config.iperf3,
+            (config.network.data_port_range_start, config.network.data_port_range_end),
+        ));
         let audit_log = Arc::new(
             AuditLog::new(config.logging.audit_log_path.clone())
                 .await
@@ -112,6 +118,7 @@ impl ReflectorServer {
             auth_gate,
             session_manager,
             governance,
+            throughput,
             audit_log,
             start_time: Instant::now(),
         })
@@ -167,6 +174,7 @@ impl ReflectorServer {
             let tls_acceptor = self.tls_acceptor.clone();
             let auth_gate = Arc::clone(&self.auth_gate);
             let session_manager = Arc::clone(&self.session_manager);
+            let throughput = Arc::clone(&self.throughput);
             let audit_log = Arc::clone(&self.audit_log);
             let config = self.config.clone();
             let endpoint_id = self.identity.endpoint_id().to_string();
@@ -237,6 +245,7 @@ impl ReflectorServer {
                     endpoint_id.clone(),
                     config,
                     session_manager,
+                    throughput,
                     auth_gate.clone(),
                     audit_log.clone(),
                     pairing_only,
@@ -274,6 +283,7 @@ async fn handle_connection(
     endpoint_id: String,
     config: ReflectorConfig,
     session_manager: Arc<SessionManager>,
+    throughput: Arc<ThroughputEngine>,
     auth_gate: Arc<AuthGate>,
     audit_log: Arc<AuditLog>,
     mut pairing_only: bool,
@@ -341,6 +351,7 @@ async fn handle_connection(
                     &peer_id,
                     &endpoint_id,
                     &session_manager,
+                    &throughput,
                     &audit_log,
                 )
                 .await
@@ -477,6 +488,7 @@ async fn handle_session_request(
     peer_id: &PeerId,
     endpoint_id: &str,
     session_manager: &SessionManager,
+    throughput: &ThroughputEngine,
     audit_log: &AuditLog,
 ) -> MessagePayload {
     let peer_id_str = peer_id.to_string();
@@ -486,7 +498,77 @@ async fn handle_session_request(
         .request_session(&peer_id_str, req.test_type.clone(), &req.params)
         .await
     {
-        Ok(grant) => {
+        Ok(mut grant) => {
+            // If this is a throughput test, start the engine.
+            if req.test_type == TestType::Throughput {
+                // Determine port and start iperf3.
+                let duration = std::time::Duration::from_secs(
+                    req.params.duration_sec.min(60) // Safety cap, though session manager handles policy
+                );
+
+                // Find a free port using internal state to avoid race conditions.
+                let allocated = session_manager.get_allocated_ports().await;
+                let (start, end) = throughput.port_range();
+                let mut port = 0;
+                
+                for p in start..=end {
+                    if !allocated.contains(&p) {
+                        port = p;
+                        break;
+                    }
+                }
+                
+                if port == 0 {
+                     return MessagePayload::SessionDeny(SessionDeny {
+                         reason: DenyReason::ResourceExhausted,
+                         message: "no ports available".into(),
+                         retry_after_sec: Some(10),
+                     });
+                }
+
+                // Add buffer to duration so server outlives client slightly.
+                let server_duration = duration + std::time::Duration::from_secs(5);
+
+                match throughput.start(port, server_duration).await {
+                   Ok((handle, result_rx)) => {
+                       // Update grant with actual port.
+                       grant.port = port;
+                       
+                       // Attach handle to session manager for lifecycle management.
+                       session_manager.attach_test_handle(&grant.test_id, handle).await;
+                       session_manager.set_session_port(&grant.test_id, port).await;
+
+                       // Spawn a background task to await the result and log it.
+                       let audit_log = audit_log.clone(); // Arc clone
+                       let endpoint_id = endpoint_id.to_string();
+                       let test_id = grant.test_id.clone();
+                       let peer_id_str = peer_id_str.clone();
+
+                       tokio::spawn(async move {
+                           match result_rx.await {
+                               Ok(res) => {
+                                   debug!(test_id = %test_id, result = ?res, "engine task completed");
+                               },
+                               Err(e) => {
+                                   warn!(test_id = %test_id, error = %e, "engine task join error");
+                               }
+                           }
+                       });
+                   },
+                   Err(e) => {
+                       error!(error = %e, "failed to start throughput engine");
+                       // If engine fails, we should technically return a Deny, or Error.
+                       // But avoiding complex rollback logic here, client will just fail to connect.
+                       // Maybe better to return Deny?
+                       return MessagePayload::SessionDeny(SessionDeny {
+                            reason: DenyReason::ResourceExhausted,
+                            message: format!("failed to start engine: {}", e),
+                            retry_after_sec: Some(10),
+                       });
+                   }
+                }
+            }
+
             let _ = audit_log
                 .log(
                     AuditEntry::new(AuditEventType::SessionGranted, endpoint_id)

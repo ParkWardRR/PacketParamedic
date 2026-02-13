@@ -799,6 +799,69 @@ sudo chown reflector:reflector /var/lib/reflector
 
 ---
 
+## 8. NAT Environment Simulation (CGNAT / Double NAT)
+
+To simulate strict NAT environments (like ISP CGNAT or Double NAT) using containers,
+you can create nested networks with routing containers.
+
+### 8.1 Simulating CGNAT
+
+Architecture:
+`[Client] --(100.64.0.x)--> [CGNAT Router] --(Public IP)--> [Reflector]`
+
+```bash
+# 1. Create WAN Network (Simulated Public Internet)
+podman network create wan-net --subnet 198.51.100.0/24
+
+# 2. Create CGNAT Network (Simulated ISP Private Network)
+podman network create cgnat-net --subnet 100.64.0.0/24 --internal
+
+# 3. Deploy Reflector on WAN
+podman run -d --name reflector-wan \
+  --network wan-net --ip 198.51.100.10 \
+  reflector:sim serve
+
+# 4. Deploy CGNAT Router (Alpine with iptables)
+podman run -d --name cgnat-router \
+  --network wan-net --ip 198.51.100.1 \
+  --cap-add=NET_ADMIN \
+  alpine sh -c "
+    apk add iptables;
+    echo 1 > /proc/sys/net/ipv4/ip_forward;
+    iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;
+    ip addr add 100.64.0.1/24 dev eth0; # Secondary IP for internal side?
+    # Actually, connect to both networks:
+    sleep infinity"
+
+# Connect Router to CGNAT Net
+podman network connect cgnat-net cgnat-router --ip 100.64.0.1
+
+# 5. Deploy Client in CGNAT
+podman run -it --rm --name client-cgnat \
+  --network cgnat-net --ip 100.64.0.10 \
+  --cap-add=NET_ADMIN \
+  debian:bookworm-slim bash -c "
+    ip route del default;
+    ip route add default via 100.64.0.1;
+    apt-get update && apt-get install -y openssl iperf3;
+    # Test connection to Public Reflector
+    echo | openssl s_client -connect 198.51.100.10:4000 -brief"
+```
+
+### 8.2 Simulating Double NAT
+
+Architecture:
+`[Client] --(192.168.1.x)--> [Home Router] --(100.64.0.x)--> [CGNAT Router] --(Public)--> [Reflector]`
+
+1.  Repeat steps for CGNAT.
+2.  Create `lan-net` (192.168.1.0/24).
+3.  Deploy "Home Router" connected to `lan-net` and `cgnat-net`.
+4.  Configure Home Router to SNAT `lan-net` -> `cgnat-net`.
+5.  Deploy Client in `lan-net` with default gateway = Home Router.
+
+This setup verifies if the protocol (mTLS over TCP) survives multiple NAT layers.
+(Note: It should, as it's standard TCP. The main issue is Peer-to-Peer pairing *inbound* to client, which Reflector architecture avoids by having Client dial out).
+
 **Symptom:** `failed to open audit log: Permission denied`
 
 **Cause:** The audit log directory is not writable by the reflector process.

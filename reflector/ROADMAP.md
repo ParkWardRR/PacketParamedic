@@ -153,13 +153,19 @@
 
 ---
 
-## Phase 6: Appliance Integration (Not Started)
+## Phase 6: Appliance Integration (In Progress)
 
 **Goal:** PacketParamedic appliance connects to the reflector and runs tests end-to-end.
 
 ### Planned
 
-- [ ] Appliance-side client library (Rust) implementing the Paramedic Link protocol
+- [x] **Client Implementation**:
+  - [x] Integrate `reflector-client` logic into `packetparamedic` binary.
+  - [x] Add `pair-reflector` CLI command.
+  - [x] Implement `ReflectorProvider` for throughput testing.
+- [ ] **End-to-End Testing**:
+  - [ ] Run full throughput test from appliance to reflector.
+  - [ ] Verify `iperf3` execution and result parsing.
 - [ ] End-to-end mTLS handshake: appliance presents its cert, reflector validates
 - [ ] Pairing flow integration: appliance sends pairing token, reflector enrolls peer
 - [ ] Session lifecycle: appliance requests test, receives grant, runs data-plane, closes

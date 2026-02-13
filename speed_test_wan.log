@@ -1,0 +1,10 @@
+[2m2026-02-13T03:41:31.487268Z[0m [32m INFO[0m [2mpacketparamedic[0m[2m:[0m Running provider speed test [3mprov_id[0m[2m=[0mreflector
+[2m2026-02-13T03:41:31.494869Z[0m [32m INFO[0m [2mpacketparamedic::reflector_proto::client[0m[2m:[0m connecting to reflector [3maddress[0m[2m=[0m172.16.19.199:4000
+[2m2026-02-13T03:41:31.516992Z[0m [32m INFO[0m [2mpacketparamedic::reflector_proto::client[0m[2m:[0m handshake complete [3mserver_version[0m[2m=[0m1.0
+[2m2026-02-13T03:41:31.524950Z[0m [32m INFO[0m [2mpacketparamedic::throughput::provider::reflector[0m[2m:[0m Received throughput session grant (Upload) [3mup_grant[0m[2m=[0mSessionGrant { test_id: "f212999b-1d25-4b8e-bec8-06851a0d4a29", mode: "direct_ephemeral", port: 0, token: "fe58b780-13b4-41f3-b185-6461ec4cf0eb", expires_at: "2026-02-13T03:42:06.521404956+00:00" }
+[2m2026-02-13T03:41:31.524980Z[0m [32m INFO[0m [2mpacketparamedic::throughput::provider::reflector[0m[2m:[0m Executing iperf3 command [3mfinal_args[0m[2m=[0m["-c", "172.16.19.199", "-p", "0", "-t", "30", "-P", "4", "-J"]
+Error: iperf3 failed: iperf3: parameter error - port number must be between 1 and 65535 inclusive
+
+Usage: iperf3 [-s|-c host] [options]
+Try `iperf3 --help' for more information.
+

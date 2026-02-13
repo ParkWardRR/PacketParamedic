@@ -95,6 +95,12 @@ pub fn defaults() -> Vec<DefaultSchedule> {
             test_type: "blame-check".to_string(),
             enabled: true,
         },
+        DefaultSchedule {
+            name: "system-anomaly-scan".to_string(),
+            cron_expr: "*/5 * * * *".to_string(), // every 5 minutes
+            test_type: "anomaly-scan".to_string(),
+            enabled: true,
+        },
     ]
 }
 
@@ -104,7 +110,7 @@ mod tests {
 
     #[test]
     fn test_defaults_have_five_schedules() {
-        assert_eq!(defaults().len(), 5);
+        assert_eq!(defaults().len(), 6);
     }
 
     #[test]

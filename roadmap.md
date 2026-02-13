@@ -39,10 +39,10 @@
 | 3 | Acceleration (NEON, Vulkan, GLES, scalar fallback) | Done | High Performance (Performance) |
 | 4 | Data Layer & Evidence (schema, migrations, blame trainer) | Done | All (Foundation) |
 | 5 | Core Measurement MVP (ICMP, TCP, DNS, HTTP probes) | Done | Simple Troubleshooting (Diagnostics) |
-| 6 | Performance & Throughput (iperf3, native Rust, 1GbE) | Done (Ookla/NDT7/Fast/iperf3) | Reliability (Streaming), High Performance |
+| 6 | Performance & Throughput (iperf3, native Rust, 1GbE) | Done (Ookla/NDT7/Fast/iperf3 + Reflector Self-Host) | Reliability (Streaming), High Performance |
 | 6.5 | Scheduling Engine (cron, bandwidth coordination) | Done | High Performance (Control), Reliability (Quiet) |
-| 7 | Path Tracing & Change Detection (traceroute/MTR) | Done | High Performance, Simple Troubleshooting |
-| 8 | Incidents & Anomaly Detection | In progress (Foundation) | Simple Troubleshooting, Reliability (Answers) |
+| 7 | Path Tracing & Change Detection (traceroute/MTR) | Started | High Performance, Simple Troubleshooting |
+| 8 | Incidents & Anomaly Detection | In progress (Foundation & Baseline Engine implemented. Needs Correlation.) | Simple Troubleshooting, Reliability (Answers) |
 | 9 | Test Phase (unit, integration, soak, security) | Not started | Reliability (Reliability) |
 | 10 | UX/UI (htmx web dashboard, onboarding, schedule mgmt) | Not started | Simple Troubleshooting, Reliability (Usability) |
 | 11 | Secure Remote Access (Tailscale) | Not started | High Performance, Reliability (Support) |
@@ -325,20 +325,11 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 
 ---
 
-## Phase 8: Incidents & Anomaly Detection (Week 17--19)
-
-### 8.1 Statistical Baseline Engine
-- [ ] **TimeSeries Analysis:** Implement `mean`, `std_dev`, and `z_score` calculation on probe history.
-- [ ] **Baseline Window:** default to trailing 24h of data.
-- [ ] **Outlier Detection:** Flag latency > 3σ (sigma) from baseline.
-
-### 8.1 Incident Lifecycle Management
-- [x] State machine: `Open` -> `Investigating` -> `Resolved` (Implemented via status column)
 - [x] Anti-flapping: deduplicate similar alerts within time window (Implemented via find_open_incident)
 - [ ] Auto-resolution: close incidents when signals return to baseline for N minutes
 
-### 8.3 Correlation
-- [ ] Correlate "High Latency" on all probes == "WAN Congestion".
+### [x] 8.2 Event Correlation (analysis/correlation.rs) (Local vs ISP detection logic)
+- [x] Correlate "High Latency" on all probes == "WAN Congestion".
 - [ ] Correlate "Packet Loss" on Gateway only == "Wi-Fi/LAN Issue".
 - [ ] Correlate "Timeout" on specific target == "Remote Service Down".
 

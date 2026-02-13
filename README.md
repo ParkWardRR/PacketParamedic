@@ -11,6 +11,7 @@
   [![Version](https://img.shields.io/badge/version-0.1.0--alpha.1-blue?style=for-the-badge&logo=github)](https://github.com/ParkWardRR/PacketParamedic)
   [![License](https://img.shields.io/badge/license-Blue%20Oak%201.0.0-brightgreen?style=for-the-badge&logo=open-source-initiative&logoColor=white)](https://blueoakcouncil.org/license/1.0.0)
   [![Raspberry Pi 5](https://img.shields.io/badge/Raspberry%20Pi%205-Only-c51a4a?style=for-the-badge&logo=raspberrypi&logoColor=white)](https://www.raspberrypi.com/products/raspberry-pi-5/)
+  [![Reflector](https://img.shields.io/badge/Reflector-Active-success?style=for-the-badge&logo=rust&logoColor=white)](https://github.com/ParkWardRR/PacketParamedic/tree/main/reflector)
   [![Rust](https://img.shields.io/badge/Built%20With-Rust-orange?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
   [![CI](https://img.shields.io/badge/CI-Passing-success?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/ParkWardRR/PacketParamedic/actions)
 

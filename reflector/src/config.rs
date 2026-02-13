@@ -137,6 +137,8 @@ pub struct NetworkConfig {
     /// Network deployment mode: `"auto"` (default), `"wan"`, `"lan"`, or `"hybrid"`.
     /// Controls how the reflector reports its network position to peers.
     pub deployment_mode: String,
+    /// Address and port for the HTTP health check listener.
+    pub listen_address_health: String,
 }
 
 impl Default for NetworkConfig {
@@ -148,6 +150,7 @@ impl Default for NetworkConfig {
             data_port_range_start: 5201,
             data_port_range_end: 5299,
             deployment_mode: "auto".to_string(),
+            listen_address_health: "0.0.0.0:7301".to_string(),
         }
     }
 }
@@ -297,6 +300,7 @@ mod tests {
         assert!(matches!(cfg.network.mode, DataPlaneMode::Tunneled));
         assert_eq!(cfg.network.data_port_range_start, 5201);
         assert_eq!(cfg.network.data_port_range_end, 5299);
+        assert_eq!(cfg.network.listen_address_health, "0.0.0.0:7301"); // Default check
 
         // Access
         assert!(!cfg.access.pairing_enabled);

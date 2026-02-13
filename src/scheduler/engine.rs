@@ -54,6 +54,7 @@ pub async fn run_scheduler_loop(scheduler: Scheduler) {
                             "http-check" | "http-reachability" => "http:google.com".to_string(),
                             "speed-test-light" => "speed:wan".to_string(), // new speed alias
                             "blame-check" => "blame:full".to_string(),     // explicit blame alias
+                            "anomaly-check" | "anomaly-scan" => "anomaly:scan".to_string(),
                             other => other.to_string(),
                         };
 
@@ -95,6 +96,22 @@ pub async fn run_scheduler_loop(scheduler: Scheduler) {
                                     Ok(_) => {
                                         info!(schedule=%name, "Blame analysis complete");
                                         return; // Success
+                                    }
+                                    Err(e) => Err(e),
+                                }
+                            }
+                            "anomaly" => {
+                                // Anomaly scan task
+                                let engine = crate::detect::engine::AnomalyEngine::new(scheduler.get_pool().clone());
+                                match engine.run_scan().await {
+                                    Ok(_) => {
+                                        info!(schedule=%name, "Anomaly scan complete");
+                                        // Run Correlation immediately
+                                        let correlator = crate::analysis::correlation::CorrelationEngine::new(scheduler.get_pool().clone());
+                                        if let Err(e) = correlator.correlate().await {
+                                            warn!(schedule=%name, "Correlation failed: {}", e);
+                                        }
+                                        return; 
                                     }
                                     Err(e) => Err(e),
                                 }

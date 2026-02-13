@@ -4,6 +4,7 @@ use std::process::Command;
 
 pub struct OoklaProvider;
 
+#[async_trait::async_trait]
 impl SpeedTestProvider for OoklaProvider {
     fn meta(&self) -> ProviderMeta {
         ProviderMeta {
@@ -28,17 +29,20 @@ impl SpeedTestProvider for OoklaProvider {
 
     fn is_available(&self) -> bool {
         // Check if `speedtest` is in PATH
-        Command::new("speedtest").arg("--version").output().is_ok()
+        // Keep sync check for availability via std Command to avoid async complexity in is_available if possible, 
+        // but trait is sync for is_available. std::process::Command is fine here.
+        std::process::Command::new("speedtest").arg("--version").output().is_ok()
     }
 
-    fn run(&self, _req: SpeedTestRequest) -> Result<SpeedTestResult> {
+    async fn run(&self, _req: SpeedTestRequest) -> Result<SpeedTestResult> {
         // Provide a real implementation stub that would fail gracefully but compiles
         // Run: speedtest --format=json --accept-license --accept-gdpr
-        let output = Command::new("speedtest")
+        let output = tokio::process::Command::new("speedtest")
             .arg("--format=json")
             .arg("--accept-license")
             .arg("--accept-gdpr")
-            .output()?;
+            .output()
+            .await?;
             
         if !output.status.success() {
              return Err(anyhow::anyhow!("Ookla CLI failed: {}", String::from_utf8_lossy(&output.stderr)));

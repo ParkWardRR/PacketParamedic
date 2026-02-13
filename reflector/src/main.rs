@@ -204,6 +204,23 @@ async fn cmd_serve(mut config: ReflectorConfig, bind_override: Option<String>) -
         config.network.listen_address = addr;
     }
 
+    // Spawn HTTP health check server.
+    let health_addr = config.network.listen_address_health.clone();
+    tokio::spawn(async move {
+        info!(address = %health_addr, "starting health check listener");
+        match tokio::net::TcpListener::bind(&health_addr).await {
+            Ok(listener) => {
+                let app = engine::health::build_health_router();
+                if let Err(e) = axum::serve(listener, app).await {
+                    error!(error = %e, "health server failed");
+                }
+            }
+            Err(e) => {
+                error!(error = %e, address = %health_addr, "failed to bind health listener");
+            }
+        }
+    });
+
     let server = ReflectorServer::new(config)
         .await
         .context("failed to initialize reflector server")?;

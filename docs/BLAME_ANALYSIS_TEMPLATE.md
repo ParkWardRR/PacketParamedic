@@ -181,30 +181,61 @@ If you need CLI snippets, put them here (do not paste secrets):
 
 ---
 
+---
 ## 11) LAN vs WAN Isolation (Self-Hosted Model)
 
-### 11.1 LAN Benchmarking (Reflector on LAN)
-*Scenario: Verifying local Wi-Fi/Ethernet health using a self-hosted endpoint on the LAN.*
+### 11.1 Local Benchmarking (Reflector on LAN/Loopback)
+*Scenario: Verifying local interface/driver/stack health (elimination of WAN variability).*
 | Metric | Target (Reflector) | Result | Pass/Fail Criteria |
 |---|---|---|---|
-| Throughput (Download) | `<Internal IP>` | `<Mbps>` | Should match link speed (e.g. >900Mbps on 1G) |
-| Throughput (Upload) | `<Internal IP>` | `<Mbps>` | Should match link speed |
-| Jitter (UDP Echo) | `<Internal IP>` | `<ms>` | Should be < 2ms on LAN |
-| Loss (UDP Echo) | `<Internal IP>` | `<%>` | Should be 0% |
+| Throughput (Download) | `localhost:4000` | `<Mbps>` | Should match interface speed (e.g., >20Gbps on Loopback, >900Mbps on 1G LAN) |
+| Throughput (Upload) | `localhost:4000` | `<Mbps>` | Should match interface speed |
+| Jitter (UDP Echo) | `localhost:4000` | `<ms>` | Should be near zero (< 0.5ms) |
+| Loss (UDP Echo) | `localhost:4000` | `<%>` | MUST be 0% |
+| CPU Load (Client) | Self | `<%>` | Verify CPU isn't bottlenecking (core 2/3 usage) |
 
-### 11.2 WAN Benchmarking (Reflector on WAN/VPS)
+### 11.2 WAN Benchmarking (Reflector on Dedicated VM)
 *Scenario: Precision WAN testing using a self-hosted endpoint on a VPS (controlled path).*
 | Metric | Target (Reflector) | Result | Notes |
 |---|---|---|---|
-| Throughput (Download) | `<VPS IP>` | `<Mbps>` | ISP limit check (single stream) |
-| Throughput (Upload) | `<VPS IP>` | `<Mbps>` | ISP limit check (single stream) |
-| Latency (UDP Echo) | `<VPS IP>` | `<ms>` | True application RTT (no ICMP de-prioritization) |
-| Bufferbloat | `<VPS IP>` | `<Grade>` | Latency delta under load |
+| Throughput (Download) | `irww.alpina` | `<Mbps>` | ISP limit check (single stream vs multi-stream) |
+| Throughput (Upload) | `irww.alpina` | `<Mbps>` | ISP limit check (single stream vs multi-stream) |
+| Latency (UDP Echo) | `irww.alpina` | `<ms>` | True application RTT (no ICMP de-prioritization) |
+| Bufferbloat | `irww.alpina` | `<Grade>` | Latency delta under load |
 
-### 11.3 WAN Benchmarking (Public / No-Reflector)
-*Scenario: Fallback to public infrastructure when no self-hosted endpoint is available.*
+### 11.3 WAN Benchmarking (Public Infrastructure)
+*Scenario: Fallback when self-hosted endpoint is unreachable or for comparison.*
 | Method | Provider | Download | Upload | Ping | Notes |
 |---|---|---|---|---|---|
 | HTTP/TCP Speed Test | Ookla/NDT7 | `<Mbps>` | `<Mbps>` | `<ms>` | Variable server distance/congestion |
 | Latency (ICMP) | 8.8.8.8 | N/A | N/A | `<ms>` | ICMP may be rate-limited |
 | Trace | Google/Cloudflare | Path | N/A | `<ms>` | Identifying bad hops via MTR |
+
+---
+
+## 12) NAT Environment Impact (CGNAT / Double NAT)
+
+### 12.1 CGNAT Detection
+*Indicator: WAN IP on router interface is in 100.64.0.0/10 range, but public IP check shows different address.*
+| Check | Observation | Value | Implication |
+|---|---|---|---|
+| WAN IP (Router Interface) | `<IP Address>` | `<100.x.y.z?>` | If private/CGNAT range, inbound connections (reflector pairing) may fail without relay. |
+| Public IP (STUN/HTTP) | `<IP Address>` | `<Public IP>` | Mismatch confirms NAT. |
+| Traceroute Hops | Hoops 1-3 | `<IPs>` | Multiple private hops indicate ISP NAT layers. |
+
+### 12.2 Double NAT Symptoms
+*Scenario: User router behind ISP modem/router (bridge mode disabled).*
+| Symptom | Test | Result |
+|---|---|---|
+| Traceroute | Hop 1 & 2 | `<IPs>` | If both are private (e.g., 192.168.1.1 then 192.168.0.1), Double NAT exists. |
+| UPnP / PCP | Discovery | `<Success/Fail>` | Port mapping likely fails. |
+| Peer-to-Peer | Reflector Pairing | `<Success/Fail>` | Direct inbound connection blocked. |
+
+---
+
+## 12) Evidence Bundle (Appendix)
+> Eventually this will be a link, but for now we append the full evidence JSON bundle here.
+
+```json
+<INSERT_FULL_JSON_EVIDENCE_BUNDLE_HERE>
+```

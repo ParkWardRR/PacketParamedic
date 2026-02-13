@@ -4,6 +4,23 @@ use std::process::Command;
 
 pub struct Ndt7Provider;
 
+impl Ndt7Provider {
+    fn find_executable() -> Option<String> {
+        // Check PATH
+        if Command::new("ndt7-client").arg("-help").output().is_ok() {
+            return Some("ndt7-client".to_string());
+        }
+        // Check local go/bin
+        let home = std::env::var("HOME").unwrap_or_else(|_| "/home/alfa".to_string());
+        let path = format!("{}/go/bin/ndt7-client", home);
+        if std::path::Path::new(&path).exists() {
+            return Some(path);
+        }
+        None
+    }
+}
+
+#[async_trait::async_trait]
 impl SpeedTestProvider for Ndt7Provider {
     fn meta(&self) -> ProviderMeta {
         ProviderMeta {
@@ -27,14 +44,17 @@ impl SpeedTestProvider for Ndt7Provider {
     }
 
     fn is_available(&self) -> bool {
-        Command::new("ndt7-client").arg("-help").output().is_ok()
+        Self::find_executable().is_some()
     }
 
-    fn run(&self, _req: SpeedTestRequest) -> Result<SpeedTestResult> {
+    async fn run(&self, _req: SpeedTestRequest) -> Result<SpeedTestResult> {
+        let exe = Self::find_executable().ok_or_else(|| anyhow::anyhow!("NDT7 Client not found"))?;
+        
         // Run: ndt7-client -format=json
-        let output = Command::new("ndt7-client")
+        let output = tokio::process::Command::new(exe)
             .arg("-format=json")
-            .output()?;
+            .output()
+            .await?;
             
         if !output.status.success() {
              return Err(anyhow::anyhow!("NDT7 Client failed: {}", String::from_utf8_lossy(&output.stderr)));
@@ -53,16 +73,37 @@ impl SpeedTestProvider for Ndt7Provider {
         
         for line in stdout.lines() {
             if let Ok(json) = serde_json::from_str::<serde_json::Value>(line) {
-                // Check if this is a server/client measurement
-                // NDT7 JSON schema varies, but typically keeps 'Download' / 'Upload' blocks
-                // We'll perform a naive best-effort aggregate for now
-                 if let Some(dl) = json.get("Download").and_then(|x| x.get("Throughput").and_then(|v| v.get("Value"))) {
-                     if let Some(val) = dl.as_f64() {
-                         download_accum = val; // Usually it reports cumulative or instantaneous? NDT7 is confusing.
-                         // Actually, let's assume valid final output or just return raw for now.
+                // Check Test type ("download" or "upload")
+                let test_type = json.get("Value").and_then(|v| v.get("Test")).and_then(|s| s.as_str());
+                
+                // Parse Throughput from AppInfo (NumBytes / ElapsedTime)
+                if let Some(app_info) = json.get("Value").and_then(|v| v.get("AppInfo")) {
+                    let bytes = app_info.get("NumBytes").and_then(|n| n.as_f64()).unwrap_or(0.0);
+                    let elapsed_us = app_info.get("ElapsedTime").and_then(|n| n.as_f64()).unwrap_or(1.0); // avoid div by zero
+                    
+                    if bytes > 0.0 && elapsed_us > 0.0 {
+                        let mbps = (bytes * 8.0) / (elapsed_us / 1_000_000.0) / 1_000_000.0;
+                        match test_type {
+                            Some("download") => download_accum = mbps, // Keep updating, last one is final
+                            Some("upload") => upload_accum = mbps,
+                            _ => {}
+                        }
+                    }
+                }
+                
+                // Parse RTT from TCPInfo (MinRTT)
+                // NDT writes TCPInfo: { "MinRTT": ... } in some messages
+                if let Some(tcp_info) = json.get("Value").and_then(|v| v.get("TCPInfo")) {
+                     if let Some(rtt) = tcp_info.get("MinRTT").and_then(|n| n.as_f64()) {
+                         // rtt is usually microseconds or milliseconds?
+                         // Linux kernel uses microseconds usually? Or verify unit.
+                         // Usually NDT reports microseconds.
+                         let rtt_ms = rtt / 1000.0;
+                         if rtt_ms > 0.0 {
+                             max_rtt = rtt_ms; // Just capture latest capable RTT
+                         }
                      }
-                 }
-                 // ... (Detailed parsing omitted for MVP to focus on structure)
+                }
                  count += 1;
             }
         }
@@ -70,9 +111,9 @@ impl SpeedTestProvider for Ndt7Provider {
         // Stub Result
         Ok(SpeedTestResult {
             provider_id: "ndt7".to_string(),
-            download_mbps: Some(download_accum / 1_000_000.0), // approx
-            upload_mbps: Some(upload_accum / 1_000_000.0),
-            latency_ms: None, 
+            download_mbps: Some(download_accum), 
+            upload_mbps: Some(upload_accum),
+            latency_ms: if max_rtt > 0.0 { Some(max_rtt) } else { None }, 
             jitter_ms: None,
             packet_loss_pct: None,
             bufferbloat_ms: None,

@@ -1,0 +1,24 @@
+[identity]
+private_key_path = "/var/lib/reflector/identity.key"
+
+[network]
+listen_address = "0.0.0.0:4000"
+listen_address_health = "0.0.0.0:7301"
+mode = "direct_ephemeral"
+data_port_range_start = 5201
+data_port_range_end = 5210
+
+[access]
+authorized_peers = ["PP-XSPQ-DE0Q-CGK4-0PSQ-NJ5Y-WVZG-T3S6-43VM-BKV3-KWYH-TVM7-2RTG-KT00-B"]
+pairing_enabled = true
+
+[iperf3]
+default_streams = 4
+max_streams = 8
+
+[logging]
+level = "debug"
+audit_log_path = "/var/lib/reflector/audit.jsonl"
+
+[quotas]
+max_concurrent_tests = 4

@@ -43,6 +43,11 @@ impl ThroughputEngine {
         }
     }
 
+    /// Get the configured port range.
+    pub fn port_range(&self) -> (u16, u16) {
+        (self.port_range_start, self.port_range_end)
+    }
+
     /// Find a free port within the configured range by attempting to bind.
     ///
     /// Returns the first port in the range that is available.
@@ -99,8 +104,8 @@ impl ThroughputEngine {
             .arg(port.to_string())
             .arg("--one-off")
             .kill_on_drop(true)
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::inherit())
+            .stderr(std::process::Stdio::inherit())
             .spawn()
             .with_context(|| {
                 format!(

@@ -68,6 +68,18 @@ ash = "0.38.0"
 async-trait = "0.1.89"
 r2d2 = "0.8.10"
 r2d2_sqlite = "0.25"
+rcgen = "0.14.7"
+ed25519-dalek = { version = "2.1.1", features = ["rand_core", "serde"] }
+rustls = { version = "0.23.36", features = ["ring"] }
+tokio-rustls = "0.26.4"
+tokio-util = { version = "0.7.18", features = ["codec"] }
+bytes = "1.11.1"
+base32 = "0.5.1"
+x509-parser = "0.18.1"
+rustls-pki-types = "1.14.0"
+futures = "0.3"
+time = { version = "0.3", features = ["serde", "formatting"] }
+zeroize = "1.8.2"
 
 [dev-dependencies]
 tokio-test = "0.4"

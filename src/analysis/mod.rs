@@ -4,4 +4,5 @@ pub mod runner;
 pub mod qos; // Phase 13
 
 
-// Future: pub mod anomaly;
+pub mod stats; // Phase 8.1
+pub mod correlation; // Phase 8.2

@@ -80,6 +80,17 @@ enum Commands {
         #[arg(long, default_value = "bundle.zip")]
         output: String,
     },
+
+    /// Pair with a Paramedic Reflector
+    PairReflector {
+        /// Reflector address (e.g. 1.2.3.4:4000)
+        #[arg(long)]
+        host: String,
+
+        /// Pairing token from reflector
+        #[arg(long)]
+        token: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -89,6 +100,17 @@ enum DiagnosticCommand {
         /// Target to ping for latency measurement
         #[arg(long, default_value = "8.8.8.8")]
         target: String,
+    },
+
+    /// View statistical baseline for a target
+    Baseline {
+        /// Target (e.g. 8.8.8.8)
+        #[arg(long)]
+        target: String,
+        
+        /// Probe type (icmp, dns, http)
+        #[arg(long, default_value = "icmp")]
+        probe: String,
     },
 }
 
@@ -147,6 +169,9 @@ async fn main() -> Result<()> {
                 .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
         )
         .init();
+    
+    // Initialize crypto provider (needed for rustls 0.23+)
+    rustls::crypto::ring::default_provider().install_default().ok();
 
     let cli = Cli::parse();
 
@@ -228,7 +253,7 @@ async fn main() -> Result<()> {
                                 timeout: std::time::Duration::from_secs(30),
                                 prefer_ipv6: false,
                                 server_hint: None,
-                            })?;
+                            }).await?; // Added await
                             println!("{}", serde_json::to_string_pretty(&res)?);
                         } else {
                             anyhow::bail!("Ookla CLI not found. {}", p.meta().install_hint);
@@ -242,7 +267,7 @@ async fn main() -> Result<()> {
                                 timeout: std::time::Duration::from_secs(30),
                                 prefer_ipv6: false,
                                 server_hint: None,
-                            })?;
+                            }).await?; // Added await
                             println!("{}", serde_json::to_string_pretty(&res)?);
                          } else {
                             anyhow::bail!("NDT7 Client not found. {}", p.meta().install_hint);
@@ -256,12 +281,27 @@ async fn main() -> Result<()> {
                                 timeout: std::time::Duration::from_secs(30),
                                 prefer_ipv6: false,
                                 server_hint: None,
-                            })?;
+                            }).await?; // Added await
                             println!("{}", serde_json::to_string_pretty(&res)?);
                          } else {
                             anyhow::bail!("Fast CLI not found. {}", p.meta().install_hint);
                          }
                     },
+                    "reflector" => {
+                        let p = packetparamedic::throughput::provider::reflector::ReflectorProvider;
+                        use packetparamedic::throughput::provider::SpeedTestProvider;
+                        if p.is_available() {
+                           // Use --peer as server_hint for Reflector
+                           let res = p.run(packetparamedic::throughput::provider::SpeedTestRequest {
+                               timeout: std::time::Duration::from_secs(30), // Should parse duration arg if possible, but struct hardcoded here
+                               prefer_ipv6: false,
+                               server_hint: peer.clone(),
+                           }).await?;
+                           println!("{}", serde_json::to_string_pretty(&res)?);
+                        } else {
+                           anyhow::bail!("iperf3 not found (required for reflector).");
+                        }
+                   },
                     _ => anyhow::bail!("Unknown provider: {}", prov_id),
                 }
             } else {
@@ -287,6 +327,20 @@ async fn main() -> Result<()> {
                     if result.grade == 'D' || result.grade == 'F' {
                         println!("⚠️  High Bufferbloat detected! Your router may need AQM/SQM enabled.");
                     }
+                }
+                DiagnosticCommand::Baseline { target, probe } => {
+                     let pool = packetparamedic::storage::open_pool("data/packetparamedic.db")?;
+                     let stats = packetparamedic::analysis::stats::calculate_baseline(&pool, &probe, &target)?;
+                     
+                     println!("--- Baseline: {} ({}) ---", target, probe);
+                     println!("Sample Count: {}", stats.sample_count);
+                     if stats.sample_count > 0 {
+                         println!("Mean:         {:.2} ms", stats.mean);
+                         println!("StdDev:       {:.2} ms", stats.std_dev);
+                         println!("Threshold:    > {:.2} ms (3σ)", stats.mean + (3.0 * stats.std_dev));
+                     } else {
+                         println!("No data available for last 24h.");
+                     }
                 }
             }
         }
@@ -360,6 +414,33 @@ async fn main() -> Result<()> {
         Commands::ExportBundle { output } => {
             tracing::info!(%output, "Exporting support bundle");
             packetparamedic::evidence::export_bundle(&output).await?;
+        }
+        Commands::PairReflector { host, token } => {
+            use anyhow::Context;
+            let addr: std::net::SocketAddr = host.parse()
+                .with_context(|| format!("invalid reflector address: {}", host))?;
+            
+            let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
+            let path = std::path::Path::new(&home).join(".packetparamedic/identity.key");
+            
+            if let Some(parent) = path.parent() {
+                tokio::fs::create_dir_all(parent).await?;
+            }
+            
+            let identity = packetparamedic::reflector_proto::identity::Identity::load_or_generate(&path)?;
+            
+            println!("Paramedic Identity: {}", identity.endpoint_id());
+            println!("Connecting to {}...", addr);
+            
+            let mut client = packetparamedic::reflector_proto::client::ReflectorClient::connect(addr, &identity).await?;
+            let resp = client.pair(token).await?;
+            
+            if resp.success {
+                println!("✅ Successfully paired with Reflector!");
+                println!("Reflector ID: {}", resp.endpoint_id.unwrap_or_default());
+            } else {
+                println!("❌ Pairing failed: {}", resp.message);
+            }
         }
     }
 

@@ -18,6 +18,7 @@ use crate::governance::GovernanceEngine;
 use crate::rpc::{
     ActiveTestInfo, DenyReason, SessionDeny, SessionGrant, StatusSnapshot, TestParams, TestType,
 };
+use crate::engine::TestHandle;
 
 // ---------------------------------------------------------------------------
 // ActiveSession
@@ -41,6 +42,8 @@ pub struct ActiveSession {
     pub bytes_transferred: AtomicU64,
     /// PID of the child process (e.g. iperf3), if applicable.
     pub child_pid: Option<u32>,
+    /// Handle to the running engine, ensuring cleanup on drop.
+    pub test_handle: Option<TestHandle>,
 }
 
 impl ActiveSession {
@@ -185,6 +188,7 @@ impl SessionManager {
             expires_at,
             bytes_transferred: AtomicU64::new(0),
             child_pid: None,
+            test_handle: None,
         };
 
         {
@@ -307,9 +311,22 @@ impl SessionManager {
         }
     }
 
+    /// Attach a test handle to an active session.
+    pub async fn attach_test_handle(&self, test_id: &str, handle: TestHandle) {
+        let mut sessions = self.sessions.write().await;
+        if let Some(session) = sessions.get_mut(test_id) {
+            session.test_handle = Some(handle);
+        }
+    }
+
     /// Get the number of currently active sessions.
     pub async fn active_count(&self) -> usize {
         self.sessions.read().await.len()
+    }
+
+    /// Get a list of all ports currently assigned to active sessions.
+    pub async fn get_allocated_ports(&self) -> Vec<u16> {
+        self.sessions.read().await.values().map(|s| s.port).collect()
     }
 }
 

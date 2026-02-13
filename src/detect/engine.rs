@@ -1,9 +1,7 @@
 use crate::storage::Pool;
-use crate::detect::anomaly::TimeSeries;
 use crate::detect::incident::IncidentManager;
-use crate::detect::Severity;
-use anyhow::{Context, Result};
-use rusqlite::params;
+use crate::analysis::stats::check_for_anomaly;
+use anyhow::Result;
 use tracing::{info, warn};
 
 pub struct AnomalyEngine {
@@ -17,77 +15,89 @@ impl AnomalyEngine {
         Self { pool, incident_manager }
     }
 
-    /// Run a scan for anomalies on key metrics.
-    /// This should be called periodically (e.g. every 5-10 mins).
+    /// Run a scan for anomalies.
+    /// This iterates over known targets and checks their latest value against the baseline.
+    /// Typically called by a cron schedule (e.g. "anomaly-scan").
     pub async fn run_scan(&self) -> Result<()> {
         info!("Running anomaly detection scan");
-        self.check_icmp_latency().await?;
+        
+        let pool = self.pool.clone();
+        
+        // Find all active targets in the last hour
+        let targets: Vec<(String, String)> = tokio::task::spawn_blocking(move || -> Result<Vec<(String, String)>> {
+            let conn = pool.get()?;
+            let mut stmt = conn.prepare(
+                "SELECT DISTINCT probe_type, target FROM measurements 
+                 WHERE created_at > datetime('now', '-1 hour')"
+            )?;
+            let rows = stmt.query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })?;
+            
+            let mut res = Vec::new();
+            for r in rows { res.push(r?); }
+            Ok(res)
+        }).await??;
+
+        for (probe_type, target) in targets {
+            self.analyze_target(&probe_type, &target).await?;
+        }
+        
         Ok(())
     }
 
-    /// Check for ICMP latency spikes (Z-Score > 3.0) across all targets
-    async fn check_icmp_latency(&self) -> Result<()> {
+    async fn analyze_target(&self, probe_type: &str, target: &str) -> Result<()> {
         let pool = self.pool.clone();
-        
-        // Spawn blocking task for DB query & analysis
-        let anomalies: Vec<(String, f64, f64, f64)> = tokio::task::spawn_blocking(move || -> Result<Vec<(String, f64, f64, f64)>> {
+        let pt = probe_type.to_string();
+        let t = target.to_string();
+
+        // Fetch latest measurement
+        let latest: Option<(f64, String)> = tokio::task::spawn_blocking(move || -> Result<Option<(f64, String)>> {
             let conn = pool.get()?;
             let mut stmt = conn.prepare(
-                "SELECT target, latency_ms FROM probe_results 
-                 WHERE probe_type = 'icmp' 
-                 AND created_at > datetime('now', '-1 hour')
-                 ORDER BY created_at ASC"
+                "SELECT value, created_at FROM measurements 
+                 WHERE probe_type = ?1 AND target = ?2 
+                 ORDER BY created_at DESC LIMIT 1"
             )?;
             
-            use std::collections::HashMap;
-            let mut samples: HashMap<String, Vec<f64>> = HashMap::new();
-            
-            let rows = stmt.query_map([], |row| {
-                Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
+            let mut rows = stmt.query_map(rusqlite::params![pt, t], |row| {
+                Ok((row.get::<_, f64>(0)?, row.get::<_, String>(1)?))
             })?;
-
-            for r in rows {
-                let (target, latency) = r?;
-                samples.entry(target).or_default().push(latency);
+            
+            if let Some(r) = rows.next() {
+                Ok(Some(r?))
+            } else {
+                Ok(None)
             }
-
-            let mut results = Vec::new();
-            for (target, values) in samples {
-                if values.len() < 10 { continue; }
-                
-                let ts = TimeSeries::new(values.clone());
-                if let Some(last_val) = values.last().copied() {
-                    let mean = ts.mean();
-                    // Z-Score calc
-                    if let Ok(z) = ts.z_score(last_val) {
-                        if z > 3.0 && last_val > 20.0 { 
-                             results.push((target, last_val, mean, z));
-                        }
-                    }
-                }
-            }
-            Ok(results)
         }).await??;
 
-        // Record any found anomalies
-        for (target, val, mean, z) in anomalies {
-            let msg = format!("Latency spike detected on {}: {:.1}ms (Baseline: {:.1}ms, Z-Score: {:.1})", target, val, mean, z);
-            warn!("{}", msg);
+        if let Some((val, _ts)) = latest {
+            // Check for anomaly
+            let pool = self.pool.clone();
+            let pt = probe_type.to_string();
+            let t = target.to_string();
             
-            self.incident_manager.record_incident(
-                "Latency Anomaly",
-                Severity::Warning,
-                serde_json::json!({
-                    "target": target,
-                    "metric": "latency",
-                    "current": val,
-                    "mean": mean,
-                    "z_score": z,
-                    "description": msg
-                })
-            )?;
+            // Just use the stats engine!
+            let anomaly_opt = tokio::task::spawn_blocking(move || {
+                check_for_anomaly(&pool, &pt, &t, val)
+            }).await??;
+
+            if let Some(anomaly) = anomaly_opt {
+                warn!(target=%anomaly.target, "Anomaly Detected: {:?}", anomaly);
+                self.incident_manager.record_incident(
+                    &format!("{} Anomaly: {}", anomaly.probe_type.to_uppercase(), anomaly.target),
+                    anomaly.severity,
+                    serde_json::json!({
+                        "target": anomaly.target,
+                        "probe_type": anomaly.probe_type,
+                        "value": anomaly.value,
+                        "baseline_mean": anomaly.baseline_mean,
+                        "z_score": anomaly.z_score,
+                        "val_unit": "ms"
+                    })
+                )?;
+            }
         }
-        
         Ok(())
     }
 }

@@ -130,3 +130,20 @@
     - Reprioritized throughput targets: 250Mbps/500Mbps/1Gbps/2.5Gbps now.
     - Deferred 5GbE/10GbE to Phase 14 (Future).
     - Updated `roadmap.md` Phases 2, 6, and 14 to reflect this focus.
+
+## 2026-02-12 (Phase 8.1)
+- **Implemented Statistical Baseline Engine (Phase 8.1):**
+    - Created `src/analysis/stats.rs` implementing Welford's algorithm for Mean/StdDev/Z-Score on persistent `measurements`.
+    - Implemented `detect/engine.rs` to scan for anomalies against 24h trailing baseline.
+    - Added `system-anomaly-scan` to default schedule (runs every 5 minutes).
+    - Integrated `anomaly-scan` into Scheduler Engine.
+    - Added `diagnostics baseline` CLI command to inspect statistical models.
+    - Validated on Pi 5 hardware with unit tests and integration (simulated) tests.
+
+## 2026-02-12 Part 2 (Phase 8.2)
+- **Implemented Event Correlation Engine (Phase 8.2):**
+    - Created `src/analysis/correlation.rs` to group isolated anomalies into actionable root causes.
+    - Implemented logic to distinguish **Local Network Issues** (Gateway + WAN bad) from **ISP Issues** (Gateway good + WAN bad) and **Remote Service Issues** (Single target bad).
+    - Updated `detect/engine.rs` to include specific targets in verdicts, enabling granular correlation.
+    - Fixed schema bug where `incidents.id` was INTEGER instead of TEXT (UUID support).
+    - Added unit tests simulating multi-target failure scenarios.

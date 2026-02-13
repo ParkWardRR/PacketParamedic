@@ -5,6 +5,7 @@ use anyhow::Result;
 pub mod ookla;
 pub mod ndt7;
 pub mod fast;
+pub mod reflector;
 
 /// Metadata describing a speed test provider.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -78,7 +79,8 @@ pub struct SpeedTestResult {
     pub timestamp: chrono::DateTime<chrono::Utc>,
 }
 
-/// Trait for all speed test providers (Ookla, NDT7, Fast, iPerf3).
+/// Trait for all speed test providers (Ookla, NDT7, Fast, iPerf3, Reflector).
+#[async_trait::async_trait]
 pub trait SpeedTestProvider: Send + Sync {
     /// Static metadata about the provider.
     fn meta(&self) -> ProviderMeta;
@@ -87,7 +89,7 @@ pub trait SpeedTestProvider: Send + Sync {
     fn is_available(&self) -> bool; 
     
     /// Run the speed test.
-    fn run(&self, req: SpeedTestRequest) -> Result<SpeedTestResult>;
+    async fn run(&self, req: SpeedTestRequest) -> Result<SpeedTestResult>;
 }
 
 /// Dynamic registry of all supported providers.

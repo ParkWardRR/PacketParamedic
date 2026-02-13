@@ -14,6 +14,7 @@ pub mod selftest;
 pub mod storage;
 pub mod system;
 pub mod throughput;
+pub mod reflector_proto;
 
 use anyhow::Result;
 

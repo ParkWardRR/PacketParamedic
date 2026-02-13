@@ -162,6 +162,7 @@ pub enum DenyReason {
     Busy,
     InvalidParams,
     QuotaExceeded,
+    ResourceExhausted,
 }
 
 /// Client or server signals that a test session has ended.

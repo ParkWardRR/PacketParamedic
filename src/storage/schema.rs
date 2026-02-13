@@ -20,7 +20,7 @@ pub fn migrate(conn: &Connection) -> Result<()> {
         );
 
         CREATE TABLE IF NOT EXISTS incidents (
-            id INTEGER PRIMARY KEY,
+            id TEXT PRIMARY KEY,
             severity TEXT NOT NULL,
             verdict TEXT NOT NULL,
             evidence_json TEXT NOT NULL,
@@ -122,6 +122,30 @@ pub fn migrate(conn: &Connection) -> Result<()> {
     
     if has_status == 0 {
          conn.execute("ALTER TABLE incidents ADD COLUMN status TEXT NOT NULL DEFAULT 'Open'", [])?;
+    }
+    
+    // Migration: Fix incidents.id type if it is INTEGER
+    let id_type: String = conn.query_row(
+        "SELECT type FROM pragma_table_info('incidents') WHERE name='id'",
+        [],
+        |row| row.get(0)
+    ).unwrap_or("TEXT".to_string()); // Default to TEXT if no row (table doesn't exist? But we just created it?)
+
+    if id_type == "INTEGER" {
+        // Drop and recreate. Data loss accepted for prototype phase.
+        conn.execute("DROP TABLE incidents", [])?;
+        conn.execute(
+            "CREATE TABLE incidents (
+                id TEXT PRIMARY KEY,
+                severity TEXT NOT NULL,
+                verdict TEXT NOT NULL,
+                evidence_json TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'Open',
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )", []
+        )?;
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_incidents_created ON incidents(created_at)", [])?;
     }
     
     Ok(())
