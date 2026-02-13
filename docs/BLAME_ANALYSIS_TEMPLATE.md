@@ -85,12 +85,17 @@ Define whether this report is **invalid** (measurement integrity compromised) or
 ## 4.5) Network Stack Diagnosis (IPv4/IPv6 & Routing)
 | Category | Check | Value | Notes |
 |---|---|---|---|
-| **IPv4** | Local IP | `<192.168.x.x>` | Subnet Mask / Gateway |
-| **IPv4** | Route to 8.8.8.8 | `<Hops Count>` | Traceroute path health |
-| **IPv6** | Global Address | `<2001:...>` | Public/Internet routable? |
-| **IPv6** | ULA Address | `<fd00:...>` | Local/Mesh routing? |
-| **IPv6** | Connectivity | `<Pass/Fail>` | Ping6 to google.com |
-| **IPv6** | Route Table | `<Default GW>` | RA / DHCPv6 / Static |
+| **IPv4** | Local IP | `<IPv4>` | Gateway: `<Gateway IP>` |
+| **IPv4** | Routing (MTR) | `<N> Hops` to `<Target>` | Loss: `<X>%`. Latency: `<Y>ms`. |
+| **IPv6** | Connectivity | `<PASS/FAIL>` | Address: `<Global IPv6>` |
+| **Wi-Fi** | Link Status | `<Connected/Disconnected>` | SSID: `<SSID>` |
+| **Wi-Fi** | Signal Quality | `<RSSI> dBm` | Bitrate: `<X> Mbps`. Freq: `<Y> MHz`. |
+
+### Path Trace (MTR) Details
+> Paste key hops here if loss is detected.
+```
+<Paste MTR output here>
+```
 
 ---
 

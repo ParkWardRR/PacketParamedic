@@ -61,24 +61,28 @@ pub fn run_trace(target: &str) -> Result<MtrReport> {
         .arg("--report")
         .arg("-c")
         .arg("10")
+        .arg("--report-wide") // Use wide report for easier parsing if JSON fails
         .arg(target)
         .output();
 
     match output {
         Ok(out) => {
             if out.status.success() {
-                let json_str = String::from_utf8_lossy(&out.stdout);
-                // Attempt parsing
-                match serde_json::from_str::<MtrReport>(&json_str) {
-                    Ok(report) => {
-                        info!(target, hops=report.report.mtr.hubs.len(), "MTR trace complete");
+                let stdout_str = String::from_utf8_lossy(&out.stdout);
+                // Attempt JSON parsing first
+                match serde_json::from_str::<MtrReport>(&stdout_str) {
+                    Ok(mut report) => {
+                        // Sometimes MTR JSON puts target in dst, sometimes not. Ensure it's set.
+                        if report.report.mtr.dst.is_empty() {
+                            report.report.mtr.dst = target.to_string();
+                        }
+                        info!(target, hops=report.report.mtr.hubs.len(), "MTR trace complete (JSON)");
                         Ok(report)
                     },
-                    Err(e) => {
-                        warn!(target, error=%e, "Failed to parse MTR JSON output");
-                        // Log raw output for debugging
-                        warn!(raw_output=%json_str, "Raw MTR JSON");
-                        Err(anyhow::anyhow!("MTR JSON parse error: {}", e))
+                    Err(_) => {
+                        // Fallback to text parsing
+                        info!("JSON parse failed, attempting text parsing for MTR output...");
+                        parse_mtr_text(&stdout_str, target)
                     }
                 }
             } else {
@@ -92,6 +96,76 @@ pub fn run_trace(target: &str) -> Result<MtrReport> {
             Err(anyhow::anyhow!("Failed to launch 'mtr': {}. Is it installed?", e))
         }
     }
+}
+
+fn parse_mtr_text(output: &str, target: &str) -> Result<MtrReport> {
+    let mut hubs = Vec::new();
+    let mut lines = output.lines();
+    
+    // Skip header lines until we see numbers
+    // Header often: "HOST: hostname Loss% Snt Last Avg Best Wrst StDev"
+    
+    for line in lines {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with("HOST:") || line.starts_with("Start:") {
+            continue;
+        }
+
+        // Example line: "  1.|-- 172.16.16.16    0.0%    10    4.1   3.8   3.5   4.4   0.3"
+        // Split by whitespace
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        if parts.len() < 8 {
+            continue; 
+        }
+
+        // Parse Hop Number "1.|--" -> "1"
+        let count_str = parts[0].replace(".|--", "").replace(".", ""); 
+        let Ok(count) = count_str.parse::<u32>() else { continue };
+
+        // Host
+        let host = parts[1].to_string();
+
+        // Loss "0.0%" -> 0.0
+        let loss_str = parts[2].trim_end_matches('%');
+        let loss_percent = loss_str.parse::<f32>().unwrap_or(0.0);
+
+        // Sent
+        let sent = parts[3].parse::<u32>().unwrap_or(0);
+
+        // Last, Avg, Best, Wrst, StDev
+        let last = parts[4].parse::<f32>().unwrap_or(0.0);
+        let avg = parts[5].parse::<f32>().unwrap_or(0.0);
+        let best = parts[6].parse::<f32>().unwrap_or(0.0);
+        let worst = parts[7].parse::<f32>().unwrap_or(0.0);
+        let stdev = parts[8].parse::<f32>().unwrap_or(0.0);
+
+        hubs.push(Hop {
+            count,
+            host,
+            loss_percent,
+            sent,
+            last,
+            avg,
+            best,
+            worst,
+            stdev,
+        });
+    }
+
+    if hubs.is_empty() {
+        return Err(anyhow::anyhow!("Failed to parse MTR text output: no hops found"));
+    }
+
+    Ok(MtrReport {
+        report: ReportData {
+            mtr: MtrDetails {
+                src: "unknown".to_string(),
+                dst: target.to_string(),
+                tests: 10,
+                hubs,
+            }
+        }
+    })
 }
 
 #[cfg(test)]

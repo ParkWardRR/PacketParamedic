@@ -6,6 +6,7 @@ pub mod dns;
 pub mod http;
 pub mod icmp;
 pub mod tcp;
+pub mod wifi;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ProbeType {

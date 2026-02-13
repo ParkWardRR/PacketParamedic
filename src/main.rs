@@ -91,6 +91,13 @@ enum Commands {
         #[arg(long)]
         token: String,
     },
+
+    /// Check Wi-Fi status (Phase 7.5)
+    WifiStatus {
+        /// JSON output
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -421,13 +428,14 @@ async fn main() -> Result<()> {
                 .with_context(|| format!("invalid reflector address: {}", host))?;
             
             let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
-            let path = std::path::Path::new(&home).join(".packetparamedic/identity.key");
-            
-            if let Some(parent) = path.parent() {
-                tokio::fs::create_dir_all(parent).await?;
+            let pathbuf = std::path::Path::new(&home).join(".packetparamedic");
+            let identity_path = pathbuf.join("identity.key");
+
+            if !pathbuf.exists() {
+                tokio::fs::create_dir_all(&pathbuf).await?;
             }
             
-            let identity = packetparamedic::reflector_proto::identity::Identity::load_or_generate(&path)?;
+            let identity = packetparamedic::reflector_proto::identity::Identity::load_or_generate(&identity_path)?;
             
             println!("Paramedic Identity: {}", identity.endpoint_id());
             println!("Connecting to {}...", addr);
@@ -442,7 +450,29 @@ async fn main() -> Result<()> {
                 println!("❌ Pairing failed: {}", resp.message);
             }
         }
+        Commands::WifiStatus { json } => {
+            tracing::info!("Scanning Wi-Fi status");
+            let statuses = packetparamedic::probes::wifi::get_wifi_status()?;
+            
+            if json {
+                println!("{}", serde_json::to_string_pretty(&statuses)?);
+            } else {
+                if statuses.is_empty() {
+                    println!("No wireless interfaces found.");
+                } else {
+                    println!("{:<10} | {:<20} | {:<10} | {:<10} | {:<12}", "Interface", "SSID", "Signal", "Freq", "Bitrate");
+                    println!("{:-<10}-|-{:-<20}-|-{:-<10}-|-{:-<10}-|-{:-<12}", "", "", "", "", "");
+                    for s in statuses {
+                        let ssid = s.ssid.unwrap_or_else(|| "-".to_string());
+                        let signal = s.signal_dbm.map(|v| format!("{} dBm", v)).unwrap_or_else(|| "-".to_string());
+                        let freq = s.freq_mhz.map(|v| format!("{} MHz", v)).unwrap_or_else(|| "-".to_string());
+                        let rate = s.tx_bitrate_mbps.map(|v| format!("{:.1} Mbps", v)).unwrap_or_else(|| "-".to_string());
+                        
+                        println!("{:<10} | {:<20} | {:<10} | {:<10} | {:<12}", s.interface, ssid, signal, freq, rate);
+                    }
+                }
+            }
+        }
     }
-
     Ok(())
 }
