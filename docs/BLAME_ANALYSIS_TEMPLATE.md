@@ -53,6 +53,12 @@ Notes (keep concise):
 | IPv4/IPv6 | IPv6 status | `<working / broken / not used>` |
 | Wi‑Fi (if applicable) | AP / band / RSSI | `<...>` |
 | Segmentation | VLANs / mesh / extenders | `<...>` |
+| 
+| **System Fundamentals** | | |
+| NTP Status | Synchronized? | `<yes/no (service active?)>` |
+| DNS Configuration | Resolvers | `<nameserver IPs>` |
+| Kernel Version | `uname -r` | `<version>` |
+| Uptime | `uptime` | `<duration>` |
 
 ---
 
