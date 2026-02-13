@@ -49,7 +49,14 @@ Why? Because the Pi 5 is the first board with the PCIe bandwidth (for 10GbE), NE
 ### Which Pi 5 do you need?
 We have specific hardware recommendations for each use case. **[👉 Read the Buyer's Guide](BUYERS_GUIDE.md)** to see exactly what to buy.
 
-### Installing Speed Test Providers
+### Installing Speed Test Providers (Automated)
+We provide an automated script to install all necessary dependencies (Ookla, NDT7, Fast, iperf3, ethtool):
+
+```bash
+sudo ./tools/setup_prereqs.sh
+```
+
+### Manual Installation (If automation fails)
 To unlock the full potential of PacketParamedic (Phase 6), you must install the official backend CLIs:
 
 **1. Ookla Speedtest (Recommended)**
