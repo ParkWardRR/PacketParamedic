@@ -77,6 +77,18 @@ Define whether this report is **invalid** (measurement integrity compromised) or
 
 ---
 
+## 4.5) Network Stack Diagnosis (IPv4/IPv6 & Routing)
+| Category | Check | Value | Notes |
+|---|---|---|---|
+| **IPv4** | Local IP | `<192.168.x.x>` | Subnet Mask / Gateway |
+| **IPv4** | Route to 8.8.8.8 | `<Hops Count>` | Traceroute path health |
+| **IPv6** | Global Address | `<2001:...>` | Public/Internet routable? |
+| **IPv6** | ULA Address | `<fd00:...>` | Local/Mesh routing? |
+| **IPv6** | Connectivity | `<Pass/Fail>` | Ping6 to google.com |
+| **IPv6** | Route Table | `<Default GW>` | RA / DHCPv6 / Static |
+
+---
+
 ## 5) Measurements collected (raw signals)
 ### 5.1 Probes (availability + latency)
 | Probe | Target class | Target | Success rate | Latency p50 | Latency p95 | Notes |
