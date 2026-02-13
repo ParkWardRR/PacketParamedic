@@ -79,11 +79,19 @@ If you have a PoE+ switch, you can power the Pi 5 via a PoE+ HAT, eliminating th
 ### Uninterruptible Power Supply (UPS)
 For maximum uptime, a small USB-C UPS or HAT-based UPS can keep the device running during short power outages, ensuring your "evidence locker" captures the exact moment power returns or fails.
 
-### Wi-Fi Capture (Standardized Add-on)
-For advanced RF diagnostics, monitor mode, and frame injection, we standardize on the **MT7612U** chipset. It is fully supported in the main Linux kernel (`mt76`), avoiding the instability often associated with proprietary drivers.
+### Wi-Fi Capture & Diagnostics (Standardized Add-on)
+For advanced RF diagnostics, monitor mode, and interference detection (Phase 7.5 / 13), you need a USB Wi-Fi adapter. The onboard Pi Wi-Fi 5 chip is good for connectivity, but dedicated hardware is required for spectral analysis and channel scanning.
 
-*   **Single-Radio Capture Kit**: **1× ALFA AWUS036ACM**.
-    *   *Best for*: Monitor mode, frame injection, and general sniffing on one channel at a time.
-*   **Dual-Radio Concurrent Kit**: **2× ALFA AWUS036ACM**.
-    *   *Best for*: Simultaneous capture/injection on different channels (e.g., park one radio, hop the other).
-    *   *Why*: A single Wi-Fi radio cannot physically monitor multiple channels at once. If you need to watch two bands or channels simultaneously, you need two physical radios.
+**Top Recommendation (Wi-Fi 6E): MediaTek MT7921AU**
+*   **Chipset:** MT7921AU
+*   **Standard:** Wi-Fi 6E (802.11ax) - Supports 2.4/5/6 GHz.
+*   **Why:** Essential for modern "Tri-Band" diagnostics. Can detect congestion on new 6GHz routers. Mainline Linux support (Kernel 5.18+).
+*   **Example Hardware:** Comfast CF-951AX, Alfa AWUS036AXML.
+*   **Caveat:** "Active" monitor mode (injection) can be finicky on some kernels, but passive scanning is excellent.
+
+**Legacy/Stable Alternative (Wi-Fi 5): MediaTek MT7612U**
+*   **Chipset:** MT7612U
+*   **Standard:** Wi-Fi 5 (802.11ac) - Supports 2.4/5 GHz.
+*   **Why:** Rock-solid stability for monitor mode and injection. The "Gold Standard" for Linux Wi-Fi 5.
+*   **Example Hardware:** Alfa AWUS036ACM.
+*   **Caveat:** Cannot see Wi-Fi 6E (6GHz) traffic.
