@@ -22,3 +22,6 @@ Thumbs.db
 # Coverage reports
 lcov.info
 tarpaulin-report.html
+speed_test_local.log
+speed_test_wan.log
+report.json

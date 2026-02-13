@@ -1,8 +1,0 @@
-[2m2026-02-13T02:34:13.213549Z[0m [32m INFO[0m [2mpacketparamedic[0m[2m:[0m Running provider speed test [3mprov_id[0m[2m=[0mreflector
-[2m2026-02-13T02:34:13.216287Z[0m [32m INFO[0m [2mpacketparamedic::reflector_proto::client[0m[2m:[0m connecting to reflector [3maddress[0m[2m=[0m172.16.19.199:4000
-[2m2026-02-13T02:34:13.281578Z[0m [32m INFO[0m [2mpacketparamedic::reflector_proto::client[0m[2m:[0m handshake complete [3mserver_version[0m[2m=[0m1.0
-Error: iperf3 failed: iperf3: parameter error - port number must be between 1 and 65535 inclusive
-
-Usage: iperf3 [-s|-c host] [options]
-Try `iperf3 --help' for more information.
-
