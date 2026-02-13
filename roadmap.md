@@ -255,8 +255,9 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 
 ### 6.5 Quality Metrics
 - [ ] Jitter + loss tracking via provider JSON
-- [ ] Bufferbloat / latency-under-load grading
+- [ ] Bufferbloat / latency-under-load grading (loaded vs unloaded delta)
 - [ ] "Consistent testing" mode (daily/weekly baselines)
+- [ ] Service value scoreboard (Plan vs Observed $/Mbps)
 
 ### Acceptance
 - [ ] Framework supports Ookla and NDT7 out of the box
@@ -318,7 +319,8 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 
 - [x] Traceroute/MTR sampling with safe rate limits
 - [x] Path diffing and correlation to incidents
-- [x] Local hop tracing (AP/mesh/router/VLAN traversal where visible)
+- [x] Local hop tracing (L2/L3 map: AP/mesh/router/VLAN gateway)
+- [ ] DNS resolver visibility ("which resolver am I using?" + change detection)
 
 ### Acceptance
 - [ ] Timeline data shows "path changed at X" and correlates with user impact
@@ -351,6 +353,8 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 - [x] Correlate "High Latency" on all probes == "WAN Congestion".
 - [ ] Correlate "Packet Loss" on Gateway only == "Wi-Fi/LAN Issue".
 - [ ] Correlate "Timeout" on specific target == "Remote Service Down".
+- [ ] Anomaly detection: 3-sigma alerts for latency/loss.
+- [ ] Long-term history (TSDB): Time series for loss/RTT/jitter/throughput.
 
 ### Acceptance
 - [ ] Incidents are emitted with recommended next tests + clear rationale
@@ -470,7 +474,9 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 - [ ] Stress test reports: pass/fail with detailed timeline of throughput, CPU, thermal, and error metrics
 - [ ] AI diagnostics assistant (local-first, privacy-preserving, optional module)
 - [ ] Device identification / IP-to-device hints (hostname, MAC vendor, OS guess)
-- [ ] Anomalous protocol detection (IPX, unusual L2 frames) as a specific detector
+- [ ] Anomalous protocol detection (IPX, unusual L2 frames, top talkers)
+- [ ] QoS detection heuristics (rate ceilings, DSCP analysis)
+- [ ] AI diagnostics assistant (natural-language health assessment)
 
 ### Acceptance
 - [ ] Advanced tools never run by default; always display risks + required permissions

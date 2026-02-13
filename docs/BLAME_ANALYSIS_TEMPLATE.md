@@ -1,102 +1,88 @@
 <!--
-PacketParamedic — Blame Analysis Template (v2)
-Goal: ELI15 Top / Prosumer Bottom. "Brass facts" first, "Deep Dive" second.
+PacketParamedic — Comprehensive Blame Analysis Template (v3)
 -->
 
-# Blame Analysis: <REPORT NAME>
+# Blame Analysis: Comprehensive Report
 
-## 🚨 The Verdict (ELI15)
-**Is it my internet?** `<YES / NO / MAYBE>`
-**Whose fault is it?** `<ME / ISP / SERVICE>`
-**Confidence:** `<0-100%>`
+## 🏁 Diagnostic Verdict (Fault Attribution)
+**Verdict:** `Is it me?` / `Is it the ISP?` / `Is it the Wi-Fi?`
+**Confidence:** `<%>`
+**Root Cause:** `<CLASSIFICATION>` (e.g., WAN Congestion, Wi-Fi Interference, Local Hardware Limit)
 
-### What is happening?
-> *Write 1-2 simple sentences here. Example: "Your Wi-Fi signal is too weak, causing Netflix to buffer. The internet connection to your house is fine."*
-
-### What should I do?
-1.  **Action 1:** `<e.g., Move closer to the router.>`
-2.  **Action 2:** `<e.g., Restart the modem.>`
-
----
-
-## 🔬 The Evidence (The "Brass Facts")
-| Test | Result | Grade | Meaning |
-|---|---|---|---|
-| **Hardware Health** | `<PASS/WARN/FAIL>` | `<A-F>` | Is the Pi itself healthy? |
-| **Wi-Fi Connection** | `<Signal dBm>` | `<A-F>` | Connectivity to Router. |
-| **Internet Speed** | `<Down> / <Up> Mbps` | `<A-F>` | Raw capacity vs Plan. |
-| **Stability (Loss)** | `<0-100>%` | `<A-F>` | Are packets getting lost? |
-| **Responsiveness** | `<Latency> ms` | `<A-F>` | Gaming/Call quality (Lag). |
+### Evidence Summary
+> *State the primary evidence clearly.*
+-   **Local Gateway Reachability:** `<PASS/FAIL>` (RTT: `<ms>`, Loss: `<%>`)
+-   **WAN Reachability:** `<PASS/FAIL>` (Loss to Google: `<%>`)
+-   **Symptom:** `<Speed/Latency/Loss>` issue confirmed.
 
 ---
 
-<br>
-<br>
-
-# 🛠️ Deep Dive (Prosumer / Technical)
-
-## 1. Local Network Architecture
-```mermaid
-graph TD
-    A[PacketParamedic] -->|Ethernet/Wi-Fi| B(Gateway/Router)
-    B -->|ISP Line| C(Modem/ONT)
-    C -->|WAN| D[Internet]
-    
-    subgraph LAN ["Local Network"]
-    A
-    B
-    R[Reflector Node] -.->|Optional| A
-    end
-```
-
-## 2. System & Hardware Self-Test
-**Context:** *Validating the observer. If the doctor is sick, the diagnosis is suspect.*
-| Component | Status | Details |
+## 📡 Signal & Connectivity (Layer 1-2)
+| Test | Result | Notes |
 |---|---|---|
-| **CPU/Thermal** | `<Temp>°C` | Throttled: `<Yes/No>` |
-| **Storage** | `<Type>` | `<Free Space>` |
-| **Ethernet** | `<Speed>` | Link verified. |
-| **Wi-Fi Interface** | `<State>` | `<SSID>` |
+| **Wi-Fi Signal (RSSI)** | `<dBm>` | Target: > -65 dBm (5GHz) or > -70 dBm (2.4GHz) |
+| **Link Rate (PHY)** | `<Mbps>` | Operational ceiling for throughput. |
+| **Noise Floor** | `<dBm>` | Interference check (requires monitor mode). |
+| **BSSID Roaming** | `<MAC>` | Stable BSSID? Frequency hopping? |
+| **Frequency** | `<GHz>` | 2.4 / 5 / 6 GHz |
 
-## 3. Comparative Analysis: Ethernet vs. Wi-Fi
-*Test both paths to isolate if the issue is wireless interference.*
+## 🌍 Reachability & Availability (Layer 3-4)
+| Probe Target | Protocol | RTT (p50) | RTT (p99) | Loss % | Success |
+|---|---|---|---|---|---|
+| **Gateway** | ICMP | `<ms>` | `<ms>` | `<%>` | ✅/❌ |
+| **Google DNS** | UDP/53 | `<ms>` | `<ms>` | `<%>` | ✅/❌ |
+| **Cloudflare** | TCP/443 | `<ms>` | `<ms>` | `<%>` | ✅/❌ |
+| **Web Search** | HTTP | `<ms>` | `<ms>` | `<%>` | ✅/❌ |
 
-| Metric | Ethernet (Wired) | Wi-Fi (Wireless) | Delta |
-|---|---|---|---|
-| **Download** | `<Mbps>` | `<Mbps>` | `<Diff>` |
-| **Upload** | `<Mbps>` | `<Mbps>` | `<Diff>` |
-| **Latency** | `<ms>` | `<ms>` | `<Diff>` |
-| **Jitter** | `<ms>` | `<ms>` | `<Diff>` |
-| **Packet Loss** | `<%>` | `<%>` | `<Diff>` |
-
-## 4. Signal Intelligence (Wi-Fi Analytics)
-| Feature | Observed Value | Optimal Range | Assessment |
-|---|---|---|---|
-| **SSID** | `<Name>` | - | Correct Network? |
-| **BSSID** | `<MAC>` | - | Roaming Check. |
-| **RSSI (Signal)** | `<dBm>` | > -65 dBm | **Strong/Weak** |
-| **Link Rate** | `<Mbps>` | Max Supported | PHY Health. |
-| **Frequency** | `<GHz>` | 5/6 GHz | Band Congestion. |
-
-## 5. Path Analysis (MTR / Traceroute)
-*Where is the break? LAN vs WAN vs Backbone.*
-
-**Target:** `8.8.8.8` (Google DNS)
-```
-<PASTE MTR OUTPUT HERE>
-```
-*Key Hops Analysis:*
-- **Hop 1 (Gateway):** `<Latency/Loss>` — Local Issue?
-- **Hop N (ISP Edge):** `<Latency/Loss>` — Last mile issue?
-- **Final Hop:** `<Latency/Loss>` — End-to-end status.
-
-## 6. Full Probe Data
-| Probe Target | Protocol | RTT (ms) | Success Rate | Note |
+## 🚀 Performance & Throughput (Speed)
+| Provider | Download (Mbps) | Upload (Mbps) | Latency (Loaded) | Jitter |
 |---|---|---|---|---|
-| **Gateway** | ICMP | `<ms>` | `<%>` | Local Link Health. |
-| **Google DNS** | UDP/53 | `<ms>` | `<%>` | WAN Connectivity. |
-| **Web (Google)** | HTTP | `<ms>` | `<%>` | Application Layer. |
-| **Reflector** | TCP/UDP | `<ms>` | `<%>` | LAN Benchmark. |
+| **Ookla (WAN)** | `<Mbps>` | `<Mbps>` | `<ms>` | `<ms>` |
+| **Reflector (LAN)** | `<Mbps>` | `<Mbps>` | `<ms>` | `<0.1ms>` |
+| **Measurement Lab** | `<Mbps>` | `<Mbps>` | `<ms>` | `<ms>` |
+
+### Bufferbloat Analysis
+-   **Unloaded Latency:** `<ms>`
+-   **Loaded Latency:** `<ms>`
+-   **Delta:** `<ms>` -> **Grade:** `<A/B/C/F>`
+
+### Service Value Scoreboard
+-   **Plan Speed:** `<Mbps> Down / <Mbps> Up`
+-   **Measured:** `<%> of Plan`
+-   **Cost:** `$/Mbps` (Estimated)
+
+---
+
+## 🗺️ Path Analysis (Topology)
+### Local Hops (L2/L3 Map)
+> *Active discovery of local infrastructure.*
+```
+<Trace to Gateway>
+Hop 1: <Device/IP> (<RTT>) [Router?]
+Hop 2: <Device/IP> (<RTT>) [Modem?]
+```
+
+### WAN Path (MTR)
+> *Route to 8.8.8.8*
+```
+<MTR Output>
+Hops changed since last baseline: <Yes/No>
+```
+
+---
+
+## 🕵️ Advanced Diagnostics
+| Feature | Status | Observation |
+|---|---|---|
+| **DNS Visibility** | `<Resolver IP>` | Detected Resolver (ISP/Google/Cloudflare). |
+| **Device Identification** | `<Vendor>` | OUI Lookup for Gateway. |
+| **QoS Detection** | `<Detected?>` | Rate shaping evidence? |
+| **Anomalous Traffic** | `<Flags>` | Broadcast storms / IPX / weird framing. |
+| **Node Integrity** | `<PASS/WARN>` | Pi 5 Thermal/Power status. |
+
+## 🧠 AI Assessment (Natural Language)
+> *Generated summary of health based on all metrics above.*
+> "The network is generally healthy but exhibits significant bufferbloat under load. Gaming sessions will suffer lag when someone is streaming 4K video. Recommend enabling SQM (Smart Queue Management) on the router."
 
 ---
 *Generated by PacketParamedic on <TIMESTAMP>*
