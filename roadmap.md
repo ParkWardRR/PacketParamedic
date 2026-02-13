@@ -42,6 +42,7 @@
 | 6 | Performance & Throughput (iperf3, native Rust, 1GbE) | Done (Ookla/NDT7/Fast/iperf3 + Reflector Self-Host) | Reliability (Streaming), High Performance |
 | 6.5 | Scheduling Engine (cron, bandwidth coordination) | Done | High Performance (Control), Reliability (Quiet) |
 | 7 | Path Tracing & Change Detection (traceroute/MTR) | Started | High Performance, Simple Troubleshooting |
+| 7.5 | Wireless Analytics (Wi-Fi 6 Diagnostics) | New | Simple Troubleshooting (Wi-Fi) |
 | 8 | Incidents & Anomaly Detection | In progress (Foundation & Baseline Engine implemented. Needs Correlation.) | Simple Troubleshooting, Reliability (Answers) |
 | 9 | Test Phase (unit, integration, soak, security) | Not started | Reliability (Reliability) |
 | 10 | UX/UI (htmx web dashboard, onboarding, schedule mgmt) | Not started | Simple Troubleshooting, Reliability (Usability) |
@@ -325,6 +326,24 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 
 ---
 
+## Phase 7.5: Wireless Analytics (Mini Milestone) (Week 16--18)
+
+### 7.5.1 Wi-Fi Telemetry (iw wrapper)
+- [ ] Implement safe Rust wrapper for `iw` types (PHY, interface, link station).
+- [ ] **Signal Logging:** Periodic RSSI/SNR sampling for the connected AP.
+- [ ] **BSSID Tracking:** Log which AP BSSID is serving the client (roaming detection).
+
+### 7.5.2 Channel Congestion Scanner
+- [ ] **Passive Scan:** Periodic background scan (during idle) to list neighboring APs.
+- [ ] **Congestion Score:** Calculate channel utilization based on neighbor count and signal strength.
+- [ ] **Interference Detection:** Flag non-Wi-Fi interference if noise floor spikes.
+
+### Acceptance
+- [ ] "Wi-Fi Health" dashboard card showing Signal Quality and Neighbor Count.
+- [ ] Logs correlate "High Latency" incidents with "Low RSSI" or "Roam Events".
+
+---
+
 - [x] Anti-flapping: deduplicate similar alerts within time window (Implemented via find_open_incident)
 - [ ] Auto-resolution: close incidents when signals return to baseline for N minutes
 
@@ -437,7 +456,11 @@ See [docs/HARDWARE_OPTIMIZATION.md](docs/HARDWARE_OPTIMIZATION.md) for the full 
 ## Phase 13: Advanced Diagnostics (Week 34+)
 
 - [ ] RF/monitor mode capture workflows (explicit opt-in only)
-- [ ] **Dual-radio simultaneous capture support** (concurrent channel monitoring)
+- [ ] **Dual-Radio Architecture (Feature Roadmap Item)**
+    - [ ] **Hardware:** Support for secondary USB Wi-Fi dongle (e.g., MediaTek mt7921au) alongside onboard Pi Wi-Fi.
+    - [ ] **Concurrent Monitoring:** One radio stays connected (Client Mode) for Internet/Throughput tests. Second radio scans (Monitor Mode) for interference.
+    - [ ] **Roaming Analysis:** "Best AP" decision engine. Compare signal strength of all candidates vs current association.
+    - [ ] **Interference Hunting:** Dedicated spectral scan on secondary radio without dropping client connection.
 - [ ] **UPS graceful shutdown integration** (safe shutdown on low battery)
 - [ ] QoS detection heuristics
 - [ ] Stress test orchestrator: multi-protocol sustained load tests with strict safety limits
