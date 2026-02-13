@@ -1,6 +1,6 @@
 <!--
-PacketParamedic — Comprehensive Validation Report (Full-Fat + IPv6 + Trace)
-Generated: 2026-02-13 17:00:00 UTC
+PacketParamedic — Comprehensive Validation Report (Full-Fat + IPv6 + Trace + Blame Matrix)
+Generated: 2026-02-13 18:00:00 UTC
 Scope: Full System Audit (Hardware + Core Probes + Reflector + Public + IPv4/IPv6 Stack + Route Analysis)
 -->
 
@@ -14,6 +14,15 @@ Scope: Full System Audit (Hardware + Core Probes + Reflector + Public + IPv4/IPv
 | Customer impact | `Remote path to irww-alpina capped at 100Mbps. IPv4/IPv6 stack fully operational.` |
 | Time window analyzed (local) | 2026-02-13 16:30 -> 17:00 |
 | Uptime | `21h 56m` |
+| Next action | `Inspect physical cabling for irww.alpina` |
+
+### Who is to blame & Prioritized Remediation
+| Responsible Party | Root Cause | Priority | Remediation Action |
+|---|---|---|---|
+| **Me (Local Hardware)** | Physical Link Negotiation Failure (100Base-TX) | **P1 - High** | Replace Ethernet cable connecting `irww.alpina` to switch. |
+| **Me (System Config)** | Storage Bottleneck (microSD) | **P2 - Medium** | Upgrade to NVMe SSD to reduce WAL latency for logs. |
+| **Me (Config)** | Wi-Fi Diagnostics Missing | **P3 - Low** | Install `iw` package for RF analysis. |
+| **ISP (Spectrum)** | None Detected | N/A | Uplink is performing within specifications (300/40 Mbps). |
 
 ---
 
@@ -95,16 +104,19 @@ Scope: Full System Audit (Hardware + Core Probes + Reflector + Public + IPv4/IPv
 ---
 
 ## 6) Summary & Recommendations
-1.  **Network Stack:** Both IPv4 and IPv6 stacks are fully functional. IPv6 connectivity is excellent (17ms RTT).
-2.  **Routing:** Traceroute shows a clean, 10-hop path to Google DNS with zero packet loss.
-3.  **Throughput:** Local LAN is perfect (1Gbps). Remote LAN (IRWW) is constrained by physical cabling (100Mbps).
-4.  **Action Item:** Inspect physical cabling to `irww.alpina` Host.
+1.  **System Health:** The PacketParamedic Client is healthy, synchronized (NTP), and running efficiently.
+2.  **Blame Verdict:** The issue with remote connectivity to `irww` is definitively isolated to **Local Hardware (Physical Link)**. The ISP is cleared.
+3.  **Remediation:** Replace the network cable for `irww.alpina` immediately. Consider NVMe upgrade for long-term log retention.
 
 ---
 
 ## Appendix: Evidence Data
 ```json
 {
+  "blame_matrix": [
+    { "party": "me", "cause": "100Mbps Link Negotiation", "priority": "P1" },
+    { "party": "me", "cause": "microSD Storage", "priority": "P2" }
+  ],
   "system": {
     "ipv4_gw": "172.16.16.16",
     "ipv6_global": true,

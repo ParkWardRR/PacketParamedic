@@ -16,6 +16,11 @@ Scope sources: probes (ICMP/TCP/DNS/HTTP), throughput (iperf3 + providers), path
 | Evidence bundle | `<path or link to exported bundle>` |
 | Next action | `<what to do next, in one sentence>` |
 
+### Who is to blame & Prioritized Remediation
+| Responsible Party | Root Cause | Priority | Remediation Action |
+|---|---|---|---|
+| `<Me / ISP / Service>` | `<Brief technical cause>` | `<P0 - Critical / P1 - High / P2 - Low>` | `<Specific fix>` |
+
 ---
 
 ## 1) Context & constraints
